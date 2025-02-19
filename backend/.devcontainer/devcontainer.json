@@ -35,12 +35,6 @@
             }
         }
     },
-    // Get SSH keys from host.
-    "mounts": [
-        "type=bind,source=${localWorkspaceFolder},target=/work",
-        "type=bind,source=/home/${localEnv:USER}/.ssh,target=/home/vscode/.ssh,readonly"
-    ],
-
     // Features to add to the dev container. More info: https://containers.dev/features.
     // "features": {}
 
