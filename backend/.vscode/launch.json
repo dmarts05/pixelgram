@@ -9,7 +9,7 @@
             "type": "debugpy",
             "request": "launch",
             "module": "uvicorn",
-            "args": ["main:app", "--reload"]
+            "args": ["pixelgram.__main__:app", "--reload"]
         }
     ]
 }
