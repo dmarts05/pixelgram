@@ -1,0 +1,38 @@
+name: Python CI
+
+on:
+    push:
+        branches: [main]
+        paths:
+            - "backend/**"
+    pull_request:
+        branches: [main]
+        paths:
+            - "backend/**"
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Set up Python
+              uses: actions/setup-python@v5
+              with:
+                  python-version: "3.13"
+
+            - name: Install dependencies
+              run: pip install -r requirements.txt
+              working-directory: backend
+
+            - name: Check ruff formatting
+              run: ruff format --check
+              working-directory: backend
+
+            - name: Check ruff linting
+              run: ruff check
+              working-directory: backend
+
+            - name: Check tests pass
+              run: pytest
+              working-directory: backend
