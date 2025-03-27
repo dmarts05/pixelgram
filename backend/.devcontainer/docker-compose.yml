@@ -1,5 +1,9 @@
 volumes:
     postgres-data:
+
+networks:
+    dev-network:
+
 services:
     devcontainer:
         build:
@@ -9,15 +13,16 @@ services:
             POSTGRES_PASSWORD: postgres
             POSTGRES_USER: postgres
             POSTGRES_DB: postgres
-            POSTGRES_HOSTNAME: db
+            POSTGRES_HOSTNAME: db # Keep this to access DB
         volumes:
-            - ../..:/workspaces:cached
-        # Overrides default command so things don't shut down after the process ends.
-        command: sleep infinity
-        # Runs app on the same network as the database container, allows "forwardPorts" in devcontainer.json function.
-        network_mode: service:db
-        # Use "forwardPorts" in **devcontainer.json** to forward an app port locally.
-        # (Adding the "ports" property to this file will not forward from a Codespace.)
+            - ../..:/workspaces/${localWorkspaceFolderBasename}:cached
+
+        command: sleep infinity # Keeps the container running
+        networks:
+            - dev-network
+        depends_on:
+            - db
+
     db:
         image: postgres:17-bookworm
         restart: unless-stopped
@@ -27,5 +32,5 @@ services:
             POSTGRES_PASSWORD: postgres
             POSTGRES_USER: postgres
             POSTGRES_DB: postgres
-        # Add "forwardPorts": ["5432"] to **devcontainer.json** to forward PostgreSQL locally.
-        # (Adding the "ports" property to this file will not forward from a Codespace.)
+        networks:
+            - dev-network

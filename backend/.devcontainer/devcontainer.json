@@ -42,7 +42,7 @@
     "forwardPorts": [5432],
 
     // Use 'postCreateCommand' to run commands after the container is created.
-    "postCreateCommand": "uv sync --frozen",
+    // "postCreateCommand": "uv sync --frozen",
 
     // Configure tool-specific properties.
     // "customizations": {},
