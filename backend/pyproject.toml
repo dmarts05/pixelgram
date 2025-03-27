@@ -5,7 +5,9 @@ description = "Pixelgram is a minimal social media for pixel art content."
 requires-python = ">=3.13"
 dependencies = [
     "fastapi[standard]>=0.115.8",
-    "httpx>=0.28.1",
+    "psycopg2>=2.9.10",
+    "pydantic-settings>=2.8.1",
+    "sqlmodel>=0.0.24",
 ]
 
 [dependency-groups]

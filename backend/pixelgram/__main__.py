@@ -1,8 +1,5 @@
 from fastapi import FastAPI
 
-app = FastAPI()
+from pixelgram.db import init_db_lifespan
 
-
-@app.get("/")
-async def root():
-    return {"message": "Hello World"}
+app = FastAPI(lifespan=init_db_lifespan)
