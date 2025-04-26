@@ -134,7 +134,7 @@ def get_jwt_strategy() -> JWTStrategy[User, uuid.UUID]:
     This function is used to create a JWT strategy for the authentication backend.
     """
     return JWTStrategy(
-        secret=settings.secret, lifetime_seconds=settings.token_lifetime_seconds
+        secret=settings.secret, lifetime_seconds=settings.token_lifetime_minutes * 60
     )
 
 
