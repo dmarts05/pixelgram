@@ -12,13 +12,17 @@ from fastapi_users import (
 )
 from fastapi_users.authentication import (
     AuthenticationBackend,
-    BearerTransport,
-    JWTStrategy,
+    CookieTransport,
+)
+from fastapi_users.authentication.strategy.db import (
+    AccessTokenDatabase,
+    DatabaseStrategy,
 )
 from fastapi_users.db import SQLAlchemyUserDatabase
 from httpx_oauth.clients.google import GoogleOAuth2
 
-from pixelgram.db import get_user_db
+from pixelgram.db import get_access_token_db, get_user_db
+from pixelgram.models.access_token import AccessToken
 from pixelgram.models.user import User
 from pixelgram.schemas.user import UserCreate
 from pixelgram.settings import settings
@@ -124,26 +128,24 @@ async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db
     yield UserManager(user_db)
 
 
-bearer_transport = BearerTransport(tokenUrl="auth/jwt/login")
-"""Bearer transport for JWT authentication."""
-
-
-def get_jwt_strategy() -> JWTStrategy[User, uuid.UUID]:
+def get_database_strategy(
+    access_token_db: AccessTokenDatabase[AccessToken] = Depends(get_access_token_db),
+) -> DatabaseStrategy:
     """
-    Get JWT strategy for authentication.
-    This function is used to create a JWT strategy for the authentication backend.
+    Get database strategy for authentication.
+    This function is used to create a database strategy for the authentication backend.
     """
-    return JWTStrategy(
-        secret=settings.secret, lifetime_seconds=settings.token_lifetime_minutes * 60
+    return DatabaseStrategy(
+        access_token_db, lifetime_seconds=settings.token_lifetime_minutes * 60
     )
 
 
 auth_backend = AuthenticationBackend(
-    name="jwt",
-    transport=bearer_transport,
-    get_strategy=get_jwt_strategy,
+    name="cookie",
+    transport=CookieTransport(cookie_max_age=settings.token_lifetime_minutes * 60),
+    get_strategy=get_database_strategy,
 )
-"""Authentication backend for JWT authentication."""
+"""Authentication backend for cookie-based authentication."""
 
 fastapi_users = FastAPIUsers[User, uuid.UUID](get_user_manager, [auth_backend])
 """FastAPI Users instance for User model."""
