@@ -1,30 +1,44 @@
-from fastapi import FastAPI
-from fastapi.concurrency import asynccontextmanager
-from sqlmodel import Session, SQLModel, create_engine
+from collections.abc import AsyncGenerator
+from typing import Coroutine
 
+from fastapi import Depends
+from fastapi_users.db import (
+    SQLAlchemyUserDatabase,
+)
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+
+from pixelgram.models.base import Base
+from pixelgram.models.oauth_account import OAuthAccount
+from pixelgram.models.user import User
 from pixelgram.settings import settings
 
-engine = create_engine(settings.db_uri)
-"""SQLModel engine to connect to the database"""
+engine = create_async_engine(settings.db_uri)
+"""Engine for the database"""
+
+async_session_maker = async_sessionmaker(engine, expire_on_commit=False)
+"""Session maker for the database"""
 
 
-def create_db_and_tables():
-    """Create the database and tables if they don't exist."""
-    SQLModel.metadata.create_all(engine)
+async def create_db_and_tables() -> Coroutine | None:
+    """Create the database and tables if they do not exist."""
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
 
 
-def get_session():
-    """Get a new session from the engine."""
-    with Session(engine) as session:
+async def get_async_session() -> AsyncGenerator[AsyncSession, None]:
+    """
+    Get an async session for the database.
+    This function is a dependency that can be used in FastAPI routes.
+    """
+    async with async_session_maker() as session:
         yield session
 
 
-@asynccontextmanager
-async def init_db_lifespan(app: FastAPI):
+async def get_user_db(
+    session: AsyncSession = Depends(get_async_session),
+) -> AsyncGenerator[SQLAlchemyUserDatabase, None]:
     """
-    Initialize the database and tables when the app starts.
-
-    :param app: FastAPI application instance
+    Get user table from the database.
+    This function is a dependency that can be used in FastAPI routes.
     """
-    create_db_and_tables()
-    yield
+    yield SQLAlchemyUserDatabase(session, User, OAuthAccount)

@@ -4,10 +4,10 @@ version = "0.1.0"
 description = "Pixelgram is a minimal social media for pixel art content."
 requires-python = ">=3.13"
 dependencies = [
+    "asyncpg>=0.30.0",
+    "fastapi-users[oauth,sqlalchemy]>=14.0.1",
     "fastapi[standard]>=0.115.8",
-    "psycopg2>=2.9.10",
     "pydantic-settings>=2.8.1",
-    "sqlmodel>=0.0.24",
 ]
 
 [dependency-groups]

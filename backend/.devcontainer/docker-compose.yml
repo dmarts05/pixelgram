@@ -9,8 +9,6 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        environment:
-            DB_URI: postgresql://postgres:postgres@db:5432/postgres
         volumes:
             - ../..:/workspaces/${localWorkspaceFolderBasename}:cached
 
@@ -31,3 +29,5 @@ services:
             POSTGRES_DB: postgres
         networks:
             - dev-network
+        ports:
+            - "5432:5432"
