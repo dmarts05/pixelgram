@@ -24,7 +24,6 @@ export default tseslint.config(
                 { allowConstantExport: true },
             ],
             "@typescript-eslint/explicit-function-return-type": "error",
-            "@typescript-eslint/consistent-type-definitions": ["error", "type"],
         },
     }
 );

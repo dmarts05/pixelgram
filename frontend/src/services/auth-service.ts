@@ -1,9 +1,10 @@
 import { LogInFormData } from "../components/LogInForm";
 import { SignUpFormData } from "../components/SignUpForm";
 import { API_URL } from "../utils/constants";
+import { fetchApi } from "./fetch-api";
 
 export async function signUp(data: SignUpFormData): Promise<void> {
-    const response = await fetch(`${API_URL}/auth/register`, {
+    const response = await fetchApi(`${API_URL}/auth/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -26,10 +27,9 @@ export async function logIn(data: LogInFormData): Promise<void> {
     formData.append("username", data.email);
     formData.append("password", data.password);
 
-    const response = await fetch(`${API_URL}/auth/login`, {
+    const response = await fetchApi(`${API_URL}/auth/login`, {
         method: "POST",
         body: formData,
-        credentials: "include",
     });
 
     if (!response.ok) {
@@ -45,9 +45,8 @@ export async function logIn(data: LogInFormData): Promise<void> {
 }
 
 export async function logout(): Promise<void> {
-    const response = await fetch(`${API_URL}/auth/logout`, {
+    const response = await fetchApi(`${API_URL}/auth/logout`, {
         method: "POST",
-        credentials: "include",
     });
 
     if (!response.ok) {
@@ -58,4 +57,11 @@ export async function logout(): Promise<void> {
                 throw new Error("Unexpected error trying to log out");
         }
     }
+}
+
+export async function isUserLoggedIn(): Promise<boolean> {
+    const response = await fetchApi(`${API_URL}/users/me`, {
+        method: "GET",
+    });
+    return response.ok;
 }
