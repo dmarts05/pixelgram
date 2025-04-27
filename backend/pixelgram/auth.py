@@ -103,8 +103,12 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
             raise InvalidPasswordException(
                 reason="Password should be at least 8 characters"
             )
-        if user.email in password:
+        if user.email.split("@")[0] in password:
             raise InvalidPasswordException(reason="Password should not contain e-mail")
+        if user.username in password:
+            raise InvalidPasswordException(
+                reason="Password should not contain username"
+            )
 
     async def on_after_register(self, user: User, request: Optional[Request] = None):
         pass
