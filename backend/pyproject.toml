@@ -4,8 +4,11 @@ version = "0.1.0"
 description = "Pixelgram is a minimal social media for pixel art content."
 requires-python = ">=3.13"
 dependencies = [
+    "aiosqlite>=0.21.0",
+    "asyncpg>=0.30.0",
+    "fastapi-users[oauth,sqlalchemy]>=14.0.1",
     "fastapi[standard]>=0.115.8",
-    "httpx>=0.28.1",
+    "pydantic-settings>=2.8.1",
 ]
 
 [dependency-groups]

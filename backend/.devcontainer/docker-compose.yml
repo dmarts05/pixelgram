@@ -9,11 +9,6 @@ services:
         build:
             context: .
             dockerfile: Dockerfile
-        environment:
-            POSTGRES_PASSWORD: postgres
-            POSTGRES_USER: postgres
-            POSTGRES_DB: postgres
-            POSTGRES_HOSTNAME: db # Keep this to access DB
         volumes:
             - ../..:/workspaces/${localWorkspaceFolderBasename}:cached
 
@@ -34,3 +29,5 @@ services:
             POSTGRES_DB: postgres
         networks:
             - dev-network
+        ports:
+            - "5432:5432"
