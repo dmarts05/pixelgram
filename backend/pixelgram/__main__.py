@@ -9,6 +9,7 @@ from pixelgram.auth import (
 from pixelgram.db import create_db_and_tables
 from pixelgram.routers.auth import auth_router
 from pixelgram.schemas.user import UserRead, UserUpdate
+from pixelgram.settings import settings
 
 
 @asynccontextmanager
@@ -26,7 +27,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:5173"],
+    allow_origins=[settings.frontend_base_url],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -38,3 +39,11 @@ app.include_router(
     prefix="/users",
     tags=["users"],
 )
+
+
+@app.get("/health", tags=["health"])
+async def health_check():
+    """
+    Health check endpoint.
+    """
+    return {"status": "ok"}
