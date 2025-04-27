@@ -11,9 +11,9 @@ function SignUpPage(): JSX.Element {
                     <BrandLogo
                         text="Sign Up"
                         direction="column"
-                        textSize="3xl"
-                        width={60}
-                        height={60}
+                        textSize="2xl"
+                        width={50}
+                        height={50}
                     />
                     <SignUpForm />
                     <div className="text-center">

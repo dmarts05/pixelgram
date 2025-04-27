@@ -8,6 +8,7 @@ import SignUpPage from "./pages/SignUpPage";
 import { isUserLoggedIn } from "./services/auth-service";
 import { useAuthStore } from "./stores/auth-store";
 import AuthenticatedRoute from "./utils/AuthenticatedRoute";
+import OAuthCallback from "./utils/OAuthCallback";
 import UnauthenticatedRoute from "./utils/UnauthenticatedRoute";
 
 function App(): JSX.Element {
@@ -60,6 +61,7 @@ function App(): JSX.Element {
                         </UnauthenticatedRoute>
                     }
                 />
+                <Route path="oauth/callback" element={<OAuthCallback />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />
         </Routes>

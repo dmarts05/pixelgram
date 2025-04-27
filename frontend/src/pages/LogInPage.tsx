@@ -11,9 +11,9 @@ function LogInPage(): JSX.Element {
                     <BrandLogo
                         text="Log In"
                         direction="column"
-                        textSize="3xl"
-                        width={60}
-                        height={60}
+                        textSize="2xl"
+                        width={50}
+                        height={50}
                     />
                     <LogInForm />
                     <div className="text-center">

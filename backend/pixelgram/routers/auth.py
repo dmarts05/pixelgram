@@ -23,6 +23,11 @@ auth_router.include_router(
     fastapi_users.get_verify_router(UserRead),
 )
 auth_router.include_router(
-    fastapi_users.get_oauth_router(google_oauth_client, auth_backend, settings.secret),
+    fastapi_users.get_oauth_router(
+        google_oauth_client,
+        auth_backend,
+        settings.secret,
+        redirect_url=f"{settings.frontend_base_url}/auth/oauth/callback",
+    ),
     prefix="/google",
 )

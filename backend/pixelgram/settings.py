@@ -8,6 +8,7 @@ class Settings(BaseSettings):
     secret: str = ""
     google_auth_client_id: str = ""
     google_oauth_client_secret: str = ""
+    frontend_base_url: str = ""
 
 
 settings = Settings()

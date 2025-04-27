@@ -3,7 +3,7 @@ import { JSX } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import googleLogo from "../assets/google-logo.webp";
-import { signUp } from "../services/auth-service";
+import { authGoogle, signUp } from "../services/auth-service";
 import InputField from "./InputField";
 
 export type SignUpFormData = {
@@ -23,12 +23,16 @@ function SignUpForm(): JSX.Element {
         },
     });
 
+    const googleAuthMutation = useMutation({
+        mutationFn: authGoogle,
+    });
+
     function onSubmit(data: SignUpFormData): void {
         regularAuthMutation.mutate(data);
     }
 
     function onGoogleSignUp(): void {
-        // TODO
+        googleAuthMutation.mutate();
     }
 
     const {
@@ -131,12 +135,20 @@ function SignUpForm(): JSX.Element {
                     {regularAuthMutation.error.message}
                 </p>
             )}
+            {googleAuthMutation.isError && (
+                <p className="text-error text-sm text-center">
+                    {googleAuthMutation.error.message}
+                </p>
+            )}
 
             {/* Submit Button */}
             <button
                 type="submit"
                 className="btn btn-primary w-full"
-                disabled={regularAuthMutation.isPending}
+                disabled={
+                    regularAuthMutation.isPending ||
+                    googleAuthMutation.isPending
+                }
             >
                 {regularAuthMutation.isPending ? (
                     <span className="loading loading-spinner loading-sm" />
@@ -157,10 +169,19 @@ function SignUpForm(): JSX.Element {
                 type="button"
                 onClick={onGoogleSignUp}
                 className="btn btn-outline flex items-center justify-center gap-2 w-full"
-                disabled={regularAuthMutation.isPending}
+                disabled={
+                    regularAuthMutation.isPending ||
+                    googleAuthMutation.isPending
+                }
             >
                 <img src={googleLogo} alt="Google Logo" className="w-7 h-7" />
-                <span className="text-sm font-medium">Sign Up with Google</span>
+                {googleAuthMutation.isPending ? (
+                    <span className="loading loading-spinner loading-sm" />
+                ) : (
+                    <span className="text-sm font-medium">
+                        Sign Up with Google
+                    </span>
+                )}
             </button>
         </form>
     );
