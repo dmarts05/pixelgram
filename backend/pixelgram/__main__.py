@@ -16,7 +16,13 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    title="Pixelgram API",
+    description="Pixelgram is a social network for creating and sharing pixel art.",
+    version="1.0.0",
+    lifespan=lifespan,
+)
+
 
 app.include_router(auth_router)
 app.include_router(
