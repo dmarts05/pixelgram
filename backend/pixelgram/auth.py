@@ -139,14 +139,12 @@ def get_database_strategy(
     Get database strategy for authentication.
     This function is used to create a database strategy for the authentication backend.
     """
-    return DatabaseStrategy(
-        access_token_db, lifetime_seconds=settings.token_lifetime_minutes * 60
-    )
+    return DatabaseStrategy(access_token_db, lifetime_seconds=None)
 
 
 auth_backend = AuthenticationBackend(
     name="cookie",
-    transport=CookieTransport(cookie_max_age=settings.token_lifetime_minutes * 60),
+    transport=CookieTransport(),
     get_strategy=get_database_strategy,
 )
 """Authentication backend for cookie-based authentication."""

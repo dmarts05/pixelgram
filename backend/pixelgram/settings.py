@@ -6,7 +6,6 @@ class Settings(BaseSettings):
 
     db_uri: str = ""
     secret: str = ""
-    token_lifetime_minutes: int = 60
     google_auth_client_id: str = ""
     google_oauth_client_secret: str = ""
 
