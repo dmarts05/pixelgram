@@ -1,7 +1,7 @@
 import { JSX } from "react";
 import { NAVBAR_HEIGHT } from "../utils/constants";
-import LogoText from "./LogoText";
-import NavButtons from "./NavButtons";
+import BrandLogo from "./BrandLogo";
+import NavLinks from "./NavLinks";
 
 function Navbar(): JSX.Element {
     return (
@@ -9,8 +9,8 @@ function Navbar(): JSX.Element {
             className="bg-base-100 shadow-md p-4 md:px-8 flex justify-between align-middle"
             style={{ height: NAVBAR_HEIGHT }}
         >
-            <LogoText />
-            <NavButtons />
+            <BrandLogo />
+            <NavLinks />
         </nav>
     );
 }
