@@ -4,6 +4,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import googleLogo from "../assets/google-logo.webp";
 import { logIn } from "../services/auth-service";
+import { useAuthStore } from "../stores/auth-store";
 import InputField from "./InputField";
 
 export type LogInFormData = {
@@ -14,9 +15,14 @@ export type LogInFormData = {
 function LogInForm(): JSX.Element {
     const navigate = useNavigate();
 
+    const setIsAuthenticated = useAuthStore(
+        (state) => state.setIsAuthenticated
+    );
+
     const regularAuthMutation = useMutation({
         mutationFn: logIn,
         onSuccess: () => {
+            setIsAuthenticated(true);
             navigate("/canvas");
         },
     });

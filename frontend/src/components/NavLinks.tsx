@@ -1,9 +1,12 @@
 import { JSX } from "react";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { logout } from "../services/auth-service";
 import { useAuthStore } from "../stores/auth-store";
 
 function NavLinks(): JSX.Element {
-    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    const navigate = useNavigate();
+
+    const { isAuthenticated, setIsAuthenticated } = useAuthStore();
 
     return (
         <div className="flex items-center gap-2">
@@ -15,6 +18,20 @@ function NavLinks(): JSX.Element {
                     <Link to="/auth/signup" className="btn btn-primary">
                         Sign Up
                     </Link>
+                </>
+            )}
+            {isAuthenticated && (
+                <>
+                    <button
+                        className="btn btn-secondary"
+                        onClick={async () => {
+                            await logout();
+                            setIsAuthenticated(false);
+                            navigate("/");
+                        }}
+                    >
+                        Log Out
+                    </button>
                 </>
             )}
         </div>

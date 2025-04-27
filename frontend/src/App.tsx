@@ -1,5 +1,5 @@
 import { JSX, useEffect } from "react";
-import { Navigate, Route, Routes } from "react-router";
+import { Route, Routes } from "react-router";
 import Layout from "./layouts/Layout";
 import LandingPage from "./pages/LandingPage";
 import LogInPage from "./pages/LogInPage";
@@ -7,18 +7,21 @@ import NotFoundPage from "./pages/NotFoundPage";
 import SignUpPage from "./pages/SignUpPage";
 import { isUserLoggedIn } from "./services/auth-service";
 import { useAuthStore } from "./stores/auth-store";
+import AuthenticatedRoute from "./utils/AuthenticatedRoute";
+import UnauthenticatedRoute from "./utils/UnauthenticatedRoute";
 
 function App(): JSX.Element {
-    const { isAuthenticated, setIsAuthenticated: setAuthenticated } =
-        useAuthStore();
+    const setIsAuthenticated = useAuthStore(
+        (state) => state.setIsAuthenticated
+    );
 
     useEffect(() => {
         async function initAuth(): Promise<void> {
             const isLoggedIn = await isUserLoggedIn();
-            setAuthenticated(isLoggedIn);
+            setIsAuthenticated(isLoggedIn);
         }
         initAuth();
-    }, [setAuthenticated]);
+    }, [setIsAuthenticated]);
 
     return (
         <Routes>
@@ -26,11 +29,17 @@ function App(): JSX.Element {
                 <Route
                     index
                     element={
-                        isAuthenticated ? (
-                            <Navigate to="/canvas" />
-                        ) : (
+                        <UnauthenticatedRoute redirectTo="/canvas">
                             <LandingPage />
-                        )
+                        </UnauthenticatedRoute>
+                    }
+                />
+                <Route
+                    path="canvas"
+                    element={
+                        <AuthenticatedRoute redirectTo="/auth/login">
+                            <div>Canvas</div>
+                        </AuthenticatedRoute>
                     }
                 />
             </Route>
@@ -38,25 +47,20 @@ function App(): JSX.Element {
                 <Route
                     path="login"
                     element={
-                        isAuthenticated ? (
-                            <Navigate to="/canvas" />
-                        ) : (
+                        <UnauthenticatedRoute redirectTo="/canvas">
                             <LogInPage />
-                        )
+                        </UnauthenticatedRoute>
                     }
                 />
                 <Route
                     path="signup"
                     element={
-                        isAuthenticated ? (
-                            <Navigate to="/canvas" />
-                        ) : (
+                        <UnauthenticatedRoute redirectTo="/canvas">
                             <SignUpPage />
-                        )
+                        </UnauthenticatedRoute>
                     }
                 />
             </Route>
-            <Route path="canvas" element={<div>Canvas</div>} />
             <Route path="*" element={<NotFoundPage />} />
         </Routes>
     );
