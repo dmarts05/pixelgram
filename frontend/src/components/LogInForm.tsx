@@ -1,27 +1,39 @@
+import { useMutation } from "@tanstack/react-query";
 import { JSX } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router";
 import googleLogo from "../assets/google-logo.webp";
+import { logIn } from "../services/auth-service";
 import InputField from "./InputField";
 
-type LogInFormData = {
+export type LogInFormData = {
     email: string;
     password: string;
 };
 
 function LogInForm(): JSX.Element {
+    const navigate = useNavigate();
+
+    const regularAuthMutation = useMutation({
+        mutationFn: logIn,
+        onSuccess: () => {
+            navigate("/canvas");
+        },
+    });
+
+    function onSubmit(data: LogInFormData): void {
+        regularAuthMutation.mutate(data);
+    }
+
+    function onGoogleLogIn(): void {
+        // TODO
+    }
+
     const {
         register,
         handleSubmit,
         formState: { errors },
     } = useForm<LogInFormData>();
-
-    const onSubmit: SubmitHandler<LogInFormData> = (data) => {
-        console.log("Login Data:", data);
-    };
-
-    const handleGoogleLogIn = (): void => {
-        // TODO
-    };
 
     return (
         <form
@@ -57,8 +69,19 @@ function LogInForm(): JSX.Element {
                 }}
             />
 
+            {/* Error Message */}
+            {regularAuthMutation.isError && (
+                <p className="text-error text-sm text-center">
+                    {regularAuthMutation.error.message}
+                </p>
+            )}
+
             {/* Submit Button */}
-            <button type="submit" className="btn btn-primary w-full">
+            <button
+                type="submit"
+                className="btn btn-primary w-full"
+                disabled={regularAuthMutation.isPending}
+            >
                 Log In
             </button>
 
@@ -72,8 +95,9 @@ function LogInForm(): JSX.Element {
             {/* Google Log In Button */}
             <button
                 type="button"
-                onClick={handleGoogleLogIn}
+                onClick={onGoogleLogIn}
                 className="btn btn-outline flex items-center justify-center gap-2 w-full"
+                disabled={regularAuthMutation.isPending}
             >
                 <img src={googleLogo} alt="Google Logo" className="w-7 h-7" />
                 <span className="text-sm font-medium">Log In with Google</span>

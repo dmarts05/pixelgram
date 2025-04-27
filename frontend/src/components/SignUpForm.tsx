@@ -1,9 +1,12 @@
+import { useMutation } from "@tanstack/react-query";
 import { JSX } from "react";
-import { SubmitHandler, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { useNavigate } from "react-router";
 import googleLogo from "../assets/google-logo.webp";
+import { signUp } from "../services/auth-service";
 import InputField from "./InputField";
 
-type SignUpFormData = {
+export type SignUpFormData = {
     username: string;
     email: string;
     password: string;
@@ -11,6 +14,23 @@ type SignUpFormData = {
 };
 
 function SignUpForm(): JSX.Element {
+    const navigate = useNavigate();
+
+    const regularAuthMutation = useMutation({
+        mutationFn: signUp,
+        onSuccess: () => {
+            navigate("/auth/login");
+        },
+    });
+
+    function onSubmit(data: SignUpFormData): void {
+        regularAuthMutation.mutate(data);
+    }
+
+    function onGoogleSignUp(): void {
+        // TODO
+    }
+
     const {
         register,
         handleSubmit,
@@ -18,17 +38,9 @@ function SignUpForm(): JSX.Element {
         watch,
     } = useForm<SignUpFormData>();
 
-    const onSubmit: SubmitHandler<SignUpFormData> = (data) => {
-        console.log("Sign Up Data:", data);
-    };
-
     const usernameValue = watch("username");
     const emailValue = watch("email");
     const passwordValue = watch("password");
-
-    const handleGoogleSignUp = (): void => {
-        // TODO
-    };
 
     return (
         <form
@@ -113,9 +125,24 @@ function SignUpForm(): JSX.Element {
                 }}
             />
 
+            {/* Error Message */}
+            {regularAuthMutation.isError && (
+                <p className="text-error text-sm text-center">
+                    {regularAuthMutation.error.message}
+                </p>
+            )}
+
             {/* Submit Button */}
-            <button type="submit" className="btn btn-primary w-full">
-                Sign Up
+            <button
+                type="submit"
+                className="btn btn-primary w-full"
+                disabled={regularAuthMutation.isPending}
+            >
+                {regularAuthMutation.isPending ? (
+                    <span className="loading loading-spinner loading-sm" />
+                ) : (
+                    <span className="text-sm font-medium">Sign Up</span>
+                )}
             </button>
 
             {/* Divider */}
@@ -128,8 +155,9 @@ function SignUpForm(): JSX.Element {
             {/* Google Sign Up Button */}
             <button
                 type="button"
-                onClick={handleGoogleSignUp}
+                onClick={onGoogleSignUp}
                 className="btn btn-outline flex items-center justify-center gap-2 w-full"
+                disabled={regularAuthMutation.isPending}
             >
                 <img src={googleLogo} alt="Google Logo" className="w-7 h-7" />
                 <span className="text-sm font-medium">Sign Up with Google</span>
