@@ -3,6 +3,12 @@ import { useNavigate } from "react-router";
 import { authGoogleCallback } from "../services/auth-service";
 import { useAuthStore } from "../stores/auth-store";
 
+function getQueryFromHash(): string {
+    const hash = window.location.hash;
+    const queryStart = hash.indexOf("?");
+    return queryStart !== -1 ? hash.slice(queryStart) : "";
+}
+
 function OAuthCallback(): JSX.Element {
     const { isAuthenticated, setIsAuthenticated } = useAuthStore();
 
@@ -11,7 +17,7 @@ function OAuthCallback(): JSX.Element {
     useEffect(() => {
         async function handleOAuthCallback(): Promise<void> {
             try {
-                await authGoogleCallback(window.location.search);
+                await authGoogleCallback(getQueryFromHash());
                 setIsAuthenticated(true);
             } finally {
                 if (isAuthenticated) {
