@@ -5,6 +5,7 @@ import LandingPage from "./pages/LandingPage";
 import LogInPage from "./pages/LogInPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import SignUpPage from "./pages/SignUpPage";
+import CanvasPage from "./pages/CanvasPage";
 import { isUserLoggedIn } from "./services/auth-service";
 import { useAuthStore } from "./stores/auth-store";
 import AuthenticatedRoute from "./utils/AuthenticatedRoute";
@@ -39,7 +40,7 @@ function App(): JSX.Element {
                     path="canvas"
                     element={
                         <AuthenticatedRoute redirectTo="/auth/login">
-                            <div>Canvas</div>
+                            <CanvasPage />
                         </AuthenticatedRoute>
                     }
                 />
