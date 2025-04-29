@@ -2,12 +2,11 @@ import { JSX, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { authGoogleCallback } from "../services/auth-service";
 import { useAuthStore } from "../stores/auth-store";
-import { NAVBAR_HEIGHT } from "./constants";
 
-function clearQueryParams(): void {
-    const url = new URL(window.location.href);
-    url.search = "";
-    window.history.replaceState({}, document.title, url.toString());
+function getQueryFromHash(): string {
+    const hash = window.location.hash;
+    const queryStart = hash.indexOf("?");
+    return queryStart !== -1 ? hash.slice(queryStart) : "";
 }
 
 function OAuthCallback(): JSX.Element {
@@ -18,9 +17,7 @@ function OAuthCallback(): JSX.Element {
     useEffect(() => {
         async function handleOAuthCallback(): Promise<void> {
             try {
-                const query = window.location.search;
-                await authGoogleCallback(query);
-                clearQueryParams();
+                await authGoogleCallback(getQueryFromHash());
                 setIsAuthenticated(true);
             } finally {
                 if (isAuthenticated) {
