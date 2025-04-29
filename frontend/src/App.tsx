@@ -24,6 +24,10 @@ function App(): JSX.Element {
         initAuth();
     }, [setIsAuthenticated]);
 
+    const urlParams = new URLSearchParams(window.location.search);
+    const isGoogleOauthCallback =
+        urlParams.has("state") && urlParams.has("code");
+
     return (
         <Routes>
             <Route path="/" element={<Layout />}>
@@ -31,7 +35,11 @@ function App(): JSX.Element {
                     index
                     element={
                         <UnauthenticatedRoute redirectTo="/canvas">
-                            <LandingPage />
+                            {isGoogleOauthCallback ? (
+                                <OAuthCallback />
+                            ) : (
+                                <LandingPage />
+                            )}
                         </UnauthenticatedRoute>
                     }
                 />
@@ -61,7 +69,6 @@ function App(): JSX.Element {
                         </UnauthenticatedRoute>
                     }
                 />
-                <Route path="oauth/callback" element={<OAuthCallback />} />
             </Route>
             <Route path="*" element={<NotFoundPage />} />
         </Routes>

@@ -3,10 +3,10 @@ import { useNavigate } from "react-router";
 import { authGoogleCallback } from "../services/auth-service";
 import { useAuthStore } from "../stores/auth-store";
 
-function getQueryFromHash(): string {
-    const hash = window.location.hash;
-    const queryStart = hash.indexOf("?");
-    return queryStart !== -1 ? hash.slice(queryStart) : "";
+function clearQueryParams(): void {
+    const url = new URL(window.location.href);
+    url.search = "";
+    window.history.replaceState({}, document.title, url.toString());
 }
 
 function OAuthCallback(): JSX.Element {
@@ -17,7 +17,9 @@ function OAuthCallback(): JSX.Element {
     useEffect(() => {
         async function handleOAuthCallback(): Promise<void> {
             try {
-                await authGoogleCallback(getQueryFromHash());
+                const query = window.location.search;
+                await authGoogleCallback(query);
+                clearQueryParams();
                 setIsAuthenticated(true);
             } finally {
                 if (isAuthenticated) {
