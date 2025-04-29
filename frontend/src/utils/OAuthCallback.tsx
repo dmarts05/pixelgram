@@ -2,6 +2,7 @@ import { JSX, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { authGoogleCallback } from "../services/auth-service";
 import { useAuthStore } from "../stores/auth-store";
+import { NAVBAR_HEIGHT } from "./constants";
 
 function clearQueryParams(): void {
     const url = new URL(window.location.href);
@@ -32,7 +33,16 @@ function OAuthCallback(): JSX.Element {
         handleOAuthCallback();
     }, [isAuthenticated, navigate, setIsAuthenticated]);
 
-    return <></>;
+    return (
+        <div
+            className="flex justify-center items-center bg-base-200"
+            style={{
+                height: `calc(100vh - ${NAVBAR_HEIGHT})`,
+            }}
+        >
+            <span className="loading loading-ring loading-xl"></span>
+        </div>
+    );
 }
 
 export default OAuthCallback;
