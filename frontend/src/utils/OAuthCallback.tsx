@@ -2,6 +2,7 @@ import { JSX, useEffect } from "react";
 import { useNavigate } from "react-router";
 import { authGoogleCallback } from "../services/auth-service";
 import { useAuthStore } from "../stores/auth-store";
+import { NAVBAR_HEIGHT } from "./constants";
 
 function clearQueryParams(): void {
     const url = new URL(window.location.href);
