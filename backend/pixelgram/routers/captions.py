@@ -5,7 +5,7 @@ from PIL import Image
 
 from pixelgram.auth import current_active_user
 from pixelgram.models.user import User
-from pixelgram.services.hugging_face_client import HuggingFaceClient
+from pixelgram.services.hf_client import HFClient
 
 captions_router = APIRouter(
     prefix="/captions",
@@ -56,7 +56,7 @@ async def get_caption(
     if image.size != (128, 128):
         raise HTTPException(status_code=400, detail="Image must be 128x128 pixels.")
 
-    hf_client = HuggingFaceClient()
+    hf_client = HFClient()
     caption = await hf_client.generate_caption(image_bytes)
 
     if not caption:

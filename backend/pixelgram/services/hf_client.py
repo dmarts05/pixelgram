@@ -3,7 +3,7 @@ import httpx
 from pixelgram.settings import settings
 
 
-class HuggingFaceClient:
+class HFClient:
     def __init__(self):
         self.headers = {
             "Authorization": f"Bearer {settings.hf_token}",
