@@ -12,7 +12,28 @@ captions_router = APIRouter(
 )
 
 
-@captions_router.post("/")
+@captions_router.post(
+    "/",
+    summary="Generate a caption for an image",
+    description="Takes an uploaded image (must be 128x128 pixels) and returns a generated caption. Only image files are allowed.",
+    responses={
+        200: {
+            "description": "Caption successfully generated",
+            "content": {
+                "application/json": {"example": {"caption": "A cat sitting on a chair"}}
+            },
+        },
+        400: {
+            "description": "Invalid input (e.g., wrong size or type)",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Image must be 128x128 pixels."}
+                }
+            },
+        },
+        401: {"description": "Unauthorized"},
+    },
+)
 async def get_caption(
     user: User = Depends(current_active_user), file: UploadFile = File(...)
 ):
@@ -24,7 +45,7 @@ async def get_caption(
         )
 
     image_bytes = await file.read()
-    
+
     try:
         image = Image.open(BytesIO(image_bytes))
     except Exception as e:
