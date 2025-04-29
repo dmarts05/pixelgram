@@ -6,14 +6,6 @@
   <link rel="shortcut icon" href="favicon.ico" type="image/x-icon">
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pixelgram</title>
-  <!-- OAuth path fixer script -->
-  <script>
-    const pathname = window.location.pathname;
-    const search = window.location.search;
-    if (pathname.startsWith('/auth/oauth/callback')) {
-      window.location.replace(`/#${pathname}${search}`);
-    }
-  </script>
 </head>
 
 <body>
