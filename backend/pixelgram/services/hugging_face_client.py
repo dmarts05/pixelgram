@@ -21,4 +21,6 @@ class HuggingFaceClient:
             )
             response.raise_for_status()
             result = response.json()
-            return result.get("generated_text", "No caption found.")
+            if (len(result) != 1) or ("generated_text" not in result[0]):
+                raise ValueError("Invalid response from Hugging Face API.")
+            return result[0].get("generated_text", "No caption found.")
