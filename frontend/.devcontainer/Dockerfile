@@ -6,5 +6,5 @@ RUN apt-get update && \
     apt-get clean -y && \
     rm -rf /var/lib/apt/lists/*
 
-# Install Bun 1.2.2. 
-RUN npm install -g bun@1.2.2
+# Install Bun 1.2.11. 
+RUN npm install -g bun@1.2.11
