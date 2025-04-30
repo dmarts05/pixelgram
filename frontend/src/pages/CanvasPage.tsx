@@ -18,20 +18,37 @@ function CanvasPage(): JSX.Element {
         if(canvas) {
             const context = canvas.getContext("2d");
             if (context) {
-                canvas.width = 128;
-                canvas.height = 128;
 
-                canvas.style.width = "512px";
-                canvas.style.height = "512px";
+                function resizeCanvas():void {
+                    const size = Math.min(window.innerWidth, window.innerHeight) * 0.8;
+                    if(canvas && context) {
+                        canvas.width = size;
+                        canvas.height = size;
 
-                context.imageSmoothingEnabled = false;
+                        canvas.style.width = `${size}px`;
+                        canvas.style.height = `${size}px`;
 
-                // Set canvas background color
-                context.fillStyle = "#ffffff";
-                context.fillRect(0, 0, canvas.width, canvas.height);
+                        context.imageSmoothingEnabled = false;
 
-                // Store the context to allow changing the color and tool
-                contextRef.current = context;
+                        // Set canvas background color
+                        context.fillStyle = "#ffffff";
+                        context.fillRect(0, 0, canvas.width, canvas.height);
+
+                        // Store the context to allow changing the color and tool
+                        contextRef.current = context;
+                    }
+                    
+                }
+
+
+                // Initial canvas size
+                resizeCanvas();
+
+                window.addEventListener("resize", resizeCanvas);
+
+                return ():void => {
+                    window.removeEventListener("resize", resizeCanvas);
+                }                
             }
         }
     }, []);
@@ -47,22 +64,25 @@ function CanvasPage(): JSX.Element {
             function draw(e: MouseEvent):void {
                 if (!drawing) return;
 
-                const rect = canvas.getBoundingClientRect();
-                const scaleX = canvas.width / rect.width;   // relationship bitmap vs. element for X
-                const scaleY = canvas.height / rect.height; // relationship bitmap vs. element for Y
-                const x = (e.clientX - rect.left) * scaleX;
-                const y = (e.clientY - rect.top) * scaleY;
+                const rect = canvas?.getBoundingClientRect();
+                let x, y
+                if(canvas && rect) {
+                    const scaleX = canvas?.width / rect.width || 1;   // relationship bitmap vs. element for X
+                    const scaleY = canvas?.height / rect?.height || 1; // relationship bitmap vs. element for Y
+                    x = (e.clientX - rect.left) * scaleX || 1;
+                    y = (e.clientY - rect.top) * scaleY || 1;
 
-
-
-                context.lineWidth = 5;
-                context.lineCap = "round";
-                context.strokeStyle = tool === "eraser" ? "#ffffff" : color;
-
-                context.lineTo(x, y);
-                context.stroke();
-                context.beginPath();
-                context.moveTo(x, y);
+                    if(context) {
+                        context.lineWidth = 5;
+                        context.lineCap = "round";
+                        context.strokeStyle = tool === "eraser" ? "#ffffff" : color;
+    
+                        context.lineTo(x, y);
+                        context.stroke();
+                        context.beginPath();
+                        context.moveTo(x, y);
+                    }
+                } 
             };
 
                 function startDrawing(e: MouseEvent):void {
@@ -70,24 +90,20 @@ function CanvasPage(): JSX.Element {
                     draw(e);
                 };
 
-                function stopDrawing(e: MouseEvent):void {
+                function stopDrawing():void {
                     drawing = false;
-                    context.beginPath();
+                    context?.beginPath();
                 };
 
                 canvas.addEventListener("mousedown", startDrawing);
                 canvas.addEventListener("mouseup", stopDrawing);
                 canvas.addEventListener("mousemove", draw);
 
-                return () => {
+                return ():void => {
                     canvas.removeEventListener("mousedown", startDrawing);
                     canvas.removeEventListener("mouseup", stopDrawing);
                     canvas.removeEventListener("mousemove", draw);
-                };
-                
-                
-            
-            
+                }; 
         }
     }, [color, tool]);
 
@@ -96,10 +112,10 @@ function CanvasPage(): JSX.Element {
         const file = e.target.files?.[0];
         if (file) {
             const reader = new FileReader();
-            reader.onload = (event) => {
+            reader.onload = (event):void => {
                 const img = new Image();
                 img.src = event.target?.result as string;
-                img.onload = () => {
+                img.onload = ():void => {
                     const canvas = document.getElementById("canvas") as HTMLCanvasElement;
                     if (canvas) {
                         const context = canvas.getContext("2d");
