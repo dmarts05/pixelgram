@@ -1,9 +1,8 @@
-import { JSX } from "react";
 import { Link, useNavigate } from "react-router";
 import { logout } from "../services/auth-service";
 import { useAuthStore } from "../stores/auth-store";
 
-function NavLinks(): JSX.Element {
+function NavLinks(): React.ReactNode {
     const navigate = useNavigate();
 
     const { isAuthenticated, setIsAuthenticated } = useAuthStore();

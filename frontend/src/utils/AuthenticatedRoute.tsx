@@ -1,4 +1,4 @@
-import { JSX, ReactNode } from "react";
+import { ReactNode } from "react";
 import { Navigate } from "react-router";
 import { useAuthStore } from "../stores/auth-store";
 
@@ -10,7 +10,7 @@ interface AuthenticatedRouteProps {
 function AuthenticatedRoute({
     children,
     redirectTo,
-}: AuthenticatedRouteProps): JSX.Element {
+}: AuthenticatedRouteProps): React.ReactNode {
     const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
 
     if (!isAuthenticated) {

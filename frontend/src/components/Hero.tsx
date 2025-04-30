@@ -1,9 +1,8 @@
-import { JSX } from "react";
 import { Link } from "react-router";
 import heroImg from "../assets/hero.webp";
 import { NAVBAR_HEIGHT } from "../utils/constants";
 
-function Hero(): JSX.Element {
+function Hero(): React.ReactNode {
     return (
         <section
             className="hero bg-cover bg-center"
