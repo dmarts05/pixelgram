@@ -12,6 +12,28 @@ function CanvasPage(): JSX.Element {
     useEffect(() => {
         const canvas = document.getElementById("canvas") as HTMLCanvasElement;
         if(canvas) {
+            const context = canvas.getContext("2d");
+            if (context) {
+                canvas.width = 128;
+                canvas.height = 128;
+
+                canvas.style.width = "512px";
+                canvas.style.height = "512px";
+
+                context.imageSmoothingEnabled = false;
+
+                // Set canvas background color
+                context.fillStyle = "#ffffff";
+                context.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Store the context to allow changing the color and tool
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+        if(canvas) {
             
             const context = canvas.getContext("2d");
             if (context) {
@@ -31,10 +53,30 @@ function CanvasPage(): JSX.Element {
                 let drawing = false;
 
                 
+                function draw(e: MouseEvent):void {
+                    if (!drawing) return;
+
+                    const rect = canvas.getBoundingClientRect();
+                    const scaleX = canvas.width / rect.width;   // relationship bitmap vs. element for X
+                    const scaleY = canvas.height / rect.height; // relationship bitmap vs. element for Y
+                    const x = (e.clientX - rect.left) * scaleX;
+                    const y = (e.clientY - rect.top) * scaleY;
+
+
+
+                    context.lineWidth = 5;
+                    context.lineCap = "round";
+                    context.strokeStyle = tool === "eraser" ? "#ffffff" : color;
+
+                    context.lineTo(x, y);
+                    context.stroke();
+                    context.beginPath();
+                    context.moveTo(x, y);
+                };
+
                 function startDrawing(e: MouseEvent):void {
                     drawing = true;
                     draw(e);
-                    return;
                 };
 
                 function stopDrawing(e: MouseEvent):void {
@@ -42,26 +84,21 @@ function CanvasPage(): JSX.Element {
                     context.beginPath();
                 };
 
-                function draw(e: MouseEvent):void {
-                    if (!drawing) return;
-                    context.lineWidth = 5;
-                    context.lineCap = "round";
-                    context.strokeStyle = color;
-
-                    context.lineTo(e.clientX, e.clientY);
-                    context.stroke();
-                    context.beginPath();
-                    context.moveTo(e.clientX, e.clientY);
-                };
-
                 canvas.addEventListener("mousedown", startDrawing);
                 canvas.addEventListener("mouseup", stopDrawing);
                 canvas.addEventListener("mousemove", draw);
+
+                return () => {
+                    canvas.removeEventListener("mousedown", startDrawing);
+                    canvas.removeEventListener("mouseup", stopDrawing);
+                    canvas.removeEventListener("mousemove", draw);
+                };
+                
                 
             }
             
         }
-     }, [color]);
+     }, [color, tool]);
 
     function handleImageUpload(e:React.ChangeEvent<HTMLInputElement>):void {
         const file = e.target.files?.[0];
@@ -87,6 +124,11 @@ function CanvasPage(): JSX.Element {
         }
         return;
 
+    }
+
+
+    function handleSubmit(e:React.FormEvent<HTMLFormElement>):void {
+        e.preventDefault();
     }
 
     return (
@@ -115,7 +157,7 @@ function CanvasPage(): JSX.Element {
                 </div>
 
                 <footer className="footer justify-items-center">
-                    <form className="form" onSubmit={(e) =>{}}>
+                    <form className="form" onSubmit={handleSubmit}>
                         <button type="submit" className="btn btn-primary">Publicar</button>
                     </form>
                 </footer>
