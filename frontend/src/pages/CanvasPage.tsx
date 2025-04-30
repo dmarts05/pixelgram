@@ -1,6 +1,7 @@
 import React, { JSX, useEffect, useState } from "react";
 import { GoPencil } from "react-icons/go";
 import {BsFillEraserFill} from "react-icons/bs";
+import {MdOutlineUploadFile} from "react-icons/md";
 
 function CanvasPage(): JSX.Element {
 
@@ -22,8 +23,10 @@ function CanvasPage(): JSX.Element {
 
                 context.imageSmoothingEnabled = false;
 
-                context.fillStyle = color;
+                // Set canvas background color
+                context.fillStyle = "#ffffff";
                 context.fillRect(0, 0, canvas.width, canvas.height);
+
 
                 let drawing = false;
 
@@ -58,13 +61,40 @@ function CanvasPage(): JSX.Element {
             }
             
         }
-     }, []);
+     }, [color]);
+
+    function handleImageUpload(e:React.ChangeEvent<HTMLInputElement>):void {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.src = event.target?.result as string;
+                img.onload = () => {
+                    const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+                    if (canvas) {
+                        const context = canvas.getContext("2d");
+                        if (context) {
+                            context.drawImage(img, 0, 0, canvas.width, canvas.height);
+                        }
+                    }
+                };
+                if(reader.result) {
+                    img.src = reader.result as string;
+                }
+            };
+            reader.readAsDataURL(file);
+        }
+        return;
+
+    }
 
     return (
         <div className="flex flex-row">
             <div className="aside flex flex-col flex-1">
-                <button onClick={() => {}} className="btn">Importar imagen</button>
-                <button onClick={() => {setTool("eraser")}} className="btn btn-circle">{tool === "eraser" ? <BsFillEraserFill/> : <p></p>}</button>
+                <input type="file" accept="image/*" id="imageInput" onChange={handleImageUpload} className="hidden"/>
+                <button onClick={() => {document.getElementById("imageInput")?.click()}} className="btn btn-circle">{<MdOutlineUploadFile/>}</button>
+                <button onClick={() => {setTool("eraser")}} className={`btn btn-circle ${tool === "eraser" ? "bg-black" : ""}`}><BsFillEraserFill className={tool === "eraser" ? "text-white" : ""}/></button>
 
                 
                 <button onClick={() => {setTool("pencil"); setColor("#ef4444")}} className="btn btn-circle bg-red-500">{tool === "pencil" && color === "#ef4444" ? <GoPencil/> : <p></p>}</button>
