@@ -1,4 +1,6 @@
 import React, { JSX, useEffect, useState } from "react";
+import { GoPencil } from "react-icons/go";
+import {BsFillEraserFill} from "react-icons/bs";
 
 function CanvasPage(): JSX.Element {
 
@@ -25,18 +27,19 @@ function CanvasPage(): JSX.Element {
 
                 let drawing = false;
 
-                /*
-                function startDrawing(e: MouseEvent) {
+                
+                function startDrawing(e: MouseEvent):void {
                     drawing = true;
                     draw(e);
+                    return;
                 };
 
-                function stopDrawing(e: MouseEvent) {
+                function stopDrawing(e: MouseEvent):void {
                     drawing = false;
                     context.beginPath();
                 };
 
-                function draw(e: MouseEvent) {
+                function draw(e: MouseEvent):void {
                     if (!drawing) return;
                     context.lineWidth = 5;
                     context.lineCap = "round";
@@ -51,7 +54,7 @@ function CanvasPage(): JSX.Element {
                 canvas.addEventListener("mousedown", startDrawing);
                 canvas.addEventListener("mouseup", stopDrawing);
                 canvas.addEventListener("mousemove", draw);
-                */
+                
             }
             
         }
@@ -60,16 +63,17 @@ function CanvasPage(): JSX.Element {
     return (
         <div className="flex flex-row">
             <div className="aside flex flex-col flex-1">
-                <button onClick={() => {setTool("eraser")}} className="btn btn-circle">Borrar</button>
+                <button onClick={() => {}} className="btn">Importar imagen</button>
+                <button onClick={() => {setTool("eraser")}} className="btn btn-circle">{tool === "eraser" ? <BsFillEraserFill/> : <p></p>}</button>
 
                 
-                <button onClick={() => {setColor("#ef4444")}} className="btn btn-circle bg-red-500"></button>
-                <button onClick={() => {setColor("#fb923c")}}className="btn btn-circle bg-orange-400"></button>
-                <button onClick={() => {setColor("#fcd34d")}} className="btn btn-circle bg-yellow-300"></button>
-                <button onClick={() => {setColor("#4ade80")}} className="btn btn-circle bg-green-400"></button>
-                <button onClick={() => {setColor("#3b82f6")}} className="btn btn-circle bg-blue-500"></button>
-                <button onClick={() => {setColor("#8b5cf6")}} className="btn btn-circle bg-purple-500"></button>
-                <button onClick={() => {setColor("#000000")}} className="btn btn-circle bg-black"></button>
+                <button onClick={() => {setTool("pencil"); setColor("#ef4444")}} className="btn btn-circle bg-red-500">{tool === "pencil" && color === "#ef4444" ? <GoPencil/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#fb923c")}}className="btn btn-circle bg-orange-400">{tool === "pencil" && color === "#fb923c" ? <GoPencil/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#fcd34d")}} className="btn btn-circle bg-yellow-300">{tool === "pencil" && color === "#fcd34d" ? <GoPencil/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#4ade80")}} className="btn btn-circle bg-green-400">{tool === "pencil" && color === "#4ade80" ? <GoPencil/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#3b82f6")}} className="btn btn-circle bg-blue-500">{tool === "pencil" && color === "#3b82f6" ? <GoPencil/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#8b5cf6")}} className="btn btn-circle bg-purple-500">{tool === "pencil" && color === "#8b5cf6" ? <GoPencil/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#000000")}} className="btn btn-circle bg-black">{tool === "pencil" && color === "#000000" ? <GoPencil className="text-white"/> : <p></p>}</button>
                 
                 <button  className="btn btn-circle bg-gradient-to-r from-yellow-500 via-green-400 via-blue-500 to-purple-500 rainbow-animated"></button>
 
@@ -81,7 +85,7 @@ function CanvasPage(): JSX.Element {
                 </div>
 
                 <footer className="footer justify-items-center">
-                    <form className="form">
+                    <form className="form" onSubmit={(e) =>{}}>
                         <button type="submit" className="btn btn-primary">Publicar</button>
                     </form>
                 </footer>
