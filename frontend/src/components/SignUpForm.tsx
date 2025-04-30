@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { JSX } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import googleLogo from "../assets/google-logo.webp";
@@ -13,7 +12,7 @@ export type SignUpFormData = {
     confirmPassword: string;
 };
 
-function SignUpForm(): JSX.Element {
+function SignUpForm(): React.ReactNode {
     const navigate = useNavigate();
 
     const regularAuthMutation = useMutation({

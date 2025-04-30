@@ -1,4 +1,3 @@
-import { JSX } from "react";
 import { useNavigate } from "react-router";
 import logoImg from "../assets/inverted-pixelgram-logo.webp";
 
@@ -29,7 +28,7 @@ function BrandLogo({
     height: heightValue = 40,
     textSize = "xl",
     direction = "row",
-}: BrandLogoProps): JSX.Element {
+}: BrandLogoProps): React.ReactNode {
     const navigate = useNavigate();
 
     return (

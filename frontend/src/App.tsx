@@ -1,22 +1,30 @@
-import { JSX, useEffect } from "react";
-import { Route, Routes } from "react-router";
+import { useEffect } from "react";
+import { Route, Routes, useLocation, useNavigate } from "react-router";
 import Layout from "./layouts/Layout";
+import CanvasPage from "./pages/CanvasPage";
 import LandingPage from "./pages/LandingPage";
 import LogInPage from "./pages/LogInPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import SignUpPage from "./pages/SignUpPage";
-import CanvasPage from "./pages/CanvasPage";
-import { isUserLoggedIn } from "./services/auth-service";
+import { authGoogleCallback, isUserLoggedIn } from "./services/auth-service";
 import { useAuthStore } from "./stores/auth-store";
 import AuthenticatedRoute from "./utils/AuthenticatedRoute";
-import OAuthCallback from "./utils/OAuthCallback";
 import UnauthenticatedRoute from "./utils/UnauthenticatedRoute";
 
-function App(): JSX.Element {
+function clearQueryParams(): void {
+    const url = new URL(window.location.href);
+    url.search = "";
+    window.history.replaceState({}, document.title, url.toString());
+}
+
+function App(): React.ReactNode {
+    const location = useLocation();
+    const navigate = useNavigate();
     const setIsAuthenticated = useAuthStore(
         (state) => state.setIsAuthenticated
     );
 
+    // Check if the user is logged in when the app loads
     useEffect(() => {
         async function initAuth(): Promise<void> {
             const isLoggedIn = await isUserLoggedIn();
@@ -25,9 +33,26 @@ function App(): JSX.Element {
         initAuth();
     }, [setIsAuthenticated]);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const isGoogleOauthCallback =
-        urlParams.has("state") && urlParams.has("code");
+    // When the url contains the OAuth callback parameters, attempt to authenticate the user with Google
+    useEffect(() => {
+        async function handleOAuthCallback(): Promise<void> {
+            const urlParams = new URLSearchParams(location.search);
+            if (!urlParams.has("state") || !urlParams.has("code")) {
+                return;
+            }
+
+            const query = window.location.search;
+            try {
+                await authGoogleCallback(query);
+                setIsAuthenticated(true);
+                navigate("/canvas");
+            } finally {
+                clearQueryParams();
+            }
+        }
+
+        handleOAuthCallback();
+    }, [location.search, navigate, setIsAuthenticated]);
 
     return (
         <Routes>
@@ -36,18 +61,14 @@ function App(): JSX.Element {
                     index
                     element={
                         <UnauthenticatedRoute redirectTo="/canvas">
-                            {isGoogleOauthCallback ? (
-                                <OAuthCallback />
-                            ) : (
-                                <LandingPage />
-                            )}
+                            <LandingPage />
                         </UnauthenticatedRoute>
                     }
                 />
                 <Route
                     path="canvas"
                     element={
-                        <AuthenticatedRoute redirectTo="/auth/login">
+                        <AuthenticatedRoute redirectTo="/">
                             <CanvasPage />
                         </AuthenticatedRoute>
                     }

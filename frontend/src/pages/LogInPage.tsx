@@ -1,9 +1,8 @@
-import { JSX } from "react";
 import { Link } from "react-router";
 import BrandLogo from "../components/BrandLogo";
 import LogInForm from "../components/LogInForm";
 
-function LogInPage(): JSX.Element {
+function LogInPage(): React.ReactNode {
     return (
         <div className="flex items-center justify-center min-h-screen bg-base-200">
             <div className="card w-full max-w-md shadow-lg bg-base-100">

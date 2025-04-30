@@ -1,7 +1,6 @@
-import { JSX } from "react";
 import Hero from "../components/Hero";
 
-function LandingPage(): JSX.Element {
+function LandingPage(): React.ReactNode {
     return <Hero />;
 }
 

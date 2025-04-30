@@ -1,4 +1,3 @@
-import { JSX } from "react";
 import {
     FieldError,
     FieldValues,
@@ -23,7 +22,7 @@ function InputField<T extends FieldValues>({
     register,
     error,
     rules = {},
-}: InputFieldProps<T>): JSX.Element {
+}: InputFieldProps<T>): React.ReactNode {
     return (
         <div className="flex flex-col gap-2">
             <label className="floating-label">

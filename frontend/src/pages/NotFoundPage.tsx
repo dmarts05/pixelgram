@@ -1,7 +1,6 @@
-import { JSX } from "react";
 import { Link } from "react-router";
 
-function NotFoundPage(): JSX.Element {
+function NotFoundPage(): React.ReactNode {
     return (
         <div className="min-h-screen bg-base-200 flex items-center">
             <div className="text-center w-full">

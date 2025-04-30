@@ -1,8 +1,7 @@
-import { JSX } from "react";
 import { Outlet } from "react-router";
 import Navbar from "../components/Navbar";
 
-function Layout(): JSX.Element {
+function Layout(): React.ReactNode {
     return (
         <div className="min-h-screen">
             <Navbar />

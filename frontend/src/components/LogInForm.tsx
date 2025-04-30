@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { JSX } from "react";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import googleLogo from "../assets/google-logo.webp";
@@ -12,7 +11,7 @@ export type LogInFormData = {
     password: string;
 };
 
-function LogInForm(): JSX.Element {
+function LogInForm(): React.ReactNode {
     const navigate = useNavigate();
 
     const setIsAuthenticated = useAuthStore(
