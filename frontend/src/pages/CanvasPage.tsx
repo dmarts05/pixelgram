@@ -12,6 +12,7 @@ function CanvasPage(): JSX.Element {
     const contextRef = React.useRef<CanvasRenderingContext2D | null>(null);
 
 
+    // Load canvas in init
     useEffect(() => {
         const canvas = canvasRef.current;
         if(canvas) {
@@ -35,6 +36,8 @@ function CanvasPage(): JSX.Element {
         }
     }, []);
 
+
+    // Load tools and methods to draw on canvas when changing tool or color
     useEffect(() => {
         const canvas = canvasRef.current;
         const context = contextRef.current;
@@ -88,6 +91,7 @@ function CanvasPage(): JSX.Element {
         }
     }, [color, tool]);
 
+    // Upload image to canvas, applying resolution change
     function handleImageUpload(e:React.ChangeEvent<HTMLInputElement>):void {
         const file = e.target.files?.[0];
         if (file) {
@@ -114,9 +118,19 @@ function CanvasPage(): JSX.Element {
 
     }
 
-
+    // Handle submit form (Click on publish button)
     function handleSubmit(e:React.FormEvent<HTMLFormElement>):void {
         e.preventDefault();
+
+        const canvas = canvasRef.current;
+
+        if(canvas) {
+            const dataURL = canvas.toDataURL("image/png");
+            const link = document.createElement("a");
+            link.href = dataURL;
+            link.download = "image.png";
+            link.click();
+        }
     }
 
     return (
