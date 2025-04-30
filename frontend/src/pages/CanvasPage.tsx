@@ -8,9 +8,12 @@ function CanvasPage(): JSX.Element {
     const [tool, setTool] = useState<"pencil" | "eraser">("pencil");
     const [color, setColor] = useState<string>("#000000");
 
+    const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
+    const contextRef = React.useRef<CanvasRenderingContext2D | null>(null);
+
 
     useEffect(() => {
-        const canvas = document.getElementById("canvas") as HTMLCanvasElement;
+        const canvas = canvasRef.current;
         if(canvas) {
             const context = canvas.getContext("2d");
             if (context) {
@@ -27,52 +30,37 @@ function CanvasPage(): JSX.Element {
                 context.fillRect(0, 0, canvas.width, canvas.height);
 
                 // Store the context to allow changing the color and tool
+                contextRef.current = context;
             }
         }
     }, []);
 
     useEffect(() => {
-        const canvas = document.getElementById("canvas") as HTMLCanvasElement;
-        if(canvas) {
-            
-            const context = canvas.getContext("2d");
-            if (context) {
-                canvas.width = 128;
-                canvas.height = 128;
+        const canvas = canvasRef.current;
+        const context = contextRef.current;
+        if(canvas && context) {
+            let drawing = false;
 
-                canvas.style.width = "512px";
-                canvas.style.height = "512px";
+            function draw(e: MouseEvent):void {
+                if (!drawing) return;
 
-                context.imageSmoothingEnabled = false;
-
-                // Set canvas background color
-                context.fillStyle = "#ffffff";
-                context.fillRect(0, 0, canvas.width, canvas.height);
-
-
-                let drawing = false;
-
-                
-                function draw(e: MouseEvent):void {
-                    if (!drawing) return;
-
-                    const rect = canvas.getBoundingClientRect();
-                    const scaleX = canvas.width / rect.width;   // relationship bitmap vs. element for X
-                    const scaleY = canvas.height / rect.height; // relationship bitmap vs. element for Y
-                    const x = (e.clientX - rect.left) * scaleX;
-                    const y = (e.clientY - rect.top) * scaleY;
+                const rect = canvas.getBoundingClientRect();
+                const scaleX = canvas.width / rect.width;   // relationship bitmap vs. element for X
+                const scaleY = canvas.height / rect.height; // relationship bitmap vs. element for Y
+                const x = (e.clientX - rect.left) * scaleX;
+                const y = (e.clientY - rect.top) * scaleY;
 
 
 
-                    context.lineWidth = 5;
-                    context.lineCap = "round";
-                    context.strokeStyle = tool === "eraser" ? "#ffffff" : color;
+                context.lineWidth = 5;
+                context.lineCap = "round";
+                context.strokeStyle = tool === "eraser" ? "#ffffff" : color;
 
-                    context.lineTo(x, y);
-                    context.stroke();
-                    context.beginPath();
-                    context.moveTo(x, y);
-                };
+                context.lineTo(x, y);
+                context.stroke();
+                context.beginPath();
+                context.moveTo(x, y);
+            };
 
                 function startDrawing(e: MouseEvent):void {
                     drawing = true;
@@ -95,10 +83,10 @@ function CanvasPage(): JSX.Element {
                 };
                 
                 
-            }
+            
             
         }
-     }, [color, tool]);
+    }, [color, tool]);
 
     function handleImageUpload(e:React.ChangeEvent<HTMLInputElement>):void {
         const file = e.target.files?.[0];
@@ -153,7 +141,7 @@ function CanvasPage(): JSX.Element {
 
             <div className="flex flex-col flex-2 max-h-full">
                 <div className="canvas-container border-2">
-                    <canvas id="canvas"></canvas>
+                    <canvas ref={canvasRef} id="canvas"></canvas>
                 </div>
 
                 <footer className="footer justify-items-center">
