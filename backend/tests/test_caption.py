@@ -1,7 +1,6 @@
 from io import BytesIO
 
 import pytest
-from fastapi import HTTPException
 from httpx import ASGITransport, AsyncClient
 from PIL import Image
 
