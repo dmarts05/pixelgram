@@ -101,18 +101,17 @@ export default function PublishPixelartModal({
         setLoading(true);
         setErrorPlaceholder(null);
         try {
-            // Convertir el dataURL a un Blob
+            // Convert dataURL to Blob
             const response = await fetch(imageUrl);
             const blob = await response.blob();
 
-            // Crear un FormData y agregar el blob como archivo
+            // Create FormData and add blob
             const formData = new FormData();
-            formData.append("file", blob, "image.png"); // 'file' debe coincidir con el parámetro del backend
+            formData.append("file", blob, "image.png");
 
-            // Enviar como multipart/form-data
+            // Send as multipart/form-data
             const apiResponse = await fetchApi(`${API_URL}/captions`, {
                 method: "POST",
-                // No establecer Content-Type, FormData lo establece automáticamente
                 body: formData,
             });
 
@@ -141,7 +140,7 @@ export default function PublishPixelartModal({
     };
 
     const handlePublish = (): void => {
-        // Aquí podrías hacer un fetch/post a tu backend
+        // TODO: Handle publish action
         console.log("Publish pixelart:", { description, imageUrl });
     };
 
