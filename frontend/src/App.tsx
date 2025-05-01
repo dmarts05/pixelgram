@@ -6,9 +6,10 @@ import LandingPage from "./pages/LandingPage";
 import LogInPage from "./pages/LogInPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import SignUpPage from "./pages/SignUpPage";
-import { authGoogleCallback, isUserLoggedIn } from "./services/auth-service";
+import { isUserLoggedIn } from "./services/auth-service";
 import { useAuthStore } from "./stores/auth-store";
 import AuthenticatedRoute from "./utils/AuthenticatedRoute";
+import OAuthCallback from "./utils/OAuthCallback";
 import UnauthenticatedRoute from "./utils/UnauthenticatedRoute";
 
 function clearQueryParams(): void {
@@ -33,26 +34,9 @@ function App(): React.ReactNode {
         initAuth();
     }, [setIsAuthenticated]);
 
-    // When the url contains the OAuth callback parameters, attempt to authenticate the user with Google
-    useEffect(() => {
-        async function handleOAuthCallback(): Promise<void> {
-            const urlParams = new URLSearchParams(location.search);
-            if (!urlParams.has("state") || !urlParams.has("code")) {
-                return;
-            }
-
-            const query = window.location.search;
-            try {
-                await authGoogleCallback(query);
-                setIsAuthenticated(true);
-                navigate("/canvas");
-            } finally {
-                clearQueryParams();
-            }
-        }
-
-        handleOAuthCallback();
-    }, [location.search, navigate, setIsAuthenticated]);
+    const urlParams = new URLSearchParams(window.location.search);
+    const isGoogleOauthCallback =
+        urlParams.has("state") && urlParams.has("code");
 
     return (
         <Routes>
@@ -61,14 +45,18 @@ function App(): React.ReactNode {
                     index
                     element={
                         <UnauthenticatedRoute redirectTo="/canvas">
-                            <LandingPage />
+                            {isGoogleOauthCallback ? (
+                                <OAuthCallback />
+                            ) : (
+                                <LandingPage />
+                            )}
                         </UnauthenticatedRoute>
                     }
                 />
                 <Route
                     path="canvas"
                     element={
-                        <AuthenticatedRoute redirectTo="/">
+                        <AuthenticatedRoute redirectTo="/auth/login">
                             <CanvasPage />
                         </AuthenticatedRoute>
                     }

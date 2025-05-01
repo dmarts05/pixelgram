@@ -21,21 +21,21 @@ function CanvasPage(): JSX.Element {
         if(canvas) {
             const context = canvas.getContext("2d");
             if (context) {
+                 // Set canvas background color
+                 context.fillStyle = "rgba(0,0,0,1)";
+                 context.fillRect(0, 0, canvas.width, canvas.height);
 
                 function resizeCanvas():void {
+                    
                     const size = Math.min(window.innerWidth, window.innerHeight) * 0.8;
                     if(canvas && context) {
-                        canvas.width = size;
-                        canvas.height = size;
+                        canvas.width = 128;
+                        canvas.height = 128;
 
                         canvas.style.width = `${size}px`;
                         canvas.style.height = `${size}px`;
 
                         context.imageSmoothingEnabled = false;
-
-                        // Set canvas background color
-                        context.fillStyle = "#ffffff";
-                        context.fillRect(0, 0, canvas.width, canvas.height);
 
                         // Store the context to allow changing the color and tool
                         contextRef.current = context;
@@ -47,7 +47,8 @@ function CanvasPage(): JSX.Element {
                 // Initial canvas size
                 resizeCanvas();
 
-                window.addEventListener("resize", resizeCanvas);
+                //TODO: See if conserve real time resize and erase all content or not resize and preserve content
+                //window.addEventListener("resize", resizeCanvas);
 
                 return ():void => {
                     window.removeEventListener("resize", resizeCanvas);
@@ -78,7 +79,9 @@ function CanvasPage(): JSX.Element {
                     if(context) {
                         context.lineWidth = 5;
                         context.lineCap = "round";
-                        context.strokeStyle = tool === "eraser" ? "#ffffff" : color;
+                        
+                        context.strokeStyle = tool === "eraser" ? "rgba(0,0,0,1)" : color;
+                        context.globalCompositeOperation = tool === "eraser" ? "destination-out" : "source-over";
     
                         context.lineTo(x, y);
                         context.stroke();
@@ -157,27 +160,34 @@ function CanvasPage(): JSX.Element {
 
     return (
         <div className="flex flex-row">
-            <div className="aside flex flex-col flex-1">
-                <input type="file" accept="image/*" id="imageInput" onChange={handleImageUpload} className="hidden"/>
-                <button onClick={() => {document.getElementById("imageInput")?.click()}} className="btn btn-circle">{<MdOutlineUploadFile/>}</button>
-                <button onClick={() => {setTool("eraser")}} className={`btn btn-circle ${tool === "eraser" ? "bg-black" : ""}`}><BsFillEraserFill className={tool === "eraser" ? "text-white" : ""}/></button>
-
+            <div className="aside flex flex-col flex-1 items-end gap-2">
                 
-                <button onClick={() => {setTool("pencil"); setColor("#ef4444")}} className="btn btn-circle bg-red-500">{tool === "pencil" && color === "#ef4444" ? <GoPencil/> : <p></p>}</button>
-                <button onClick={() => {setTool("pencil"); setColor("#fb923c")}}className="btn btn-circle bg-orange-400">{tool === "pencil" && color === "#fb923c" ? <GoPencil/> : <p></p>}</button>
-                <button onClick={() => {setTool("pencil"); setColor("#fcd34d")}} className="btn btn-circle bg-yellow-300">{tool === "pencil" && color === "#fcd34d" ? <GoPencil/> : <p></p>}</button>
-                <button onClick={() => {setTool("pencil"); setColor("#4ade80")}} className="btn btn-circle bg-green-400">{tool === "pencil" && color === "#4ade80" ? <GoPencil/> : <p></p>}</button>
-                <button onClick={() => {setTool("pencil"); setColor("#3b82f6")}} className="btn btn-circle bg-blue-500">{tool === "pencil" && color === "#3b82f6" ? <GoPencil/> : <p></p>}</button>
-                <button onClick={() => {setTool("pencil"); setColor("#8b5cf6")}} className="btn btn-circle bg-purple-500">{tool === "pencil" && color === "#8b5cf6" ? <GoPencil/> : <p></p>}</button>
-                <button onClick={() => {setTool("pencil"); setColor("#000000")}} className="btn btn-circle bg-black">{tool === "pencil" && color === "#000000" ? <GoPencil className="text-white"/> : <p></p>}</button>
-                
-                <button  className="btn btn-circle bg-gradient-to-r from-yellow-500 via-green-400 via-blue-500 to-purple-500 rainbow-animated"></button>
-
             </div>
 
-            <div className="flex flex-col flex-2 max-h-full">
-                <div className="canvas-container border-2">
-                    <canvas ref={canvasRef} id="canvas"></canvas>
+            <div className="flex flex-col flex-2 max-h-full items-center">
+
+                <div className="flex flex-row items-center">
+                    <div className="flex flex-col items-end gap-2">
+                        <input type="file" accept="image/*" id="imageInput" onChange={handleImageUpload} className="hidden"/>
+                        <button onClick={() => {document.getElementById("imageInput")?.click()}} className="btn btn-circle border-white border-2">{<MdOutlineUploadFile/>}</button>
+                        <button onClick={() => {setTool("eraser")}} className={`btn btn-circle border-white border-2 ${tool === "eraser" ? "bg-black" : ""}`}><BsFillEraserFill className={tool === "eraser" ? "text-white" : ""}/></button>
+                        
+                        <button onClick={() => {setTool("pencil"); setColor("#ef4444")}} className="btn btn-circle bg-red-500 dark:bg-red-500 border-white border-2">{tool === "pencil" && color === "#ef4444" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
+                        <button onClick={() => {setTool("pencil"); setColor("#fb923c")}}className="btn btn-circle bg-orange-400 dark:bg-orange-400 border-white border-2">{tool === "pencil" && color === "#fb923c" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
+                        <button onClick={() => {setTool("pencil"); setColor("#fcd34d")}} className="btn btn-circle bg-yellow-300 dark:bg-yellow-400  border-white border-2">{tool === "pencil" && color === "#fcd34d" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
+                        <button onClick={() => {setTool("pencil"); setColor("#4ade80")}} className="btn btn-circle bg-green-400 border-white border-2">{tool === "pencil" && color === "#4ade80" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
+                        <button onClick={() => {setTool("pencil"); setColor("#3b82f6")}} className="btn btn-circle bg-blue-500 border-white border-2">{tool === "pencil" && color === "#3b82f6" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
+                        <button onClick={() => {setTool("pencil"); setColor("#8b5cf6")}} className="btn btn-circle bg-purple-500 border-white border-2">{tool === "pencil" && color === "#8b5cf6" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
+                        <button onClick={() => {setTool("pencil"); setColor("#ffffff")}} className="btn btn-circle light:bg-[#ffffff] dark:bg-[#cdcdcd] border-white border-2">{tool === "pencil" && color === "#ffffff" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
+                        <button onClick={() => {setTool("pencil"); setColor("#000000")}} className="btn btn-circle bg-black border-white border-2">{tool === "pencil" && color === "#000000" ? <GoPencil className="text-white stroke-2"/> : <p></p>}</button>
+                        
+                        <button onClick={() => document.getElementById("colorPicker")?.click()}  className="btn btn-circle bg-gradient-to-r from-yellow-500 via-green-400 via-blue-500 to-purple-500 rainbow-animated"></button>
+                        <input type="color" id="colorPicker" className="hidden" onChange={(e) => {setTool("pencil"); setColor(e.target.value)}}/>
+                    </div>
+
+                    <div className="h-fit w-fit border-2 items-center justify-center">
+                        <canvas ref={canvasRef} id="canvas"></canvas>
+                    </div>
                 </div>
 
                 <footer className="footer justify-items-center">
