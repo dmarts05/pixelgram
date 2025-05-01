@@ -175,8 +175,8 @@ function CanvasPage(): JSX.Element {
                 <button onClick={() => {setTool("pencil"); setColor("#ffffff")}} className="btn btn-circle light:bg-[#ffffff] dark:bg-[#cdcdcd] border-white border-2">{tool === "pencil" && color === "#ffffff" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
                 <button onClick={() => {setTool("pencil"); setColor("#000000")}} className="btn btn-circle bg-black border-white border-2">{tool === "pencil" && color === "#000000" ? <GoPencil className="text-white stroke-2"/> : <p></p>}</button>
                 
-                <button  className="btn btn-circle bg-gradient-to-r from-yellow-500 via-green-400 via-blue-500 to-purple-500 rainbow-animated"></button>
-
+                <button onClick={() => document.getElementById("colorPicker")?.click()}  className="btn btn-circle bg-gradient-to-r from-yellow-500 via-green-400 via-blue-500 to-purple-500 rainbow-animated"></button>
+                <input type="color" id="colorPicker" className="hidden" onChange={(e) => {setTool("pencil"); setColor(e.target.value)}}/>
             </div>
 
             <div className="flex flex-col flex-2 max-h-full">
