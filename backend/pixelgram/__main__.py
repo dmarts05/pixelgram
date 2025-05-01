@@ -9,6 +9,7 @@ from pixelgram.auth import (
 from pixelgram.db import create_db_and_tables
 from pixelgram.routers.auth import auth_router
 from pixelgram.routers.captions import captions_router
+from pixelgram.routers.posts import posts_router
 from pixelgram.schemas.user import UserRead, UserUpdate
 from pixelgram.settings import settings
 
@@ -41,6 +42,7 @@ app.include_router(
     tags=["users"],
 )
 app.include_router(captions_router)
+app.include_router(posts_router)
 
 
 @app.get("/health", tags=["health"])

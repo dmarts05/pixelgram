@@ -12,7 +12,7 @@ class Settings(BaseSettings):
     hf_token: str = ""
     hf_img2txt_model: str = ""
     supabase_url: str = ""
-    supabase_key: str = ""
+    supabase_service_key: str = ""
     supabase_bucket: str = ""
 
 settings = Settings()
