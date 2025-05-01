@@ -22,7 +22,7 @@ function CanvasPage(): JSX.Element {
             const context = canvas.getContext("2d");
             if (context) {
                  // Set canvas background color
-                 context.fillStyle = "#ffffff";
+                 context.fillStyle = "rgba(0,0,0,1)";
                  context.fillRect(0, 0, canvas.width, canvas.height);
 
                 function resizeCanvas():void {
@@ -80,7 +80,9 @@ function CanvasPage(): JSX.Element {
                     if(context) {
                         context.lineWidth = 5;
                         context.lineCap = "round";
-                        context.strokeStyle = tool === "eraser" ? "#ffffff" : color;
+                        
+                        context.strokeStyle = tool === "eraser" ? "rgba(0,0,0,1)" : color;
+                        context.globalCompositeOperation = tool === "eraser" ? "destination-out" : "source-over";
     
                         context.lineTo(x, y);
                         context.stroke();
@@ -171,6 +173,7 @@ function CanvasPage(): JSX.Element {
                 <button onClick={() => {setTool("pencil"); setColor("#4ade80")}} className="btn btn-circle bg-green-400">{tool === "pencil" && color === "#4ade80" ? <GoPencil/> : <p></p>}</button>
                 <button onClick={() => {setTool("pencil"); setColor("#3b82f6")}} className="btn btn-circle bg-blue-500">{tool === "pencil" && color === "#3b82f6" ? <GoPencil/> : <p></p>}</button>
                 <button onClick={() => {setTool("pencil"); setColor("#8b5cf6")}} className="btn btn-circle bg-purple-500">{tool === "pencil" && color === "#8b5cf6" ? <GoPencil/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#ffffff")}} className="btn btn-circle bg-white">{tool === "pencil" && color === "#ffffff" ? <GoPencil/> : <p></p>}</button>
                 <button onClick={() => {setTool("pencil"); setColor("#000000")}} className="btn btn-circle bg-black">{tool === "pencil" && color === "#000000" ? <GoPencil className="text-white"/> : <p></p>}</button>
                 
                 <button  className="btn btn-circle bg-gradient-to-r from-yellow-500 via-green-400 via-blue-500 to-purple-500 rainbow-animated"></button>
