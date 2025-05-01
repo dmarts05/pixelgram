@@ -182,7 +182,7 @@ function CanvasPage(): JSX.Element {
 
                 <footer className="footer justify-items-center">
                     <form className="form" onSubmit={handleSubmit}>
-                        <button type="submit" className="btn btn-primary">Publicar</button>
+                        <button type="submit" className="btn btn-primary">Publish</button>
                     </form>
                 </footer>
 
