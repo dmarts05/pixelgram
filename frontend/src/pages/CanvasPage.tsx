@@ -21,21 +21,23 @@ function CanvasPage(): JSX.Element {
         if(canvas) {
             const context = canvas.getContext("2d");
             if (context) {
+                 // Set canvas background color
+                 context.fillStyle = "#ffffff";
+                 context.fillRect(0, 0, canvas.width, canvas.height);
 
                 function resizeCanvas():void {
+                    
                     const size = Math.min(window.innerWidth, window.innerHeight) * 0.8;
                     if(canvas && context) {
-                        canvas.width = size;
-                        canvas.height = size;
+                        canvas.width = 128;
+                        canvas.height = 128;
 
                         canvas.style.width = `${size}px`;
                         canvas.style.height = `${size}px`;
 
                         context.imageSmoothingEnabled = false;
 
-                        // Set canvas background color
-                        context.fillStyle = "#ffffff";
-                        context.fillRect(0, 0, canvas.width, canvas.height);
+                       
 
                         // Store the context to allow changing the color and tool
                         contextRef.current = context;
@@ -47,7 +49,7 @@ function CanvasPage(): JSX.Element {
                 // Initial canvas size
                 resizeCanvas();
 
-                window.addEventListener("resize", resizeCanvas);
+                //window.addEventListener("resize", resizeCanvas);
 
                 return ():void => {
                     window.removeEventListener("resize", resizeCanvas);
@@ -176,7 +178,7 @@ function CanvasPage(): JSX.Element {
             </div>
 
             <div className="flex flex-col flex-2 max-h-full">
-                <div className="canvas-container border-2">
+                <div className="h-fit w-fit border-2">
                     <canvas ref={canvasRef} id="canvas"></canvas>
                 </div>
 
