@@ -101,18 +101,17 @@ export default function PublishPixelartModal({
         setLoading(true);
         setErrorPlaceholder(null);
         try {
-            // Convertir el dataURL a un Blob
+            // Convert dataURL to Blob
             const response = await fetch(imageUrl);
             const blob = await response.blob();
 
-            // Crear un FormData y agregar el blob como archivo
+            // Create FormData and add blob
             const formData = new FormData();
-            formData.append("file", blob, "image.png"); // 'file' debe coincidir con el parámetro del backend
+            formData.append("file", blob, "image.png");
 
-            // Enviar como multipart/form-data
+            // Send as multipart/form-data
             const apiResponse = await fetchApi(`${API_URL}/captions`, {
                 method: "POST",
-                // No establecer Content-Type, FormData lo establece automáticamente
                 body: formData,
             });
 
@@ -141,24 +140,31 @@ export default function PublishPixelartModal({
     };
 
     const handlePublish = (): void => {
-        // Aquí podrías hacer un fetch/post a tu backend
+        // TODO: Handle publish action
         console.log("Publish pixelart:", { description, imageUrl });
     };
 
     if (!isOpen) return null;
 
-
     return (
-        <div className="modal modal-open">
+        <dialog className="modal modal-open">
             <div className="modal-box">
-                <h3 className="font-bold text-lg">Publicar pixelart</h3>
+                <form method="dialog">
+                    <button
+                        className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                        onClick={onClose}
+                    >
+                        ✕
+                    </button>
+                </form>
+                <h3 className="font-bold text-lg">Publish pixelart</h3>
                 <PixelartPreview src={imageUrl} />
                 <DescriptionField
                     value={description}
                     isLoading={loading}
                     onChange={setDescription}
                     onGenerate={handleAutogenerate}
-
+                    errorPlaceholder={errorPlaceholder || undefined}
                 />
                 <ModalActions
                     onClose={onClose}
@@ -166,76 +172,9 @@ export default function PublishPixelartModal({
                     disabled={!description || loading}
                 />
             </div>
-
-        </div>
+            <form method="dialog" className="modal-backdrop">
+                <button onClick={onClose}>close</button>
+            </form>
+        </dialog>
     );
 }
-
-// Subcomponentes internos
-
-    const PixelartPreview = ({ src }: { src: string }): JSX.Element => (
-        <div className="mt-4">
-            <img
-                src={src}
-                alt="Pixelart"
-                className="w-32 h-32 object-cover border rounded"
-            />
-        </div>
-    );
-
-    const DescriptionField = ({
-        value,
-        isLoading,
-        onChange,
-        onGenerate,
-    }: {
-        value: string;
-        isLoading: boolean;
-        onChange: (val: string) => void;
-        onGenerate: () => void;
-    }): JSX.Element => (
-        <div className="mt-4 flex items-start gap-2">
-            <div className="flex-1">
-                {isLoading ? (
-                    <div className="skeleton animate-pulse h-24 w-full rounded"></div>
-                ) : (
-                    <textarea
-                        className="textarea textarea-bordered w-full resize-none h-24"
-                        value={value}
-                        onChange={(e) => onChange(e.target.value)}
-                    />
-                )}
-            </div>
-            <button
-                className="btn btn-secondary"
-                onClick={onGenerate}
-                disabled={isLoading}
-            >
-                Autogenerar
-            </button>
-        </div>
-    );
-
-    const ModalActions = ({
-        onClose,
-        onPublish,
-        disabled,
-    }: {
-        onClose: () => void;
-        onPublish: () => void;
-        disabled: boolean;
-    }): JSX.Element => (
-        <div className="modal-action">
-            <button className="btn btn-outline" onClick={onClose}>
-                Cancelar
-            </button>
-            <button
-                className="btn btn-primary"
-                onClick={onPublish}
-                disabled={disabled}
-            >
-                Publicar
-            </button>
-        </div>
-    );
-
