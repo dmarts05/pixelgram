@@ -1,12 +1,90 @@
 import { JSX, useState } from "react";
+import { MdAutoFixHigh } from "react-icons/md";
 import { fetchApi } from "../services/fetch-api";
 import { API_URL } from "../utils/constants";
 
 interface Props {
-    imageUrl: string; // Cambiado de ImageData a string, ya que es un dataURL
+    imageUrl: string;
     isOpen: boolean;
     onClose: () => void;
 }
+
+const DescriptionField = ({
+    value,
+    isLoading,
+    onChange,
+    onGenerate,
+    errorPlaceholder,
+}: {
+    value: string;
+    isLoading: boolean;
+    onChange: (val: string) => void;
+    onGenerate: () => void;
+    errorPlaceholder?: string;
+}): JSX.Element => {
+    return (
+        <div className="mt-4 flex items-center gap-2">
+            <div className="flex-1">
+                {isLoading ? (
+                    <div className="skeleton textarea border-none h-10 mt-4 w-full rounded"></div>
+                ) : (
+                    <textarea
+                        className={`textarea w-full resize-none h-10 mt-4`}
+                        placeholder={errorPlaceholder || "Description"}
+                        value={value}
+                        onChange={(e) => {
+                            onChange(e.target.value);
+                        }}
+                    />
+                )}
+            </div>
+            <button
+                className="btn btn-circle btn-ghost"
+                onClick={onGenerate}
+                disabled={isLoading}
+            >
+                {isLoading ? (
+                    <span className="loading loading-spinner"></span>
+                ) : (
+                    <MdAutoFixHigh />
+                )}
+            </button>
+        </div>
+    );
+};
+
+const PixelartPreview = ({ src }: { src: string }): JSX.Element => (
+    <div className="mt-4 justify-center flex">
+        <img
+            src={src}
+            alt="Pixelart"
+            className="w-32 h-32 object-cover border rounded"
+        />
+    </div>
+);
+
+const ModalActions = ({
+    onClose,
+    onPublish,
+    disabled,
+}: {
+    onClose: () => void;
+    onPublish: () => void;
+    disabled: boolean;
+}): JSX.Element => (
+    <div className="modal-actions flex justify-center gap-4 mt-8">
+        <button className="btn btn-outline" onClick={onClose}>
+            Cancel
+        </button>
+        <button
+            className="btn btn-primary"
+            onClick={onPublish}
+            disabled={disabled}
+        >
+            Publish
+        </button>
+    </div>
+);
 
 export default function PublishPixelartModal({
     imageUrl,
@@ -15,9 +93,13 @@ export default function PublishPixelartModal({
 }: Props): JSX.Element | null {
     const [description, setDescription] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
+    const [errorPlaceholder, setErrorPlaceholder] = useState<string | null>(
+        null
+    );
 
     const handleAutogenerate = async (): Promise<void> => {
         setLoading(true);
+        setErrorPlaceholder(null);
         try {
             // Convertir el dataURL a un Blob
             const response = await fetch(imageUrl);
@@ -42,10 +124,17 @@ export default function PublishPixelartModal({
             }
 
             const data = await apiResponse.json();
-            setDescription(data.description);
-        } catch (error) {
+            setDescription(data.caption);
+        } catch (error: unknown) {
             console.error("Error:", error);
-            // Manejar el error, tal vez mostrar un mensaje al usuario
+            let errorMessage = "An unknown error occurred";
+
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+
+            setErrorPlaceholder(errorMessage);
+            setDescription("");
         } finally {
             setLoading(false);
         }
@@ -53,12 +142,11 @@ export default function PublishPixelartModal({
 
     const handlePublish = (): void => {
         // Aquí podrías hacer un fetch/post a tu backend
-        console.log("Publicar pixelart:", { description, imageUrl });
+        console.log("Publish pixelart:", { description, imageUrl });
     };
 
     if (!isOpen) return null;
 
-    
 
     return (
         <div className="modal modal-open">
@@ -70,6 +158,7 @@ export default function PublishPixelartModal({
                     isLoading={loading}
                     onChange={setDescription}
                     onGenerate={handleAutogenerate}
+
                 />
                 <ModalActions
                     onClose={onClose}
@@ -77,6 +166,7 @@ export default function PublishPixelartModal({
                     disabled={!description || loading}
                 />
             </div>
+
         </div>
     );
 }
@@ -148,3 +238,4 @@ export default function PublishPixelartModal({
             </button>
         </div>
     );
+
