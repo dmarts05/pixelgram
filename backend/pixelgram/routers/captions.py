@@ -1,0 +1,64 @@
+from io import BytesIO
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from PIL import Image
+
+from pixelgram.auth import current_active_user
+from pixelgram.models.user import User
+from pixelgram.services.hf_client import HFClient
+
+captions_router = APIRouter(
+    prefix="/captions",
+    tags=["captions"],
+)
+
+
+@captions_router.post(
+    "/",
+    summary="Generate a caption for an image",
+    description="Takes an uploaded image (must be 128x128 pixels) and returns a generated caption. Only image files are allowed.",
+    responses={
+        200: {
+            "description": "Caption successfully generated",
+            "content": {
+                "application/json": {"example": {"caption": "A cat sitting on a chair"}}
+            },
+        },
+        400: {
+            "description": "Invalid input (e.g., wrong size or type)",
+            "content": {
+                "application/json": {
+                    "example": {"detail": "Image must be 128x128 pixels."}
+                }
+            },
+        },
+        401: {"description": "Unauthorized"},
+    },
+)
+async def get_caption(
+    user: User = Depends(current_active_user), file: UploadFile = File(...)
+):
+    content_type = file.content_type
+    if not content_type or not content_type.startswith("image/"):
+        raise HTTPException(
+            status_code=400,
+            detail="Invalid content type. Only image files are allowed.",
+        )
+
+    image_bytes = await file.read()
+
+    try:
+        image = Image.open(BytesIO(image_bytes))
+    except Exception as e:
+        print(f"Error opening image: {e}")
+        raise HTTPException(status_code=400, detail="Invalid or corrupted image file.")
+
+    if image.size != (128, 128):
+        raise HTTPException(status_code=400, detail="Image must be 128x128 pixels.")
+
+    hf_client = HFClient()
+    caption = await hf_client.generate_caption(image_bytes)
+
+    if not caption:
+        raise HTTPException(status_code=500, detail="Failed to generate caption.")
+    return {"caption": caption}

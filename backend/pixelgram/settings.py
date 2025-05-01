@@ -9,6 +9,8 @@ class Settings(BaseSettings):
     google_auth_client_id: str = ""
     google_oauth_client_secret: str = ""
     frontend_base_url: str = ""
+    hf_token: str = ""
+    hf_img2txt_model: str = ""
 
 
 settings = Settings()

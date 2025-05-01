@@ -2,11 +2,14 @@ import React, { JSX, useEffect, useState } from "react";
 import { GoPencil } from "react-icons/go";
 import {BsFillEraserFill} from "react-icons/bs";
 import {MdOutlineUploadFile} from "react-icons/md";
+import PublishPixelartModal from "../components/PublishPixelartModal";
 
 function CanvasPage(): JSX.Element {
 
     const [tool, setTool] = useState<"pencil" | "eraser">("pencil");
     const [color, setColor] = useState<string>("#000000");
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    const [imageUrl, setImageUrl] = useState<string>("");
 
     const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
     const contextRef = React.useRef<CanvasRenderingContext2D | null>(null);
@@ -142,12 +145,15 @@ function CanvasPage(): JSX.Element {
 
         if(canvas) {
             const dataURL = canvas.toDataURL("image/png");
-            const link = document.createElement("a");
-            link.href = dataURL;
-            link.download = "image.png";
-            link.click();
+            setImageUrl(dataURL);
+            setIsModalOpen(true);
         }
     }
+
+    // Close publish modal handler
+    const handleCloseModal = (): void => {
+        setIsModalOpen(false);
+    };
 
     return (
         <div className="flex flex-row">
@@ -176,7 +182,7 @@ function CanvasPage(): JSX.Element {
 
                 <footer className="footer justify-items-center">
                     <form className="form" onSubmit={handleSubmit}>
-                        <button type="submit" className="btn btn-primary">Publicar</button>
+                        <button type="submit" className="btn btn-primary">Publish</button>
                     </form>
                 </footer>
 
@@ -185,6 +191,13 @@ function CanvasPage(): JSX.Element {
             <div className="flex flex-1">
 
             </div>
+
+            {/* Publish modal component */}
+            <PublishPixelartModal
+                imageUrl={imageUrl}
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+            />
 
         </div>
     );
