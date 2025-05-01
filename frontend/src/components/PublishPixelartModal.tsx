@@ -58,7 +58,30 @@ export default function PublishPixelartModal({
 
     if (!isOpen) return null;
 
-    // Subcomponentes internos
+    
+
+    return (
+        <div className="modal modal-open">
+            <div className="modal-box">
+                <h3 className="font-bold text-lg">Publicar pixelart</h3>
+                <PixelartPreview src={imageUrl} />
+                <DescriptionField
+                    value={description}
+                    isLoading={loading}
+                    onChange={setDescription}
+                    onGenerate={handleAutogenerate}
+                />
+                <ModalActions
+                    onClose={onClose}
+                    onPublish={handlePublish}
+                    disabled={!description || loading}
+                />
+            </div>
+        </div>
+    );
+}
+
+// Subcomponentes internos
 
     const PixelartPreview = ({ src }: { src: string }): JSX.Element => (
         <div className="mt-4">
@@ -125,24 +148,3 @@ export default function PublishPixelartModal({
             </button>
         </div>
     );
-
-    return (
-        <div className="modal modal-open">
-            <div className="modal-box">
-                <h3 className="font-bold text-lg">Publicar pixelart</h3>
-                <PixelartPreview src={imageUrl} />
-                <DescriptionField
-                    value={description}
-                    isLoading={loading}
-                    onChange={setDescription}
-                    onGenerate={handleAutogenerate}
-                />
-                <ModalActions
-                    onClose={onClose}
-                    onPublish={handlePublish}
-                    disabled={!description || loading}
-                />
-            </div>
-        </div>
-    );
-}
