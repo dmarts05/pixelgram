@@ -161,20 +161,19 @@ function CanvasPage(): JSX.Element {
 
     return (
         <div className="flex flex-row">
-            <div className="aside flex flex-col flex-1">
+            <div className="aside flex flex-col flex-1 items-end gap-2">
                 <input type="file" accept="image/*" id="imageInput" onChange={handleImageUpload} className="hidden"/>
-                <button onClick={() => {document.getElementById("imageInput")?.click()}} className="btn btn-circle">{<MdOutlineUploadFile/>}</button>
-                <button onClick={() => {setTool("eraser")}} className={`btn btn-circle ${tool === "eraser" ? "bg-black" : ""}`}><BsFillEraserFill className={tool === "eraser" ? "text-white" : ""}/></button>
-
+                <button onClick={() => {document.getElementById("imageInput")?.click()}} className="btn btn-circle border-white border-2">{<MdOutlineUploadFile/>}</button>
+                <button onClick={() => {setTool("eraser")}} className={`btn btn-circle border-white border-2 ${tool === "eraser" ? "bg-black" : ""}`}><BsFillEraserFill className={tool === "eraser" ? "text-white" : ""}/></button>
                 
-                <button onClick={() => {setTool("pencil"); setColor("#ef4444")}} className="btn btn-circle bg-red-500">{tool === "pencil" && color === "#ef4444" ? <GoPencil/> : <p></p>}</button>
-                <button onClick={() => {setTool("pencil"); setColor("#fb923c")}}className="btn btn-circle bg-orange-400">{tool === "pencil" && color === "#fb923c" ? <GoPencil/> : <p></p>}</button>
-                <button onClick={() => {setTool("pencil"); setColor("#fcd34d")}} className="btn btn-circle bg-yellow-300">{tool === "pencil" && color === "#fcd34d" ? <GoPencil/> : <p></p>}</button>
-                <button onClick={() => {setTool("pencil"); setColor("#4ade80")}} className="btn btn-circle bg-green-400">{tool === "pencil" && color === "#4ade80" ? <GoPencil/> : <p></p>}</button>
-                <button onClick={() => {setTool("pencil"); setColor("#3b82f6")}} className="btn btn-circle bg-blue-500">{tool === "pencil" && color === "#3b82f6" ? <GoPencil/> : <p></p>}</button>
-                <button onClick={() => {setTool("pencil"); setColor("#8b5cf6")}} className="btn btn-circle bg-purple-500">{tool === "pencil" && color === "#8b5cf6" ? <GoPencil/> : <p></p>}</button>
-                <button onClick={() => {setTool("pencil"); setColor("#ffffff")}} className="btn btn-circle bg-white">{tool === "pencil" && color === "#ffffff" ? <GoPencil/> : <p></p>}</button>
-                <button onClick={() => {setTool("pencil"); setColor("#000000")}} className="btn btn-circle bg-black">{tool === "pencil" && color === "#000000" ? <GoPencil className="text-white"/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#ef4444")}} className="btn btn-circle bg-red-500 dark:bg-red-500 border-white border-2">{tool === "pencil" && color === "#ef4444" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#fb923c")}}className="btn btn-circle bg-orange-400 dark:bg-orange-400 border-white border-2">{tool === "pencil" && color === "#fb923c" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#fcd34d")}} className="btn btn-circle bg-yellow-300 dark:bg-yellow-400  border-white border-2">{tool === "pencil" && color === "#fcd34d" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#4ade80")}} className="btn btn-circle bg-green-400 border-white border-2">{tool === "pencil" && color === "#4ade80" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#3b82f6")}} className="btn btn-circle bg-blue-500 border-white border-2">{tool === "pencil" && color === "#3b82f6" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#8b5cf6")}} className="btn btn-circle bg-purple-500 border-white border-2">{tool === "pencil" && color === "#8b5cf6" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#ffffff")}} className="btn btn-circle light:bg-[#ffffff] dark:bg-[#cdcdcd] border-white border-2">{tool === "pencil" && color === "#ffffff" ? <GoPencil className="stroke-2"/> : <p></p>}</button>
+                <button onClick={() => {setTool("pencil"); setColor("#000000")}} className="btn btn-circle bg-black border-white border-2">{tool === "pencil" && color === "#000000" ? <GoPencil className="text-white stroke-2"/> : <p></p>}</button>
                 
                 <button  className="btn btn-circle bg-gradient-to-r from-yellow-500 via-green-400 via-blue-500 to-purple-500 rainbow-animated"></button>
 
@@ -187,7 +186,7 @@ function CanvasPage(): JSX.Element {
 
                 <footer className="footer justify-items-center">
                     <form className="form" onSubmit={handleSubmit}>
-                        <button type="submit" className="btn btn-primary">Publicar</button>
+                        <button type="submit" className="btn btn-primary">Publish</button>
                     </form>
                 </footer>
 
