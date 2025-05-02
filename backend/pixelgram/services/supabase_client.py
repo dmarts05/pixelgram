@@ -3,6 +3,7 @@ from uuid import uuid4
 
 import httpx
 from PIL.Image import Image
+from pydantic import HttpUrl
 
 from pixelgram.settings import settings
 
@@ -19,7 +20,7 @@ class SupabaseStorageClient:
             "Authorization": f"Bearer {self.api_key}",
         }
 
-    async def upload(self, img: Image) -> str:
+    async def upload(self, img: Image) -> HttpUrl:
         """
         Uploads an image to Supabase storage and returns its URL.
 
@@ -46,7 +47,7 @@ class SupabaseStorageClient:
             raise Exception(f"Upload failed: {response.text}")
 
         url = f"{self.url}/storage/v1/object/public/{self.bucket}/{file_id}"
-        return url
+        return HttpUrl(url)
 
     def _image_to_png_bytes(self, img: Image) -> bytes:
         """Convert a PIL Image object to PNG format bytes."""

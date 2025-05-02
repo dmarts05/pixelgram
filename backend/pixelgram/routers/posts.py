@@ -95,7 +95,7 @@ async def post_pixelart(
 
         new_post = Post(
             description=post_data.description,
-            image_url=post_data.image_url,
+            image_url=str(post_data.image_url),
             user_id=post_data.user_id,
         )
 

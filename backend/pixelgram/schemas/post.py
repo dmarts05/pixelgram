@@ -1,12 +1,12 @@
 from uuid import UUID
 from datetime import datetime
 
-from pydantic import field_validator, BaseModel
+from pydantic import field_validator, BaseModel, HttpUrl
 
 
 class PostBase(BaseModel):
     description: str
-    image_url: str
+    image_url: HttpUrl
 
     @field_validator("description")
     @classmethod
@@ -17,8 +17,8 @@ class PostBase(BaseModel):
 
     @field_validator("image_url")
     @classmethod
-    def image_url_must_not_be_empty(cls, v: str) -> str:
-        if not v or not v.strip():
+    def image_url_must_not_be_empty(cls, v: HttpUrl) -> HttpUrl:
+        if not v:
             raise ValueError("Image URL cannot be empty")
         return v
 
