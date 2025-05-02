@@ -1,14 +1,18 @@
 from io import BytesIO
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, Form
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from PIL import Image
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from pixelgram.models.post import Post
 from pixelgram.auth import current_active_user
-from pixelgram.models.user import User
-from pixelgram.services.supabase_client import SupabaseStorageClient
 from pixelgram.db import get_async_session
+from pixelgram.models.user import User
+from pixelgram.schemas.post import PostCreate, PostRead
+from pixelgram.models.post import Post
+from pixelgram.services.supabase_client import SupabaseStorageClient
+from pixelgram.settings import settings
+
+REQUIRED_IMAGE_SIZE = (128, 128)  # Required image size in pixels
 
 posts_router = APIRouter(
     prefix="/posts",
@@ -67,35 +71,43 @@ async def post_pixelart(
         print(f"Error opening image: {e}")
         raise HTTPException(status_code=400, detail="Invalid or corrupted image file.")
 
-    if image.size != (128, 128):
-        raise HTTPException(status_code=400, detail="Image must be 128x128 pixels.")
+    if len(image_bytes) > settings.max_img_mb_size * 1024 * 1024:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Image exceeds {settings.max_img_mb_size}MB size limit.",
+        )
+
+    if image.size != REQUIRED_IMAGE_SIZE:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Image must be {REQUIRED_IMAGE_SIZE[0]}x{REQUIRED_IMAGE_SIZE[1]} pixels.",
+        )
 
     try:
         supabase_client = SupabaseStorageClient()
         image_url = await supabase_client.upload(image)
-        
-        new_post = Post(
+
+        post_data = PostCreate(
             description=description,
             image_url=image_url,
             user_id=user.id,
         )
-        
-        print(user.id)
-        
+
+        new_post = Post(
+            description=post_data.description,
+            image_url=post_data.image_url,
+            user_id=post_data.user_id,
+        )
+
         db.add(new_post)
         await db.commit()
         await db.refresh(new_post)
-        
-        return {
-            "post": {
-                "id": new_post.id,
-                "description": new_post.description,
-                "image_url": new_post.image_url,
-                "created_at": new_post.created_at,
-                "user_id": new_post.user_id,
-            }
-        }
-        
+
+        return {"post": PostRead.model_validate(new_post).model_dump()}
+
+    except ValueError as e:
+        # Capturar errores de validación del esquema
+        raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         await db.rollback()
-        raise HTTPException(status_code=500, detail="Failed to save post.")
+        raise HTTPException(status_code=500, detail=f"Failed to save post: {str(e)}")

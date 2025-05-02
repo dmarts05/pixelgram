@@ -1,7 +1,9 @@
-import httpx
-from uuid import uuid4
 from io import BytesIO
+from uuid import uuid4
+
+import httpx
 from PIL.Image import Image
+
 from pixelgram.settings import settings
 
 
@@ -19,13 +21,13 @@ class SupabaseStorageClient:
 
     async def upload(self, img: Image) -> str:
         """
-        Uploads an image to Supabase storage and returns a signed URL (private access).
+        Uploads an image to Supabase storage and returns its URL.
 
         Args:
             img (Image): The image object to upload.
 
         Returns:
-            str: A signed URL to access the uploaded image.
+            str: The URL to access the uploaded image.
 
         Raises:
             Exception: If the upload or signing fails.
@@ -43,34 +45,8 @@ class SupabaseStorageClient:
         if response.status_code != 200:
             raise Exception(f"Upload failed: {response.text}")
 
-        signed_url = await self._generate_signed_url(file_id, expires_in=3600)
-        return signed_url
-
-    async def _generate_signed_url(self, file_path: str, expires_in: int = 3600) -> str:
-        """
-        Generates a signed URL to access a private file.
-
-        Args:
-            file_path (str): The file path inside the bucket.
-            expires_in (int): Time in seconds the URL is valid (default: 3600s).
-
-        Returns:
-            str: A signed URL for accessing the file.
-        """
-        url = f"{self.url}/storage/v1/object/sign/{self.bucket}/{file_path}"
-        json_body = {"expiresIn": expires_in}
-
-        async with httpx.AsyncClient() as client:
-            response = await client.post(url, headers=self.headers, json=json_body)
-
-        if response.status_code != 200:
-            print(
-                f"Failed to generate signed URL: {response.status_code} - {response.text}"
-            )
-            raise Exception(f"Failed to generate signed URL: {response.text}")
-
-        signed_path = response.json().get("signedURL")
-        return f"{self.url}{signed_path}"
+        url = f"{self.url}/storage/v1/object/public/{self.bucket}/{file_id}"
+        return url
 
     def _image_to_png_bytes(self, img: Image) -> bytes:
         """Convert a PIL Image object to PNG format bytes."""

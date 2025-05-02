@@ -14,6 +14,7 @@ class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_service_key: str = ""
     supabase_bucket: str = ""
+    max_img_mb_size: int = 5
 
 settings = Settings()
 """Application settings instance"""
