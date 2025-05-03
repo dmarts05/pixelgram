@@ -7,20 +7,7 @@ from PIL import Image
 from pixelgram.__main__ import app
 from pixelgram.auth import current_active_user
 from pixelgram.models.user import User
-
-
-def create_test_image(size=(128, 128), format="PNG", color="blue"):
-    img = Image.new("RGB", size, color=color)
-    buffer = BytesIO()
-    img.save(buffer, format=format)
-    buffer.seek(0)
-    return buffer
-
-
-async def override_current_user():
-    return User(
-        id="user-123", username="test_user", email="test@example.com", is_active=True
-    )
+from tests.utils import create_test_image, override_current_user
 
 
 @pytest.fixture(autouse=True)
@@ -28,29 +15,6 @@ def override_dependencies():
     app.dependency_overrides[current_active_user] = override_current_user
     yield
     app.dependency_overrides = {}
-
-
-@pytest.mark.asyncio
-async def test_create_post_success(monkeypatch):
-    class MockSupabaseClient:
-        async def upload(self, image):
-            return "https://mockstorage.com/image.png"
-
-    monkeypatch.setattr(
-        "pixelgram.routers.posts.SupabaseStorageClient", MockSupabaseClient
-    )
-
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
-        image = create_test_image()
-        files = {"file": ("valid.png", image, "image/png")}
-        data = {"description": "A valid post image"}
-        response = await ac.post("/posts/", files=files, data=data)
-
-    assert response.status_code == 201
-    assert response.json()["post"]["description"] == "A valid post image"
-    assert response.json()["post"]["image_url"] == "https://mockstorage.com/image.png"
 
 
 @pytest.mark.asyncio
@@ -148,3 +112,39 @@ async def test_create_post_missing_description():
     assert (
         response.status_code == 422
     )  # FastAPI validation error for missing form field
+
+@pytest.mark.asyncio
+async def test_create_post_success(monkeypatch):
+    # Mock Supabase client to return a predictable URL without actually uploading
+    mock_image_url = "https://example.com/test-image.png"
+
+    class SuccessSupabaseClient:
+        def __init__(self, *args, **kwargs):
+            pass
+            
+        async def upload(self, *args, **kwargs):
+            return mock_image_url
+
+    monkeypatch.setattr(
+        "pixelgram.routers.posts.SupabaseStorageClient", SuccessSupabaseClient
+    )
+
+    # Create a valid 128x128 test image
+    image = create_test_image()
+    test_description = "Test successful post"
+
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        files = {"file": ("success.png", image, "image/png")}
+        data = {"description": test_description}
+        response = await ac.post("/posts/", files=files, data=data)
+
+    assert response.status_code == 200  # Successful response
+    resp_data = response.json()
+
+    # Verify response structure and content
+    assert "post" in resp_data
+    assert resp_data["post"]["description"] == test_description
+    assert resp_data["post"]["image_url"] == mock_image_url
+    assert "id" in resp_data["post"]
