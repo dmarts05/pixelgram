@@ -1,14 +1,14 @@
+from datetime import datetime
 from io import BytesIO
 from uuid import uuid4
-from datetime import datetime
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
 from pixelgram.__main__ import app
 from pixelgram.auth import current_active_user
-from tests.utils import create_test_image, override_current_user
 from pixelgram.db import get_async_session
+from tests.utils import create_test_image, override_current_user
 
 id = uuid4()
 created_at = datetime.now()

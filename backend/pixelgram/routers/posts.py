@@ -6,9 +6,9 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from pixelgram.auth import current_active_user
 from pixelgram.db import get_async_session
+from pixelgram.models.post import Post
 from pixelgram.models.user import User
 from pixelgram.schemas.post import PostCreate, PostRead
-from pixelgram.models.post import Post
 from pixelgram.services.supabase_client import SupabaseStorageClient
 from pixelgram.settings import settings
 

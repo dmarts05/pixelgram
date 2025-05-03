@@ -2,6 +2,7 @@ from io import BytesIO
 from uuid import uuid4
 
 from PIL import Image
+
 from pixelgram.models.user import User
 
 
@@ -11,6 +12,7 @@ def create_test_image(size=(128, 128), format="PNG"):
     img.save(buffer, format=format)
     buffer.seek(0)
     return buffer
+
 
 async def override_current_user():
     return User(

@@ -5,7 +5,6 @@ from httpx import ASGITransport, AsyncClient
 
 from pixelgram.__main__ import app
 from pixelgram.auth import current_active_user
-from pixelgram.models.user import User
 from tests.utils import create_test_image, override_current_user
 
 
