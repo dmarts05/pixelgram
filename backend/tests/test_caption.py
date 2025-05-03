@@ -18,7 +18,7 @@ def override_dependencies():
 
 @pytest.mark.asyncio
 async def test_generate_caption_valid(monkeypatch):
-    # Define una clase mock para HFClient
+    # Define a mock class for HFClient
     class MockHFClient:
         async def generate_caption(self, img_bytes):
             return "Mock caption"

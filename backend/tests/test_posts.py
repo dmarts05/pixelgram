@@ -1,19 +1,52 @@
 from io import BytesIO
+from uuid import uuid4
+from datetime import datetime
 
 import pytest
 from httpx import ASGITransport, AsyncClient
-from PIL import Image
 
 from pixelgram.__main__ import app
 from pixelgram.auth import current_active_user
-from pixelgram.models.user import User
 from tests.utils import create_test_image, override_current_user
+from pixelgram.db import get_async_session
+
+id = uuid4()
+created_at = datetime.now()
 
 
 @pytest.fixture(autouse=True)
 def override_dependencies():
+    class MockAsyncSession:
+        async def __aenter__(self):
+            return self
+
+        async def __aexit__(self, *args, **kwargs):
+            pass
+
+        async def commit(self):
+            pass
+
+        def add(self, obj):
+            pass
+
+        async def refresh(self, obj):
+            obj.id = id
+            obj.created_at = created_at
+            return obj
+
+        async def rollback(self):
+            pass
+
+    async def mock_get_async_session():
+        return MockAsyncSession()
+
+    # Set up overrides
     app.dependency_overrides[current_active_user] = override_current_user
+    app.dependency_overrides[get_async_session] = mock_get_async_session
+
     yield
+
+    # Clean up overrides
     app.dependency_overrides = {}
 
 
@@ -62,7 +95,7 @@ async def test_create_post_corrupt_image():
 @pytest.mark.asyncio
 async def test_create_post_oversized_image(monkeypatch):
     class MockSettings:
-        max_img_mb_size = 0.0001  # Simula 0.1KB límite para forzar fallo
+        max_img_mb_size = 0.0001  # Simulate a very small size limit
 
     monkeypatch.setattr("pixelgram.routers.posts.settings", MockSettings)
 
@@ -113,15 +146,16 @@ async def test_create_post_missing_description():
         response.status_code == 422
     )  # FastAPI validation error for missing form field
 
+
 @pytest.mark.asyncio
 async def test_create_post_success(monkeypatch):
-    # Mock Supabase client to return a predictable URL without actually uploading
+    # Mock Supabase client for getting a predictable URL without actual upload
     mock_image_url = "https://example.com/test-image.png"
 
     class SuccessSupabaseClient:
         def __init__(self, *args, **kwargs):
             pass
-            
+
         async def upload(self, *args, **kwargs):
             return mock_image_url
 
@@ -129,7 +163,7 @@ async def test_create_post_success(monkeypatch):
         "pixelgram.routers.posts.SupabaseStorageClient", SuccessSupabaseClient
     )
 
-    # Create a valid 128x128 test image
+    # Create a valid image and description
     image = create_test_image()
     test_description = "Test successful post"
 
@@ -140,11 +174,14 @@ async def test_create_post_success(monkeypatch):
         data = {"description": test_description}
         response = await ac.post("/posts/", files=files, data=data)
 
-    assert response.status_code == 200  # Successful response
+    assert response.status_code == 200
     resp_data = response.json()
 
-    # Verify response structure and content
+    # Verify structure and content
     assert "post" in resp_data
     assert resp_data["post"]["description"] == test_description
     assert resp_data["post"]["image_url"] == mock_image_url
     assert "id" in resp_data["post"]
+    assert resp_data["post"]["id"] == str(id)
+    assert "created_at" in resp_data["post"]
+    assert resp_data["post"]["created_at"] == created_at.isoformat()

@@ -1,4 +1,6 @@
 from io import BytesIO
+from uuid import uuid4
+
 from PIL import Image
 from pixelgram.models.user import User
 
@@ -12,5 +14,5 @@ def create_test_image(size=(128, 128), format="PNG"):
 
 async def override_current_user():
     return User(
-        id="123", username="test_user", email="test@example.com", is_active=True
+        id=uuid4(), username="test_user", email="test@example.com", is_active=True
     )

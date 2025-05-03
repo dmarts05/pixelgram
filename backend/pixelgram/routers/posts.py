@@ -106,7 +106,6 @@ async def post_pixelart(
         return {"post": PostRead.model_validate(new_post).model_dump()}
 
     except ValueError as e:
-        # Capturar errores de validación del esquema
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         await db.rollback()
