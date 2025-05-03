@@ -56,7 +56,7 @@ function App(): React.ReactNode {
                 <Route
                     path="canvas"
                     element={
-                        <AuthenticatedRoute redirectTo="/">
+                        <AuthenticatedRoute redirectTo="/auth/login">
                             <CanvasPage />
                         </AuthenticatedRoute>
                     }
