@@ -1,5 +1,6 @@
 import { JSX, useState } from "react";
 import { MdAutoFixHigh } from "react-icons/md";
+import { useNavigate } from "react-router";
 import { fetchApi } from "../services/fetch-api";
 import { API_URL } from "../utils/constants";
 
@@ -86,6 +87,30 @@ const ModalActions = ({
     </div>
 );
 
+const SuccessView = ({ onDone }: { onDone: () => void }): JSX.Element => (
+    <div className="flex flex-col items-center gap-6 py-4">
+        <div role="alert" className="alert alert-success">
+            <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 shrink-0 stroke-current"
+                fill="none"
+                viewBox="0 0 24 24"
+            >
+                <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+            </svg>
+            <span>Your pixelart has been successfully uploaded!</span>
+        </div>
+        <button className="btn btn-primary w-32" onClick={onDone}>
+            Done
+        </button>
+    </div>
+);
+
 export default function PublishPixelartModal({
     imageUrl,
     isOpen,
@@ -96,6 +121,8 @@ export default function PublishPixelartModal({
     const [errorPlaceholder, setErrorPlaceholder] = useState<string | null>(
         null
     );
+    const [isPublished, setIsPublished] = useState<boolean>(false);
+    const navigate = useNavigate();
 
     const handleAutogenerate = async (): Promise<void> => {
         setLoading(true);
@@ -139,9 +166,49 @@ export default function PublishPixelartModal({
         }
     };
 
-    const handlePublish = (): void => {
-        // TODO: Handle publish action
-        console.log("Publish pixelart:", { description, imageUrl });
+    const handlePublish = async (): Promise<void> => {
+        setLoading(true);
+        try {
+            // Convert dataURL to Blob
+            const response = await fetch(imageUrl);
+            const blob = await response.blob();
+
+            // Create FormData and add blob and description
+            const formData = new FormData();
+            formData.append("file", blob, "image.png");
+            formData.append("description", description);
+
+            const apiResponse = await fetchApi(`${API_URL}/posts`, {
+                method: "POST",
+                body: formData,
+            });
+
+            if (!apiResponse.ok) {
+                const errorData = await apiResponse.json();
+                throw new Error(
+                    `Error while publishing the pixelart: ${errorData.detail || apiResponse.statusText}`
+                );
+            }
+
+            // Set published state to true on success
+            setIsPublished(true);
+        } catch (error: unknown) {
+            console.error("Error publishing pixelart:", error);
+            let errorMessage = "Ocurrió un error al publicar tu pixelart";
+
+            if (error instanceof Error) {
+                errorMessage = error.message;
+            }
+
+            setErrorPlaceholder(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDone = (): void => {
+        onClose();
+        navigate("/feed");
     };
 
     if (!isOpen) return null;
@@ -158,19 +225,26 @@ export default function PublishPixelartModal({
                     </button>
                 </form>
                 <h3 className="font-bold text-lg">Publish pixelart</h3>
-                <PixelartPreview src={imageUrl} />
-                <DescriptionField
-                    value={description}
-                    isLoading={loading}
-                    onChange={setDescription}
-                    onGenerate={handleAutogenerate}
-                    errorPlaceholder={errorPlaceholder || undefined}
-                />
-                <ModalActions
-                    onClose={onClose}
-                    onPublish={handlePublish}
-                    disabled={!description || loading}
-                />
+
+                {isPublished ? (
+                    <SuccessView onDone={handleDone} />
+                ) : (
+                    <>
+                        <PixelartPreview src={imageUrl} />
+                        <DescriptionField
+                            value={description}
+                            isLoading={loading}
+                            onChange={setDescription}
+                            onGenerate={handleAutogenerate}
+                            errorPlaceholder={errorPlaceholder || undefined}
+                        />
+                        <ModalActions
+                            onClose={onClose}
+                            onPublish={handlePublish}
+                            disabled={!description || loading}
+                        />
+                    </>
+                )}
             </div>
             <form method="dialog" className="modal-backdrop">
                 <button onClick={onClose}>close</button>
