@@ -1,4 +1,4 @@
-import { JSX, useState } from "react";
+import React, { useState } from "react";
 import { MdAutoFixHigh } from "react-icons/md";
 import { useNavigate } from "react-router";
 import { fetchApi } from "../services/fetch-api";
@@ -22,7 +22,7 @@ const DescriptionField = ({
     onChange: (val: string) => void;
     onGenerate: () => void;
     errorPlaceholder?: string;
-}): JSX.Element => {
+}): React.ReactNode => {
     return (
         <div className="mt-4 flex items-center gap-2">
             <div className="flex-1">
@@ -54,7 +54,7 @@ const DescriptionField = ({
     );
 };
 
-const PixelartPreview = ({ src }: { src: string }): JSX.Element => (
+const PixelartPreview = ({ src }: { src: string }): React.ReactElement => (
     <div className="mt-4 justify-center flex">
         <img
             src={src}
@@ -72,7 +72,7 @@ const ModalActions = ({
     onClose: () => void;
     onPublish: () => void;
     disabled: boolean;
-}): JSX.Element => (
+}): React.ReactElement => (
     <div className="modal-actions flex justify-center gap-4 mt-8">
         <button className="btn btn-outline" onClick={onClose}>
             Cancel
@@ -87,7 +87,11 @@ const ModalActions = ({
     </div>
 );
 
-const SuccessView = ({ onDone }: { onDone: () => void }): JSX.Element => (
+const SuccessView = ({
+    onDone,
+}: {
+    onDone: () => void;
+}): React.ReactElement => (
     <div className="flex flex-col items-center gap-6 py-4">
         <div role="alert" className="alert alert-success">
             <svg
@@ -115,7 +119,7 @@ export default function PublishPixelartModal({
     imageUrl,
     isOpen,
     onClose,
-}: Props): JSX.Element | null {
+}: Props): React.ReactElement | null {
     const [description, setDescription] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const [errorPlaceholder, setErrorPlaceholder] = useState<string | null>(
