@@ -24,3 +24,13 @@ class HFClient:
             if (len(result) != 1) or ("generated_text" not in result[0]):
                 raise ValueError("Invalid response from Hugging Face API.")
             return result[0].get("generated_text", "No caption found.")
+
+
+def get_hf_client() -> HFClient:
+    """
+    Dependency to get an instance of the HFClient.
+
+    Returns:
+        An instance of HFClient.
+    """
+    return HFClient()

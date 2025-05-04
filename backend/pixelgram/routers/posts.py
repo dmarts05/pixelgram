@@ -9,10 +9,12 @@ from pixelgram.db import get_async_session
 from pixelgram.models.post import Post
 from pixelgram.models.user import User
 from pixelgram.schemas.post import PostCreate, PostRead
-from pixelgram.services.supabase_client import SupabaseStorageClient
-from pixelgram.settings import settings
-
-REQUIRED_IMAGE_SIZE = (128, 128)  # Required image size in pixels
+from pixelgram.services.supabase_client import (
+    SupabaseStorageClient,
+    get_supabase_client,
+)
+from pixelgram.settings import Settings, get_settings
+from pixelgram.utils.constants import REQUIRED_IMAGE_SIZE
 
 posts_router = APIRouter(
     prefix="/posts",
@@ -22,6 +24,7 @@ posts_router = APIRouter(
 
 @posts_router.post(
     "/",
+    status_code=201,
     summary="Creates a pixelart post",
     description="Takes an uploaded image (must be 128x128 pixels) and its description and saves it as a pixelart post.",
     responses={
@@ -54,6 +57,8 @@ async def post_pixelart(
     user: User = Depends(current_active_user),
     file: UploadFile = File(...),
     description: str = Form(...),
+    supabase_client: SupabaseStorageClient = Depends(get_supabase_client),
+    settings: Settings = Depends(get_settings),
     db: AsyncSession = Depends(get_async_session),
 ):
     content_type = file.content_type
@@ -84,7 +89,6 @@ async def post_pixelart(
         )
 
     try:
-        supabase_client = SupabaseStorageClient()
         image_url = await supabase_client.upload(image)
 
         post_data = PostCreate(
@@ -92,7 +96,6 @@ async def post_pixelart(
             image_url=image_url,
             user_id=user.id,
         )
-
         new_post = Post(
             description=post_data.description,
             image_url=str(post_data.image_url),

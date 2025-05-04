@@ -1,4 +1,5 @@
 from __future__ import annotations
+
 from typing import TYPE_CHECKING
 
 from fastapi_users.db import (
@@ -11,8 +12,6 @@ from pixelgram.models.oauth_account import OAuthAccount
 
 if TYPE_CHECKING:
     from pixelgram.models.post import Post
-else:
-    Post = "Post"
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
@@ -22,5 +21,4 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     oauth_accounts: Mapped[list[OAuthAccount]] = relationship(
         "OAuthAccount", lazy="joined"
     )
-
     posts: Mapped[list[Post]] = relationship("Post", back_populates="author")
