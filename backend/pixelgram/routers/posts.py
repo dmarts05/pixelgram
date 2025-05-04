@@ -1,7 +1,8 @@
 from io import BytesIO
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
 from PIL import Image
+from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from pixelgram.auth import current_active_user
@@ -113,3 +114,40 @@ async def post_pixelart(
     except Exception as e:
         await db.rollback()
         raise HTTPException(status_code=500, detail=f"Failed to save post: {str(e)}")
+
+
+@posts_router.get(
+    "/",
+    summary="Retrieve paginated posts",
+    description="Returns a paginated list of posts for infinite scrolling. "
+    "Use query parameters to control the page and page size.",
+)
+async def get_posts(
+    db: AsyncSession = Depends(get_async_session),
+    page: int = Query(1, ge=1, description="The page number to retrieve."),
+    page_size: int = Query(
+        10, ge=1, le=100, description="The number of posts per page."
+    ),
+):
+    # Query posts ordered by creation date
+    stmt = (
+        select(Post)
+        .order_by(Post.created_at.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+    )
+    result = await db.execute(stmt)
+    posts = result.scalars().all()
+
+    # Count total posts for pagination metadata
+    total_result = await db.execute(select(func.count(Post.id)))
+    total = total_result.scalar() or 0
+
+    # Determine next page for infinite scrolling; returns None if no more pages.
+    next_page = page + 1 if (page * page_size) < total else None
+
+    return {
+        "data": [PostRead.model_validate(post).model_dump() for post in posts],
+        "nextPage": next_page,
+        "total": total,
+    }
