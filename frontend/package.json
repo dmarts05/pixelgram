@@ -8,8 +8,7 @@
         "build": "tsc -b && vite build",
         "lint": "eslint .",
         "lint:fix": "eslint . --fix",
-        "prettier": "prettier --ignore-path .gitignore --write \"./src/**/*.+(js|ts|json)\"",
-        "prettier:fix": "prettier --write src",
+        "prettier": "prettier --ignore-path .gitignore --write \"./src/**/*.+(js|ts|json|tsx|jsx)\"",
         "preview": "vite preview --host 127.0.0.1"
     },
     "dependencies": {
