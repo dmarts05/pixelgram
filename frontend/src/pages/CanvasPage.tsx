@@ -3,6 +3,7 @@ import { BsFillEraserFill } from "react-icons/bs";
 import { GoPencil } from "react-icons/go";
 import { MdOutlineUploadFile } from "react-icons/md";
 import PublishPixelartModal from "../components/forms/PublishPixelartModal";
+import { NAVBAR_HEIGHT } from "../utils/constants";
 
 function CanvasPage(): React.ReactElement {
     const [tool, setTool] = useState<"pencil" | "eraser">("pencil");
@@ -166,10 +167,11 @@ function CanvasPage(): React.ReactElement {
     };
 
     return (
-        <div className="flex flex-row bg-base-100">
+        <div className="flex flex-row bg-base-200 m-4"
+            style={{maxHeight: `calc(100vh - ${NAVBAR_HEIGHT})`}}>
             <div className="aside flex flex-col flex-1 items-end gap-2"></div>
 
-            <div className="flex flex-col flex-2 max-h-full items-center">
+            <div className="flex flex-col flex-2 max-h-full items-center ">
                 <div className="flex flex-row items-center">
                     <div className="flex flex-col items-end gap-2">
                         <input
@@ -231,7 +233,7 @@ function CanvasPage(): React.ReactElement {
                                 setTool("pencil");
                                 setColor("#fcd34d");
                             }}
-                            className="btn btn-circle bg-yellow-300 dark:bg-yellow-400  border-white border-2"
+                            className="btn btn-circle bg-yellow-300  border-white border-2"
                         >
                             {tool === "pencil" && color === "#fcd34d" ? (
                                 <GoPencil className="stroke-2" />
@@ -283,7 +285,7 @@ function CanvasPage(): React.ReactElement {
                                 setTool("pencil");
                                 setColor("#ffffff");
                             }}
-                            className="btn btn-circle light:bg-[#ffffff] dark:bg-[#cdcdcd] border-white border-2"
+                            className="btn btn-circle bg-white border-white border-2"
                         >
                             {tool === "pencil" && color === "#ffffff" ? (
                                 <GoPencil className="stroke-2" />
@@ -322,12 +324,12 @@ function CanvasPage(): React.ReactElement {
                         />
                     </div>
 
-                    <div className="h-fit w-fit border-2 items-center justify-center">
+                    <div className="card h-fit w-fit border-1 shadow-md items-center justify-center ml-2 mr-2">
                         <canvas ref={canvasRef} id="canvas"></canvas>
                     </div>
                 </div>
 
-                <footer className="footer justify-items-center">
+                <footer className="footer justify-items-end mt-2">
                     <form className="form" onSubmit={handleSubmit}>
                         <button type="submit" className="btn btn-primary">
                             Publish
