@@ -165,7 +165,7 @@ function CanvasPage(): React.ReactElement {
     };
 
     return (
-        <div className="flex flex-row">
+        <div className="flex flex-row bg-base-100">
             <div className="aside flex flex-col flex-1 items-end gap-2"></div>
 
             <div className="flex flex-col flex-2 max-h-full items-center">

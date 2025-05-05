@@ -22,7 +22,7 @@ function LogInForm(): React.ReactNode {
         mutationFn: logIn,
         onSuccess: () => {
             setIsAuthenticated(true);
-            navigate("/canvas");
+            navigate("/feed");
         },
     });
 

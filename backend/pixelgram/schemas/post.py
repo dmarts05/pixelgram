@@ -1,10 +1,12 @@
-from uuid import UUID
 from datetime import datetime
+from uuid import UUID
 
-from pydantic import field_validator, BaseModel, HttpUrl
+from pydantic import HttpUrl, field_validator
+
+from pixelgram.schemas.camel_model import CamelModel
 
 
-class PostBase(BaseModel):
+class PostBase(CamelModel):
     description: str
     image_url: HttpUrl
 
@@ -35,11 +37,17 @@ class PostCreate(PostBase):
             raise ValueError("User ID cannot be empty")
         return v
 
+    @field_validator("description")
+    @classmethod
+    def description_must_not_exceed_length(cls, v: str) -> str:
+        if len(v) > 1000:
+            raise ValueError("Description exceeds maximum length of 1000 characters")
+        return v
+
 
 class PostRead(PostBase):
     id: UUID
     user_id: UUID
+    author_username: str
+    author_email: str
     created_at: datetime
-
-    class Config:
-        from_attributes = True

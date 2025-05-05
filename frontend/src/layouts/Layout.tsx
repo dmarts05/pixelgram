@@ -3,7 +3,7 @@ import Navbar from "../components/Navbar";
 
 function Layout(): React.ReactNode {
     return (
-        <div className="min-h-screen">
+        <div className="min-h-screen bg-base-200">
             <Navbar />
             <Outlet />
         </div>

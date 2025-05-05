@@ -1,10 +1,12 @@
 import { useAuthStore } from "../stores/auth-store";
+import { API_URL } from "../utils/constants";
 
 export async function fetchApi(
     url: string,
     options: RequestInit = {}
 ): Promise<Response> {
-    const response = await fetch(url, {
+    const fullUrl = `${API_URL}/${url}`;
+    const response = await fetch(fullUrl, {
         ...options,
         credentials: "include",
         signal: AbortSignal.timeout(10000), // 10 seconds timeout

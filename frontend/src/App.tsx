@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Route, Routes, useLocation, useNavigate } from "react-router";
 import Layout from "./layouts/Layout";
 import CanvasPage from "./pages/CanvasPage";
+import FeedPage from "./pages/FeedPage";
 import LandingPage from "./pages/LandingPage";
 import LogInPage from "./pages/LogInPage";
 import NotFoundPage from "./pages/NotFoundPage";
@@ -40,7 +41,7 @@ function App(): React.ReactNode {
             try {
                 await authGoogleCallback(query);
                 setIsAuthenticated(true);
-                navigate("/canvas");
+                navigate("/feed");
             } finally {
                 clearQueryParams();
             }
@@ -55,7 +56,7 @@ function App(): React.ReactNode {
                 <Route
                     index
                     element={
-                        <UnauthenticatedRoute redirectTo="/canvas">
+                        <UnauthenticatedRoute redirectTo="/feed">
                             <LandingPage />
                         </UnauthenticatedRoute>
                     }
@@ -68,12 +69,20 @@ function App(): React.ReactNode {
                         </AuthenticatedRoute>
                     }
                 />
+                <Route
+                    path="feed"
+                    element={
+                        <AuthenticatedRoute redirectTo="/">
+                            <FeedPage />
+                        </AuthenticatedRoute>
+                    }
+                />
             </Route>
             <Route path="auth">
                 <Route
                     path="login"
                     element={
-                        <UnauthenticatedRoute redirectTo="/canvas">
+                        <UnauthenticatedRoute redirectTo="/feed">
                             <LogInPage />
                         </UnauthenticatedRoute>
                     }
@@ -81,7 +90,7 @@ function App(): React.ReactNode {
                 <Route
                     path="signup"
                     element={
-                        <UnauthenticatedRoute redirectTo="/canvas">
+                        <UnauthenticatedRoute redirectTo="/feed">
                             <SignUpPage />
                         </UnauthenticatedRoute>
                     }

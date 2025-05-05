@@ -29,7 +29,11 @@ async def test_create_post_success():
             post_id = json_data["post"]["id"]
             assert post_id is not None
             assert json_data["post"]["description"] == "A valid post image"
-            assert json_data["post"]["image_url"] is not None
+            assert json_data["post"]["imageUrl"] is not None
+            assert json_data["post"]["userId"] is not None
+            assert json_data["post"]["authorUsername"] is not None
+            assert json_data["post"]["authorEmail"] is not None
+            assert json_data["post"]["createdAt"] is not None
 
     assert response.status_code == 201
 
@@ -104,6 +108,20 @@ async def test_create_post_missing_description():
         response = await ac.post("/posts/", files=files)
 
     assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_create_post_description_too_long():
+    image = create_test_image()
+    long_description = "A" * 1001
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        files = {"file": ("longdesc.png", image, "image/png")}
+        data = {"description": long_description}
+        response = await ac.post("/posts/", files=files, data=data)
+
+    assert response.status_code == 400
 
 
 @pytest.mark.asyncio
