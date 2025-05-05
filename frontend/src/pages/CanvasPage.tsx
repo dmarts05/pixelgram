@@ -22,13 +22,14 @@ function CanvasPage(): React.ReactElement {
                 // Set canvas background color
                 context.fillStyle = "rgba(0,0,0,1)";
                 context.fillRect(0, 0, canvas.width, canvas.height);
+                canvas.width = 128;
+                canvas.height = 128;
 
                 function resizeCanvas(): void {
                     const size =
                         Math.min(window.innerWidth, window.innerHeight) * 0.8;
                     if (canvas && context) {
-                        canvas.width = 128;
-                        canvas.height = 128;
+                        
 
                         canvas.style.width = `${size}px`;
                         canvas.style.height = `${size}px`;
@@ -44,7 +45,7 @@ function CanvasPage(): React.ReactElement {
                 resizeCanvas();
 
                 //TODO: See if conserve real time resize and erase all content or not resize and preserve content
-                //window.addEventListener("resize", resizeCanvas);
+                window.addEventListener("resize", resizeCanvas);
 
                 return (): void => {
                     window.removeEventListener("resize", resizeCanvas);
