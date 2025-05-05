@@ -1,12 +1,14 @@
-name: Python CI
+name: Backend CI
 
 on:
     push:
-        branches: [main]
+        branches:
+            - "**"
         paths:
             - "backend/**"
     pull_request:
-        branches: [main]
+        branches:
+            - main
         paths:
             - "backend/**"
 
@@ -21,18 +23,22 @@ jobs:
               with:
                   python-version: "3.13"
 
-            - name: Install dependencies
-              run: pip install -r requirements.txt
+            - name: Install uv
+              run: pip install uv
+              working-directory: backend
+
+            - name: Install dependencies with uv
+              run: uv sync --frozen
               working-directory: backend
 
             - name: Check ruff formatting
-              run: ruff format --check
+              run: uv run ruff format --check
               working-directory: backend
 
             - name: Check ruff linting
-              run: ruff check
+              run: uv run ruff check
               working-directory: backend
 
             - name: Check tests pass
-              run: pytest
+              run: uv run pytest
               working-directory: backend

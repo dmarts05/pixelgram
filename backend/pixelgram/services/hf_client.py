@@ -4,6 +4,12 @@ from pixelgram.settings import settings
 
 
 class HFClient:
+    """
+    A client for interacting with the Hugging Face API.
+    This client is specifically designed to generate captions for images using
+    the Hugging Face image-to-text model.
+    """
+
     def __init__(self):
         self.headers = {
             "Authorization": f"Bearer {settings.hf_token}",
