@@ -20,6 +20,8 @@ type BrandLogoProps = {
         | "8xl"
         | "9xl";
     direction?: "row" | "column";
+    enableLinkToHomeLogo?: boolean;
+    enableLinkToHomeText?: boolean;
 };
 
 function BrandLogo({
@@ -28,24 +30,48 @@ function BrandLogo({
     height: heightValue = 40,
     textSize = "xl",
     direction = "row",
+    enableLinkToHomeLogo = true,
+    enableLinkToHomeText = false,
 }: BrandLogoProps): React.ReactNode {
     const navigate = useNavigate();
+
+    const enableBothLinks = enableLinkToHomeLogo && enableLinkToHomeText;
 
     return (
         <div
             className={`flex items-center justify-center gap-2 ${
                 direction === "column" ? "flex-col" : "flex-row"
-            }`}
+            } ${enableBothLinks && "cursor-pointer"}`}
+            onClick={() => {
+                if (enableBothLinks) {
+                    navigate("/");
+                }
+            }}
         >
             <img
                 src={logoImg}
                 alt="Pixelgram Logo"
-                className="cursor-pointer"
-                onClick={() => navigate("/")}
+                className={`${enableLinkToHomeLogo && "cursor-pointer"}`}
+                onClick={() => {
+                    if (enableLinkToHomeLogo) {
+                        navigate("/");
+                    }
+                }}
                 width={widthValue}
                 height={heightValue}
             />
-            <h2 className={`text-${textSize} font-bold select-none`}>{text}</h2>
+            <h2
+                className={`text-${textSize} font-bold select-none ${
+                    enableLinkToHomeText && "cursor-pointer"
+                }`}
+                onClick={() => {
+                    if (enableLinkToHomeText) {
+                        navigate("/");
+                    }
+                }}
+            >
+                {text}
+            </h2>
         </div>
     );
 }

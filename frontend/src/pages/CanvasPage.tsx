@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { BsFillEraserFill } from "react-icons/bs";
 import { GoPencil } from "react-icons/go";
 import { MdOutlineUploadFile } from "react-icons/md";
-import PublishPixelartModal from "../components/PublishPixelartModal";
+import PublishPixelartModal from "../components/forms/PublishPixelartModal";
 
 function CanvasPage(): React.ReactElement {
     const [tool, setTool] = useState<"pencil" | "eraser">("pencil");
@@ -165,7 +165,7 @@ function CanvasPage(): React.ReactElement {
     };
 
     return (
-        <div className="flex flex-row">
+        <div className="flex flex-row bg-base-100">
             <div className="aside flex flex-col flex-1 items-end gap-2"></div>
 
             <div className="flex flex-col flex-2 max-h-full items-center">

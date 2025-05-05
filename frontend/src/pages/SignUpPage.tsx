@@ -1,6 +1,6 @@
 import { Link } from "react-router";
 import BrandLogo from "../components/BrandLogo";
-import SignUpForm from "../components/SignUpForm";
+import SignUpForm from "../components/forms/SignUpForm";
 
 function SignUpPage(): React.ReactNode {
     return (

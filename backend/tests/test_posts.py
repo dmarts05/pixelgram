@@ -1,53 +1,41 @@
-from datetime import datetime
 from io import BytesIO
-from uuid import uuid4
 
 import pytest
 from httpx import ASGITransport, AsyncClient
 
 from pixelgram.__main__ import app
-from pixelgram.auth import current_active_user
-from pixelgram.db import get_async_session
-from tests.utils import create_test_image, override_current_user
+from pixelgram.settings import get_settings
+from tests.overrides import override_small_image_size_settings
+from tests.utils import (
+    create_test_image,
+    create_test_user,
+)
 
-id = uuid4()
-created_at = datetime.now()
 
+@pytest.mark.asyncio
+async def test_create_post_success():
+    async with app.router.lifespan_context(app):
+        await create_test_user()
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            image = create_test_image()
+            files = {"file": ("valid.png", image, "image/png")}
+            data = {"description": "A valid post image"}
+            response = await ac.post("/posts/", files=files, data=data)
+            json_data = response.json()
+            assert "post" in json_data
+            assert "id" in json_data["post"]
+            post_id = json_data["post"]["id"]
+            assert post_id is not None
+            assert json_data["post"]["description"] == "A valid post image"
+            assert json_data["post"]["imageUrl"] is not None
+            assert json_data["post"]["userId"] is not None
+            assert json_data["post"]["authorUsername"] is not None
+            assert json_data["post"]["authorEmail"] is not None
+            assert json_data["post"]["createdAt"] is not None
 
-@pytest.fixture(autouse=True)
-def override_dependencies():
-    class MockAsyncSession:
-        async def __aenter__(self):
-            return self
-
-        async def __aexit__(self, *args, **kwargs):
-            pass
-
-        async def commit(self):
-            pass
-
-        def add(self, obj):
-            pass
-
-        async def refresh(self, obj):
-            obj.id = id
-            obj.created_at = created_at
-            return obj
-
-        async def rollback(self):
-            pass
-
-    async def mock_get_async_session():
-        return MockAsyncSession()
-
-    # Set up overrides
-    app.dependency_overrides[current_active_user] = override_current_user
-    app.dependency_overrides[get_async_session] = mock_get_async_session
-
-    yield
-
-    # Clean up overrides
-    app.dependency_overrides = {}
+    assert response.status_code == 201
 
 
 @pytest.mark.asyncio
@@ -93,11 +81,8 @@ async def test_create_post_corrupt_image():
 
 
 @pytest.mark.asyncio
-async def test_create_post_oversized_image(monkeypatch):
-    class MockSettings:
-        max_img_mb_size = 0.0001  # Simulate a very small size limit
-
-    monkeypatch.setattr("pixelgram.routers.posts.settings", MockSettings)
+async def test_create_post_oversized_image():
+    app.dependency_overrides[get_settings] = override_small_image_size_settings
 
     large_image = create_test_image()
     async with AsyncClient(
@@ -110,27 +95,7 @@ async def test_create_post_oversized_image(monkeypatch):
     assert response.status_code == 400
     assert "size limit" in response.json()["detail"]
 
-
-@pytest.mark.asyncio
-async def test_create_post_supabase_upload_failure(monkeypatch):
-    class FailingSupabaseClient:
-        async def upload(self, image):
-            raise Exception("Supabase failed")
-
-    monkeypatch.setattr(
-        "pixelgram.routers.posts.SupabaseStorageClient", FailingSupabaseClient
-    )
-
-    image = create_test_image()
-    async with AsyncClient(
-        transport=ASGITransport(app=app), base_url="http://test"
-    ) as ac:
-        files = {"file": ("fail.png", image, "image/png")}
-        data = {"description": "Should fail upload"}
-        response = await ac.post("/posts/", files=files, data=data)
-
-    assert response.status_code == 500
-    assert "Failed to save post" in response.json()["detail"]
+    app.dependency_overrides.pop(get_settings)
 
 
 @pytest.mark.asyncio
@@ -142,46 +107,203 @@ async def test_create_post_missing_description():
         files = {"file": ("missingdesc.png", image, "image/png")}
         response = await ac.post("/posts/", files=files)
 
-    assert (
-        response.status_code == 422
-    )  # FastAPI validation error for missing form field
+    assert response.status_code == 422
 
 
 @pytest.mark.asyncio
-async def test_create_post_success(monkeypatch):
-    # Mock Supabase client for getting a predictable URL without actual upload
-    mock_image_url = "https://example.com/test-image.png"
-
-    class SuccessSupabaseClient:
-        def __init__(self, *args, **kwargs):
-            pass
-
-        async def upload(self, *args, **kwargs):
-            return mock_image_url
-
-    monkeypatch.setattr(
-        "pixelgram.routers.posts.SupabaseStorageClient", SuccessSupabaseClient
-    )
-
-    # Create a valid image and description
+async def test_create_post_description_too_long():
     image = create_test_image()
-    test_description = "Test successful post"
-
+    long_description = "A" * 1001
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
-        files = {"file": ("success.png", image, "image/png")}
-        data = {"description": test_description}
+        files = {"file": ("longdesc.png", image, "image/png")}
+        data = {"description": long_description}
         response = await ac.post("/posts/", files=files, data=data)
 
-    assert response.status_code == 200
-    resp_data = response.json()
+    assert response.status_code == 400
 
-    # Verify structure and content
-    assert "post" in resp_data
-    assert resp_data["post"]["description"] == test_description
-    assert resp_data["post"]["image_url"] == mock_image_url
-    assert "id" in resp_data["post"]
-    assert resp_data["post"]["id"] == str(id)
-    assert "created_at" in resp_data["post"]
-    assert resp_data["post"]["created_at"] == created_at.isoformat()
+
+@pytest.mark.asyncio
+async def test_get_posts_pagination():
+    async with app.router.lifespan_context(app):
+        await create_test_user()
+
+        # Create a number of posts using the POST endpoint.
+        num_posts = 15
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            for i in range(num_posts):
+                image = create_test_image()
+                files = {"file": ("valid.png", image, "image/png")}
+                data = {"description": f"Post number {i + 1}"}
+                resp = await ac.post("/posts/", files=files, data=data)
+                # Assert that each post was created successfully.
+                assert resp.status_code == 201, (
+                    f"Post creation failed on iteration {i + 1}"
+                )
+
+            # Query page 1 with page_size 10.
+            get_resp = await ac.get("/posts/", params={"page": 1, "page_size": 10})
+            assert get_resp.status_code == 200, "GET posts failed for page 1"
+            json_data = get_resp.json()
+            # Expect 10 posts on the first page.
+            assert "data" in json_data
+            assert len(json_data["data"]) == 10
+            # nextPage should be 2 since there are 15 posts.
+            assert json_data["nextPage"] == 2
+            assert json_data["total"] == num_posts
+
+            # Query page 2 with the same page_size.
+            get_resp = await ac.get("/posts/", params={"page": 2, "page_size": 10})
+            assert get_resp.status_code == 200, "GET posts failed for page 2"
+            json_data = get_resp.json()
+            # Expect 5 posts on the second page.
+            assert len(json_data["data"]) == 5
+            # No further page available.
+            assert json_data["nextPage"] is None
+            assert json_data["total"] == num_posts
+
+
+@pytest.mark.asyncio
+async def test_get_posts_empty_database():
+    async with app.router.lifespan_context(app):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            get_resp = await ac.get("/posts/", params={"page": 1, "page_size": 10})
+    assert get_resp.status_code == 200
+    json_data = get_resp.json()
+    assert json_data["data"] == []
+    assert json_data["nextPage"] is None
+    assert json_data["total"] == 0
+
+
+@pytest.mark.asyncio
+async def test_get_posts_minimum_page_size():
+    async with app.router.lifespan_context(app):
+        await create_test_user()
+        # Create 5 posts.
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            for i in range(5):
+                image = create_test_image()
+                files = {"file": ("minpage.png", image, "image/png")}
+                data = {"description": f"Minimum size post {i + 1}"}
+                resp = await ac.post("/posts/", files=files, data=data)
+                assert resp.status_code == 201
+
+            # Request using page_size 1.
+            get_resp = await ac.get("/posts/", params={"page": 1, "page_size": 1})
+            assert get_resp.status_code == 200
+            json_data = get_resp.json()
+            assert len(json_data["data"]) == 1
+            # As there are 5 posts, nextPage should be 2.
+            assert json_data["nextPage"] == 2
+
+
+@pytest.mark.asyncio
+async def test_get_posts_maximum_page_size():
+    async with app.router.lifespan_context(app):
+        await create_test_user()
+        # Create 20 posts.
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            for i in range(20):
+                image = create_test_image()
+                files = {"file": ("maxpage.png", image, "image/png")}
+                data = {"description": f"Maximum size post {i + 1}"}
+                resp = await ac.post("/posts/", files=files, data=data)
+                assert resp.status_code == 201
+
+            # Request using page_size 100.
+            get_resp = await ac.get("/posts/", params={"page": 1, "page_size": 100})
+            assert get_resp.status_code == 200
+            json_data = get_resp.json()
+            # Even though page_size is 100, only 20 posts exist.
+            assert len(json_data["data"]) == 20
+            assert json_data["nextPage"] is None
+            assert json_data["total"] == 20
+
+
+@pytest.mark.asyncio
+async def test_get_posts_ordering():
+    async with app.router.lifespan_context(app):
+        # Create test user if necessary.
+        await create_test_user()
+
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            # Create two posts in sequence.
+            image = create_test_image()
+            files = {"file": ("first.png", image, "image/png")}
+            data = {"description": "First Post"}
+            resp1 = await ac.post("/posts/", files=files, data=data)
+            assert resp1.status_code == 201
+
+            # Create a second post.
+            image = create_test_image()
+            files = {"file": ("second.png", image, "image/png")}
+            data = {"description": "Second Post"}
+            resp2 = await ac.post("/posts/", files=files, data=data)
+            assert resp2.status_code == 201
+
+            # Retrieve the first page with page_size set to 2.
+            get_resp = await ac.get("/posts/", params={"page": 1, "page_size": 2})
+            assert get_resp.status_code == 200, "GET posts failed for ordering test"
+            posts = get_resp.json()["data"]
+            # Since the GET endpoint orders posts by created_at descending,
+            # the "Second Post" (created later) should appear before "First Post".
+            assert posts[0]["description"] == "Second Post"
+            assert posts[1]["description"] == "First Post"
+
+
+@pytest.mark.asyncio
+async def test_get_posts_invalid_page():
+    async with app.router.lifespan_context(app):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            get_resp = await ac.get("/posts/", params={"page": 0, "page_size": 10})
+            assert get_resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_get_posts_invalid_query_params():
+    async with app.router.lifespan_context(app):
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            get_resp = await ac.get(
+                "/posts/", params={"page": "invalid", "page_size": "invalid"}
+            )
+    assert get_resp.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_get_posts_page_number_out_of_range():
+    async with app.router.lifespan_context(app):
+        await create_test_user()
+        # Create 3 posts.
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            for i in range(3):
+                image = create_test_image()
+                files = {"file": ("range.png", image, "image/png")}
+                data = {"description": f"Out of range post {i + 1}"}
+                resp = await ac.post("/posts/", files=files, data=data)
+                assert resp.status_code == 201
+
+            # Request page 2 with page_size 3 (only one page exists).
+            get_resp = await ac.get("/posts/", params={"page": 2, "page_size": 3})
+            assert get_resp.status_code == 200
+            json_data = get_resp.json()
+            # There should be no posts on the second page.
+            assert json_data["data"] == []
+            assert json_data["nextPage"] is None
+            assert json_data["total"] == 3

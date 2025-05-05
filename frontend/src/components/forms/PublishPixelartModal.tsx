@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { MdAutoFixHigh } from "react-icons/md";
 import { useNavigate } from "react-router";
-import { fetchApi } from "../services/fetch-api";
-import { API_URL } from "../utils/constants";
+import { fetchApi } from "../../services/fetch-api";
 
 interface Props {
     imageUrl: string;
@@ -31,6 +30,7 @@ const DescriptionField = ({
                 ) : (
                     <textarea
                         className={`textarea w-full resize-none h-10 mt-4`}
+                        maxLength={1000}
                         placeholder={errorPlaceholder || "Description"}
                         value={value}
                         onChange={(e) => {
@@ -141,7 +141,7 @@ export default function PublishPixelartModal({
             formData.append("file", blob, "image.png");
 
             // Send as multipart/form-data
-            const apiResponse = await fetchApi(`${API_URL}/captions`, {
+            const apiResponse = await fetchApi("captions", {
                 method: "POST",
                 body: formData,
             });
@@ -182,7 +182,7 @@ export default function PublishPixelartModal({
             formData.append("file", blob, "image.png");
             formData.append("description", description);
 
-            const apiResponse = await fetchApi(`${API_URL}/posts`, {
+            const apiResponse = await fetchApi("posts", {
                 method: "POST",
                 body: formData,
             });

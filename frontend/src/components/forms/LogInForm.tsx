@@ -1,24 +1,28 @@
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
-import googleLogo from "../assets/google-logo.webp";
-import { authGoogle, signUp } from "../services/auth-service";
+import googleLogo from "../../assets/google-logo.webp";
+import { authGoogle, logIn } from "../../services/auth-service";
+import { useAuthStore } from "../../stores/auth-store";
 import InputField from "./InputField";
 
-export type SignUpFormData = {
-    username: string;
+export type LogInFormData = {
     email: string;
     password: string;
-    confirmPassword: string;
 };
 
-function SignUpForm(): React.ReactNode {
+function LogInForm(): React.ReactNode {
     const navigate = useNavigate();
 
+    const setIsAuthenticated = useAuthStore(
+        (state) => state.setIsAuthenticated
+    );
+
     const regularAuthMutation = useMutation({
-        mutationFn: signUp,
+        mutationFn: logIn,
         onSuccess: () => {
-            navigate("/auth/login");
+            setIsAuthenticated(true);
+            navigate("/feed");
         },
     });
 
@@ -26,11 +30,11 @@ function SignUpForm(): React.ReactNode {
         mutationFn: authGoogle,
     });
 
-    function onSubmit(data: SignUpFormData): void {
+    function onSubmit(data: LogInFormData): void {
         regularAuthMutation.mutate(data);
     }
 
-    function onGoogleSignUp(): void {
+    function onGoogleLogIn(): void {
         googleAuthMutation.mutate();
     }
 
@@ -38,12 +42,7 @@ function SignUpForm(): React.ReactNode {
         register,
         handleSubmit,
         formState: { errors },
-        watch,
-    } = useForm<SignUpFormData>();
-
-    const usernameValue = watch("username");
-    const emailValue = watch("email");
-    const passwordValue = watch("password");
+    } = useForm<LogInFormData>();
 
     return (
         <form
@@ -52,7 +51,7 @@ function SignUpForm(): React.ReactNode {
             noValidate
         >
             {/* Email Field */}
-            <InputField<SignUpFormData>
+            <InputField<LogInFormData>
                 name="email"
                 label="Email"
                 type="email"
@@ -67,19 +66,8 @@ function SignUpForm(): React.ReactNode {
                 }}
             />
 
-            {/* Username Field */}
-            <InputField<SignUpFormData>
-                name="username"
-                label="Username"
-                register={register}
-                error={errors.username}
-                rules={{
-                    required: "Username is required",
-                }}
-            />
-
             {/* Password Field */}
-            <InputField<SignUpFormData>
+            <InputField<LogInFormData>
                 name="password"
                 label="Password"
                 type="password"
@@ -87,44 +75,6 @@ function SignUpForm(): React.ReactNode {
                 error={errors.password}
                 rules={{
                     required: "Password is required",
-                    minLength: {
-                        value: 8,
-                        message: "Password must be at least 8 characters",
-                    },
-                    validate: (value: string) => {
-                        const isUsernameInPassword =
-                            usernameValue &&
-                            value
-                                .toLowerCase()
-                                .includes(usernameValue.toLowerCase());
-                        const isEmailInPassword =
-                            emailValue &&
-                            value
-                                .toLowerCase()
-                                .includes(emailValue.split("@")[0]);
-
-                        if (isUsernameInPassword) {
-                            return "Password cannot contain your username";
-                        }
-                        if (isEmailInPassword) {
-                            return "Password cannot contain your email";
-                        }
-                        return true;
-                    },
-                }}
-            />
-
-            {/* Confirm Password Field */}
-            <InputField<SignUpFormData>
-                name="confirmPassword"
-                label="Confirm Password"
-                type="password"
-                register={register}
-                error={errors.confirmPassword}
-                rules={{
-                    required: "Please confirm your password",
-                    validate: (value: string) =>
-                        value === passwordValue || "Passwords do not match",
                 }}
             />
 
@@ -152,7 +102,7 @@ function SignUpForm(): React.ReactNode {
                 {regularAuthMutation.isPending ? (
                     <span className="loading loading-spinner loading-sm" />
                 ) : (
-                    <span className="text-sm font-medium">Sign Up</span>
+                    <span className="text-sm font-medium">Log In</span>
                 )}
             </button>
 
@@ -163,10 +113,10 @@ function SignUpForm(): React.ReactNode {
                 <div className="flex-grow h-px bg-base-300" />
             </div>
 
-            {/* Google Sign Up Button */}
+            {/* Google Log In Button */}
             <button
                 type="button"
-                onClick={onGoogleSignUp}
+                onClick={onGoogleLogIn}
                 className="btn btn-outline flex items-center justify-center gap-2 w-full"
                 disabled={
                     regularAuthMutation.isPending ||
@@ -178,7 +128,7 @@ function SignUpForm(): React.ReactNode {
                     <span className="loading loading-spinner loading-sm" />
                 ) : (
                     <span className="text-sm font-medium">
-                        Sign Up with Google
+                        Log In with Google
                     </span>
                 )}
             </button>
@@ -186,4 +136,4 @@ function SignUpForm(): React.ReactNode {
     );
 }
 
-export default SignUpForm;
+export default LogInForm;

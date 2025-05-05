@@ -4,26 +4,13 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from pixelgram.__main__ import app
-from pixelgram.auth import current_active_user
-from tests.utils import create_test_image, override_current_user
-
-
-@pytest.fixture(autouse=True)
-def override_dependencies():
-    app.dependency_overrides[current_active_user] = override_current_user
-    yield
-    app.dependency_overrides = {}
+from pixelgram.services.hf_client import get_hf_client
+from tests.overrides import override_fail_hf_client
+from tests.utils import create_test_image
 
 
 @pytest.mark.asyncio
-async def test_generate_caption_valid(monkeypatch):
-    # Define a mock class for HFClient
-    class MockHFClient:
-        async def generate_caption(self, img_bytes):
-            return "Mock caption"
-
-    monkeypatch.setattr("pixelgram.routers.captions.HFClient", MockHFClient)
-
+async def test_generate_caption_valid():
     async with AsyncClient(
         transport=ASGITransport(app=app), base_url="http://test"
     ) as ac:
@@ -75,12 +62,8 @@ async def test_generate_caption_corrupt_image():
 
 
 @pytest.mark.asyncio
-async def test_generate_caption_failure(monkeypatch):
-    class MockHFClient:
-        async def generate_caption(self, img_bytes):
-            return None
-
-    monkeypatch.setattr("pixelgram.routers.captions.HFClient", MockHFClient)
+async def test_generate_caption_failure():
+    app.dependency_overrides[get_hf_client] = override_fail_hf_client
 
     image = create_test_image()
     async with AsyncClient(
@@ -91,3 +74,5 @@ async def test_generate_caption_failure(monkeypatch):
 
     assert response.status_code == 500
     assert "Failed to generate caption." in response.json()["detail"]
+
+    app.dependency_overrides.pop(get_hf_client)

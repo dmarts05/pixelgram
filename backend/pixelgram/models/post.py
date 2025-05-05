@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 class Post(Base):
     """Represents a pixel art post uploaded by a user."""
 
-    __tablename__ = "posts"
+    __tablename__ = "post"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     description: Mapped[str] = mapped_column(String, nullable=False)

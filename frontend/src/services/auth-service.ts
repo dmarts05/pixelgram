@@ -1,10 +1,9 @@
-import { LogInFormData } from "../components/LogInForm";
-import { SignUpFormData } from "../components/SignUpForm";
-import { API_URL } from "../utils/constants";
+import { LogInFormData } from "../components/forms/LogInForm";
+import { SignUpFormData } from "../components/forms/SignUpForm";
 import { fetchApi } from "./fetch-api";
 
 export async function signUp(data: SignUpFormData): Promise<void> {
-    const response = await fetchApi(`${API_URL}/auth/register`, {
+    const response = await fetchApi("auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -27,7 +26,7 @@ export async function logIn(data: LogInFormData): Promise<void> {
     formData.append("username", data.email);
     formData.append("password", data.password);
 
-    const response = await fetchApi(`${API_URL}/auth/login`, {
+    const response = await fetchApi("auth/login", {
         method: "POST",
         body: formData,
     });
@@ -45,7 +44,7 @@ export async function logIn(data: LogInFormData): Promise<void> {
 }
 
 export async function authGoogle(): Promise<void> {
-    const response = await fetchApi(`${API_URL}/auth/google/authorize`);
+    const response = await fetchApi("auth/google/authorize");
 
     if (!response.ok) {
         switch (response.status) {
@@ -63,7 +62,7 @@ export async function authGoogle(): Promise<void> {
 }
 
 export async function authGoogleCallback(query: string): Promise<void> {
-    const response = await fetchApi(`${API_URL}/auth/google/callback${query}`);
+    const response = await fetchApi(`auth/google/callback${query}`);
     if (!response.ok) {
         switch (response.status) {
             case 400:
@@ -79,7 +78,7 @@ export async function authGoogleCallback(query: string): Promise<void> {
 }
 
 export async function logout(): Promise<void> {
-    const response = await fetchApi(`${API_URL}/auth/logout`, {
+    const response = await fetchApi("auth/logout", {
         method: "POST",
     });
 
@@ -94,7 +93,7 @@ export async function logout(): Promise<void> {
 }
 
 export async function isUserLoggedIn(): Promise<boolean> {
-    const response = await fetchApi(`${API_URL}/users/me`, {
+    const response = await fetchApi("users/me", {
         method: "GET",
     });
     return response.ok;

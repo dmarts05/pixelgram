@@ -14,8 +14,16 @@ class Settings(BaseSettings):
     supabase_url: str = ""
     supabase_service_key: str = ""
     supabase_bucket: str = ""
-    max_img_mb_size: int = 5
+    max_img_mb_size: float = 5
 
 
 settings = Settings()
 """Application settings instance"""
+
+
+def get_settings() -> Settings:
+    """
+    Dependency to get settings.
+    This function is a dependency that can be used in FastAPI routes.
+    """
+    return Settings()

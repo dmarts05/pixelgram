@@ -55,3 +55,13 @@ class SupabaseStorageClient:
         img.save(buffer, format="PNG")
         buffer.seek(0)
         return buffer.read()
+
+
+def get_supabase_client() -> SupabaseStorageClient:
+    """
+    Dependency to get the Supabase storage client.
+
+    Returns:
+        The Supabase storage client instance.
+    """
+    return SupabaseStorageClient()
