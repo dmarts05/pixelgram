@@ -1,0 +1,38 @@
+name: Frontend CI
+
+on:
+    push:
+        branches:
+            - "**"
+        paths:
+            - "frontend/**"
+    pull_request:
+        branches:
+            - main
+        paths:
+            - "frontend/**"
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+
+            - name: Install Bun
+              uses: oven-sh/bun-install@v1
+
+            - name: Install dependencies
+              run: bun install
+              working-directory: frontend
+
+            - name: Build project
+              run: bun run build
+              working-directory: frontend
+
+            - name: Check prettier formatting
+              run: bun run prettier
+              working-directory: frontend
+
+            - name: Check eslint linting
+              run: bun run lint
+              working-directory: frontend
