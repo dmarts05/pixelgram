@@ -1,5 +1,5 @@
+import BrandLogo from "../BrandLogo";
 import AuthMenu from "./AuthMenu";
-import BrandLogo from "./BrandLogo";
 import DesktopMenu from "./DesktopMenu";
 import MobileMenu from "./MobileMenu";
 

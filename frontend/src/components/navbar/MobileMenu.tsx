@@ -1,5 +1,5 @@
 import { RiMenu2Fill } from "react-icons/ri";
-import { useAuthStore } from "../stores/auth-store";
+import { useAuthStore } from "../../stores/auth-store";
 import MenuLinks from "./MenuLinks";
 
 function MobileMenu(): React.ReactNode {

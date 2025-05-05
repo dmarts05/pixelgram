@@ -1,28 +1,24 @@
 import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
-import googleLogo from "../assets/google-logo.webp";
-import { authGoogle, logIn } from "../services/auth-service";
-import { useAuthStore } from "../stores/auth-store";
+import { authGoogle, signUp } from "../../services/auth-service";
+import googleLogo from "../../assets/google-logo.webp";
 import InputField from "./InputField";
 
-export type LogInFormData = {
+export type SignUpFormData = {
+    username: string;
     email: string;
     password: string;
+    confirmPassword: string;
 };
 
-function LogInForm(): React.ReactNode {
+function SignUpForm(): React.ReactNode {
     const navigate = useNavigate();
 
-    const setIsAuthenticated = useAuthStore(
-        (state) => state.setIsAuthenticated
-    );
-
     const regularAuthMutation = useMutation({
-        mutationFn: logIn,
+        mutationFn: signUp,
         onSuccess: () => {
-            setIsAuthenticated(true);
-            navigate("/feed");
+            navigate("/auth/login");
         },
     });
 
@@ -30,11 +26,11 @@ function LogInForm(): React.ReactNode {
         mutationFn: authGoogle,
     });
 
-    function onSubmit(data: LogInFormData): void {
+    function onSubmit(data: SignUpFormData): void {
         regularAuthMutation.mutate(data);
     }
 
-    function onGoogleLogIn(): void {
+    function onGoogleSignUp(): void {
         googleAuthMutation.mutate();
     }
 
@@ -42,7 +38,12 @@ function LogInForm(): React.ReactNode {
         register,
         handleSubmit,
         formState: { errors },
-    } = useForm<LogInFormData>();
+        watch,
+    } = useForm<SignUpFormData>();
+
+    const usernameValue = watch("username");
+    const emailValue = watch("email");
+    const passwordValue = watch("password");
 
     return (
         <form
@@ -51,7 +52,7 @@ function LogInForm(): React.ReactNode {
             noValidate
         >
             {/* Email Field */}
-            <InputField<LogInFormData>
+            <InputField<SignUpFormData>
                 name="email"
                 label="Email"
                 type="email"
@@ -66,8 +67,19 @@ function LogInForm(): React.ReactNode {
                 }}
             />
 
+            {/* Username Field */}
+            <InputField<SignUpFormData>
+                name="username"
+                label="Username"
+                register={register}
+                error={errors.username}
+                rules={{
+                    required: "Username is required",
+                }}
+            />
+
             {/* Password Field */}
-            <InputField<LogInFormData>
+            <InputField<SignUpFormData>
                 name="password"
                 label="Password"
                 type="password"
@@ -75,6 +87,44 @@ function LogInForm(): React.ReactNode {
                 error={errors.password}
                 rules={{
                     required: "Password is required",
+                    minLength: {
+                        value: 8,
+                        message: "Password must be at least 8 characters",
+                    },
+                    validate: (value: string) => {
+                        const isUsernameInPassword =
+                            usernameValue &&
+                            value
+                                .toLowerCase()
+                                .includes(usernameValue.toLowerCase());
+                        const isEmailInPassword =
+                            emailValue &&
+                            value
+                                .toLowerCase()
+                                .includes(emailValue.split("@")[0]);
+
+                        if (isUsernameInPassword) {
+                            return "Password cannot contain your username";
+                        }
+                        if (isEmailInPassword) {
+                            return "Password cannot contain your email";
+                        }
+                        return true;
+                    },
+                }}
+            />
+
+            {/* Confirm Password Field */}
+            <InputField<SignUpFormData>
+                name="confirmPassword"
+                label="Confirm Password"
+                type="password"
+                register={register}
+                error={errors.confirmPassword}
+                rules={{
+                    required: "Please confirm your password",
+                    validate: (value: string) =>
+                        value === passwordValue || "Passwords do not match",
                 }}
             />
 
@@ -102,7 +152,7 @@ function LogInForm(): React.ReactNode {
                 {regularAuthMutation.isPending ? (
                     <span className="loading loading-spinner loading-sm" />
                 ) : (
-                    <span className="text-sm font-medium">Log In</span>
+                    <span className="text-sm font-medium">Sign Up</span>
                 )}
             </button>
 
@@ -113,10 +163,10 @@ function LogInForm(): React.ReactNode {
                 <div className="flex-grow h-px bg-base-300" />
             </div>
 
-            {/* Google Log In Button */}
+            {/* Google Sign Up Button */}
             <button
                 type="button"
-                onClick={onGoogleLogIn}
+                onClick={onGoogleSignUp}
                 className="btn btn-outline flex items-center justify-center gap-2 w-full"
                 disabled={
                     regularAuthMutation.isPending ||
@@ -128,7 +178,7 @@ function LogInForm(): React.ReactNode {
                     <span className="loading loading-spinner loading-sm" />
                 ) : (
                     <span className="text-sm font-medium">
-                        Log In with Google
+                        Sign Up with Google
                     </span>
                 )}
             </button>
@@ -136,4 +186,4 @@ function LogInForm(): React.ReactNode {
     );
 }
 
-export default LogInForm;
+export default SignUpForm;

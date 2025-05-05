@@ -1,5 +1,5 @@
-import { LogInFormData } from "../components/LogInForm";
-import { SignUpFormData } from "../components/SignUpForm";
+import { LogInFormData } from "../components/forms/LogInForm";
+import { SignUpFormData } from "../components/forms/SignUpForm";
 import { fetchApi } from "./fetch-api";
 
 export async function signUp(data: SignUpFormData): Promise<void> {

@@ -1,4 +1,4 @@
-import { useAuthStore } from "../stores/auth-store";
+import { useAuthStore } from "../../stores/auth-store";
 import MenuLinks from "./MenuLinks";
 
 function DesktopMenu(): React.ReactNode {

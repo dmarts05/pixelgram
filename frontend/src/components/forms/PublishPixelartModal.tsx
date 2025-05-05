@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { MdAutoFixHigh } from "react-icons/md";
 import { useNavigate } from "react-router";
-import { fetchApi } from "../services/fetch-api";
+import { fetchApi } from "../../services/fetch-api";
 
 interface Props {
     imageUrl: string;

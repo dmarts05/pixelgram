@@ -1,7 +1,7 @@
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router";
-import { logout } from "../services/auth-service";
-import { useAuthStore } from "../stores/auth-store";
+import { logout } from "../../services/auth-service";
+import { useAuthStore } from "../../stores/auth-store";
 
 function AuthMenu(): React.ReactNode {
     const navigate = useNavigate();

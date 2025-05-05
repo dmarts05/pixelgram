@@ -1,7 +1,7 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React, { useEffect, useRef } from "react";
 import { MdErrorOutline, MdInfoOutline } from "react-icons/md";
-import PostCard from "../components/PostCard";
+import PostCard from "../components/post-card/PostCard";
 import { fetchPosts } from "../services/posts-service";
 import { Post } from "../types/post";
 import { NAVBAR_HEIGHT } from "../utils/constants";
