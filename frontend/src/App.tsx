@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 import { Route, Routes, useLocation, useNavigate } from "react-router";
+import AuthenticatedRoute from "./components/AuthenticatedRoute";
+import UnauthenticatedRoute from "./components/UnauthenticatedRoute";
 import Layout from "./layouts/Layout";
 import CanvasPage from "./pages/CanvasPage";
 import FeedPage from "./pages/FeedPage";
@@ -9,8 +11,6 @@ import NotFoundPage from "./pages/NotFoundPage";
 import SignUpPage from "./pages/SignUpPage";
 import { authGoogleCallback, isUserLoggedIn } from "./services/auth-service";
 import { useAuthStore } from "./stores/auth-store";
-import AuthenticatedRoute from "./utils/AuthenticatedRoute";
-import UnauthenticatedRoute from "./utils/UnauthenticatedRoute";
 import { clearQueryParams } from "./utils/navigation";
 
 function App(): React.ReactNode {
