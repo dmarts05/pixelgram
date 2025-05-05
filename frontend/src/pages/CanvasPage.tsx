@@ -324,12 +324,12 @@ function CanvasPage(): React.ReactElement {
                         />
                     </div>
 
-                    <div className="card h-fit w-fit border-1 shadow-md items-center justify-center ml-2 mr-2">
+                    <div className="card h-fit w-fit border-base-200 border-1 bg-white shadow-md items-center justify-center ml-4 mr-4">
                         <canvas ref={canvasRef} id="canvas"></canvas>
                     </div>
                 </div>
 
-                <footer className="footer justify-items-end mt-2">
+                <footer className="footer justify-items-end mt-2 mr-4">
                     <form className="form" onSubmit={handleSubmit}>
                         <button type="submit" className="btn btn-primary">
                             Publish
