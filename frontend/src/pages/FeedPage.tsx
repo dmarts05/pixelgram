@@ -19,6 +19,7 @@ function FeedPage(): React.ReactNode {
         queryFn: fetchPosts,
         initialPageParam: 1,
         getNextPageParam: (lastPage) => lastPage.nextPage,
+        refetchInterval: 60000, // Refetch every minute
     });
 
     const sentinelRef = useRef<HTMLDivElement | null>(null);
