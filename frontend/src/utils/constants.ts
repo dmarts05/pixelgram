@@ -9,4 +9,5 @@ export const MENU_LINKS: Link[] = [
 
 export const API_URL = import.meta.env.DEV
     ? "http://localhost:8000"
-    : "https://pixelgram-backend.onrender.com";
+    : // Get production url from env
+      import.meta.env.VITE_BACKEND_BASE_URL;
