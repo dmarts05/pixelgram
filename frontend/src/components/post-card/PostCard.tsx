@@ -5,18 +5,23 @@ import PostCardHeader from "./PostCardHeader";
 import PostCardImage from "./PostCardImage";
 import PostCardTimestamp from "./PostCardTimestamp";
 
+const POST_CARD_IMAGE_SIZE = 256;
+
 type PostCardProps = {
     post: Post;
 };
 
 function PostCard({ post }: PostCardProps): React.ReactNode {
     return (
-        <article className="card bg-base-100 shadow-md">
+        <article
+            className="card bg-base-100 shadow-md"
+            style={{ minWidth: `${POST_CARD_IMAGE_SIZE}px` }}
+        >
             <PostCardHeader authorUsername={post.authorUsername} />
             <PostCardImage
                 imageUrl={post.imageUrl}
                 imageAlt={post.description}
-                height={256}
+                height={POST_CARD_IMAGE_SIZE}
             />
             <div className="card-body">
                 <PostCardActions

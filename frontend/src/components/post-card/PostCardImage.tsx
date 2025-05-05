@@ -18,12 +18,17 @@ function PostCardImage({
 
     return (
         <>
-            <figure onClick={openModal} className="cursor-pointer">
+            <figure
+                onClick={openModal}
+                className="border-y border-base-200 cursor-pointer"
+            >
                 <img
                     src={String(imageUrl)}
                     alt={imageAlt}
-                    className="w-full border-y border-base-200"
-                    height={height}
+                    style={{
+                        minWidth: `${height}px`,
+                        minHeight: `${height}px`,
+                    }}
                 />
             </figure>
 
