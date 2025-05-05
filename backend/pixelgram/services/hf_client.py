@@ -4,6 +4,8 @@ from pixelgram.settings import settings
 
 
 class HFClient:
+    """A client for interacting with the Hugging Face API."""
+
     def __init__(self):
         self.headers = {
             "Authorization": f"Bearer {settings.hf_token}",
