@@ -4,11 +4,13 @@ import pytest
 from httpx import ASGITransport, AsyncClient
 
 from pixelgram.__main__ import app
+from pixelgram.auth import current_active_user  # noqa: E402
 from pixelgram.settings import get_settings
 from tests.overrides import override_small_image_size_settings
 from tests.utils import (
     create_test_image,
     create_test_user,
+    get_test_user,
 )
 
 
@@ -336,3 +338,76 @@ async def test_get_posts_page_number_out_of_range():
             assert json_data["data"] == []
             assert json_data["nextPage"] is None
             assert json_data["total"] == 3
+
+
+@pytest.mark.asyncio
+async def test_get_posts_query_by_user_id():
+    user_id_1 = "00000000-0000-0000-0000-000000000001"
+    user_2 = {
+        "id": "00000000-0000-0000-0000-000000000002",
+        "username": "testuser2",
+        "email": "test2@example.com",
+    }
+    async with app.router.lifespan_context(app):
+        await create_test_user(id=user_id_1)
+        # Create 3 posts.
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            for i in range(3):
+                image = create_test_image()
+                files = {"file": ("range.png", image, "image/png")}
+                data = {"description": f"Post by user 1 number {i + 1}"}
+                resp = await ac.post("/posts/", files=files, data=data)
+                assert resp.status_code == 201
+
+            # Request all posts
+            get_resp = await ac.get("/posts/")
+            assert get_resp.status_code == 200
+            json_data = get_resp.json()
+            assert "total" in json_data
+            assert json_data["total"] == 3
+
+            # Request posts by user_id
+            get_resp = await ac.get("/posts/", params={"user_id": user_id_1})
+            assert get_resp.status_code == 200
+
+            assert "total" in json_data
+            assert json_data["total"] == 3
+            assert "data" in json_data
+            assert len(json_data["data"]) == 3
+
+            await create_test_user(
+                id=user_2["id"], username=user_2["username"], email=user_2["email"]
+            )
+
+            # Create second user
+            app.dependency_overrides[current_active_user] = lambda: get_test_user(
+                id=user_2["id"], username=user_2["username"], email=user_2["email"]
+            )
+
+            for i in range(3):
+                image = create_test_image()
+                files = {"file": ("range.png", image, "image/png")}
+                data = {"description": f"Post by user 2 number {i + 1}"}
+                resp = await ac.post("/posts/", files=files, data=data)
+                assert resp.status_code == 201
+                result = resp.json()
+                assert result["post"]["userId"] == user_2["id"]
+
+            # Request all posts
+            get_resp = await ac.get("/posts/")
+            assert get_resp.status_code == 200
+            json_data = get_resp.json()
+            assert "total" in json_data
+            assert json_data["total"] == 6
+
+            # Request posts by second user_id
+            get_resp = await ac.get("/posts/", params={"user_id": user_2["id"]})
+            assert get_resp.status_code == 200
+            json_data = get_resp.json()
+            assert "total" in json_data
+            assert json_data["total"] == 3
+            assert "data" in json_data
+            assert len(json_data["data"]) == 3
+            assert json_data["data"][0]["userId"] == user_2["id"]
