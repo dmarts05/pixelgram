@@ -14,18 +14,30 @@ def create_test_image(size=(128, 128), format="PNG", color="blue") -> BytesIO:
     return buffer
 
 
-def get_test_user() -> User:
+def get_test_user(
+    id: str = "00000000-0000-0000-0000-000000000001",
+    username: str = "test",
+    email: str = "test@example.com",
+    hashed_password: str = "hashed_password",
+    is_active: bool = True,
+) -> User:
     return User(
-        id="00000000-0000-0000-0000-000000000001",
-        username="test",
-        email="test@example.com",
-        hashed_password="hashed_password",
-        is_active=True,
+        id=id,
+        username=username,
+        email=email,
+        hashed_password=hashed_password,
+        is_active=is_active,
     )
 
 
-async def create_test_user():
+async def create_test_user(
+    id: str = "00000000-0000-0000-0000-000000000001",
+    username: str = "test",
+    email: str = "test@example.com",
+    hashed_password: str = "hashed_password",
+    is_active: bool = True,
+):
     async for session in get_async_session():
         async with session.begin():
-            session.add(get_test_user())
+            session.add(get_test_user(id, username, email, hashed_password, is_active))
             await session.commit()

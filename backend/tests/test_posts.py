@@ -285,6 +285,35 @@ async def test_get_posts_invalid_query_params():
 
 
 @pytest.mark.asyncio
+async def test_get_posts_no_query_params():
+    img_to_create = 12
+    async with app.router.lifespan_context(app):
+        await create_test_user()
+        # Create 3 posts.
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            for i in range(img_to_create):
+                image = create_test_image()
+                files = {"file": ("range.png", image, "image/png")}
+                data = {"description": f"No query params post {i + 1}"}
+                resp = await ac.post("/posts/", files=files, data=data)
+                assert resp.status_code == 201
+
+            # Request without any query params.
+            get_resp = await ac.get("/posts/")
+            assert get_resp.status_code == 200
+            json_data = get_resp.json()
+
+            assert "nextPage" in json_data
+            assert json_data["nextPage"] == 2
+            assert "total" in json_data
+            assert json_data["total"] == img_to_create
+            assert "data" in json_data
+            assert len(json_data["data"]) == 10  # Default page size is 10
+
+
+@pytest.mark.asyncio
 async def test_get_posts_page_number_out_of_range():
     async with app.router.lifespan_context(app):
         await create_test_user()
