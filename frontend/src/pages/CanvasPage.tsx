@@ -369,7 +369,7 @@ function CanvasPage(): React.ReactElement {
                     </div>
 
                     <div className="flex flex-col">
-                    <div className="card border-base-200 border-1 bg-white shadow-md items-center justify-center ml-4 mr-4">
+                    <div className="card h-fit w-fit border-base-200 border-1 bg-white shadow-md items-center justify-center ml-4 mr-4">
                         <canvas ref={canvasRef} id="canvas"></canvas>
                     </div>
                         <footer className="footer justify-items-end mt-2">
