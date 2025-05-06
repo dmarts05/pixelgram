@@ -1,9 +1,9 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
 import { useEffect } from "react";
 import { getMyUser, updateUser } from "../../services/account-service";
 import InputField from "./InputField";
 import { AccountFormData } from "../../types/account";
+import { useAccountForm } from "../../hooks/useAccountForm";
 
 function AccountForm(): React.ReactNode {
     const { data: userData, isLoading } = useQuery({
@@ -11,13 +11,8 @@ function AccountForm(): React.ReactNode {
         queryFn: getMyUser,
     });
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        watch,
-        reset,
-    } = useForm<AccountFormData>();
+    const { register, handleSubmit, errors, reset, commonRules } =
+        useAccountForm();
 
     useEffect(() => {
         if (userData) {
@@ -37,13 +32,10 @@ function AccountForm(): React.ReactNode {
         },
     });
 
-    const usernameValue = watch("username");
-    const emailValue = watch("email");
-    const passwordValue = watch("password");
-
     function onSubmit(data: AccountFormData): void {
-        // Only send changed fields
-        const updateData = {
+        const updateData: Partial<
+            Pick<AccountFormData, "username" | "password">
+        > = {
             ...(data.username !== userData?.username && {
                 username: data.username,
             }),
@@ -69,7 +61,6 @@ function AccountForm(): React.ReactNode {
             className="flex flex-col gap-4"
             noValidate
         >
-            {/* Email Field (read-only) */}
             <InputField<AccountFormData>
                 name="email"
                 label="Email"
@@ -77,27 +68,17 @@ function AccountForm(): React.ReactNode {
                 register={register}
                 error={errors.email}
                 disabled={true}
-                rules={{
-                    required: "Email is required",
-                    pattern: {
-                        value: /^\S+@\S+$/i,
-                        message: "Invalid email address",
-                    },
-                }}
+                rules={commonRules.email}
             />
 
-            {/* Username Field */}
             <InputField<AccountFormData>
                 name="username"
-                label="username"
+                label="Username"
                 register={register}
                 error={errors.username}
-                rules={{
-                    required: "Username is required",
-                }}
+                rules={commonRules.username}
             />
 
-            {/* Password Field (optional for updates) */}
             <InputField<AccountFormData>
                 name="password"
                 label="New password (leave blank to keep current)"
@@ -105,56 +86,23 @@ function AccountForm(): React.ReactNode {
                 register={register}
                 error={errors.password}
                 rules={{
-                    minLength: {
-                        value: 8,
-                        message: "Password must be at least 8 characters",
-                    },
-                    validate: (value: string) => {
-                        if (!value) return true;
-
-                        const isUsernameInPassword =
-                            usernameValue &&
-                            value
-                                .toLowerCase()
-                                .includes(usernameValue.toLowerCase());
-                        const isEmailInPassword =
-                            emailValue &&
-                            value
-                                .toLowerCase()
-                                .includes(emailValue.split("@")[0]);
-
-                        if (isUsernameInPassword) {
-                            return "Password cannot contain your username";
-                        }
-                        if (isEmailInPassword) {
-                            return "Password cannot contain your email";
-                        }
-                        return true;
-                    },
+                    ...commonRules.password,
+                    required: false,
                 }}
             />
 
-            {/* Confirm Password Field */}
             <InputField<AccountFormData>
                 name="confirmPassword"
                 label="Confirm Password"
                 type="password"
                 register={register}
                 error={errors.confirmPassword}
-                rules={{
-                    validate: (value: string) => {
-                        if (!passwordValue) return true;
-                        return (
-                            value === passwordValue || "Passwords do not match"
-                        );
-                    },
-                }}
+                rules={commonRules.confirmPassword}
             />
 
-            {/* Error/Success messages */}
             {updateMutation.isError && (
                 <p className="text-error text-sm text-center">
-                    {updateMutation.error.message}
+                    {(updateMutation.error as Error).message}
                 </p>
             )}
             {updateMutation.isSuccess && (
@@ -163,7 +111,6 @@ function AccountForm(): React.ReactNode {
                 </p>
             )}
 
-            {/* Submit Button */}
             <button
                 type="submit"
                 className="btn btn-primary w-full"
