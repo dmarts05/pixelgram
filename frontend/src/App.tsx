@@ -8,6 +8,7 @@ import FeedPage from "./pages/FeedPage";
 import LandingPage from "./pages/LandingPage";
 import LogInPage from "./pages/LogInPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import MyPostsPage from "./pages/MyPostsPage";
 import SignUpPage from "./pages/SignUpPage";
 import { authGoogleCallback, isUserLoggedIn } from "./services/auth-service";
 import { useAuthStore } from "./stores/auth-store";
@@ -74,6 +75,14 @@ function App(): React.ReactNode {
                     element={
                         <AuthenticatedRoute redirectTo="/">
                             <FeedPage />
+                        </AuthenticatedRoute>
+                    }
+                />
+                <Route
+                    path="my-posts"
+                    element={
+                        <AuthenticatedRoute redirectTo="/">
+                            <MyPostsPage />
                         </AuthenticatedRoute>
                     }
                 />

@@ -4,6 +4,7 @@ import { fetchApi } from "./fetch-api";
 export type FetchPostsParams = {
     pageParam: number;
     pageSize?: number;
+    userId?: string;
 };
 
 export type FetchPostsResponse = {
@@ -15,11 +16,16 @@ export type FetchPostsResponse = {
 export async function fetchPosts({
     pageParam,
     pageSize = 10,
+    userId = undefined,
 }: FetchPostsParams): Promise<FetchPostsResponse> {
     const params = new URLSearchParams({
         page: String(pageParam),
         page_size: String(pageSize),
     });
+
+    if (userId) {
+        params.append("user_id", userId);
+    }
 
     const res = await fetchApi(`posts?${params}`, {
         headers: {
