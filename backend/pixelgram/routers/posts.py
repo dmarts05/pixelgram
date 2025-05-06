@@ -167,7 +167,7 @@ async def get_posts(
     page_size: int = Query(
         10, ge=1, le=100, description="The number of posts per page."
     ),
-    user_id: str = Query(
+    user_id: str | None = Query(
         None,
         description="The user ID to filter posts by.",
         pattern=r"^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
