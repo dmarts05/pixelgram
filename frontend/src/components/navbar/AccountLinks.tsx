@@ -5,7 +5,8 @@ import { ACCOUNT_LINKS } from "../../utils/constants";
 function Links(): React.ReactNode {
     return (
         <>
-            {ACCOUNT_LINKS.map(({ path: to, name: label }) => (
+            {ACCOUNT_LINKS.map(({ link: { path: to, name: label }, icon }) => (
+                
                 <li key={to}>
                     <NavLink
                         to={to}
@@ -13,6 +14,7 @@ function Links(): React.ReactNode {
                             isActive ? "font-bold" : ""
                         }
                     >
+                        {React.createElement(icon)}
                         {label}
                     </NavLink>
                 </li>

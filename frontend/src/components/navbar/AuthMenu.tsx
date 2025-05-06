@@ -1,4 +1,4 @@
-import { RiAccountCircleLine } from "react-icons/ri";
+import { RiAccountCircleLine, RiLogoutBoxRLine } from "react-icons/ri";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router";
 import { logout } from "../../services/auth-service";
@@ -28,16 +28,17 @@ function AuthMenu(): React.ReactNode {
                         tabIndex={0}
                         className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
                     >
+                        <AccountLinks />
                         <li>
                             <button
                                 className=""
                                 onClick={() => mutation.mutate()}
                                 disabled={mutation.isPending}
                             >
+                                <RiLogoutBoxRLine />
                                 Log Out
                             </button>
                         </li>
-                        <AccountLinks />
                     </ul>
                 </div>
             ) : (

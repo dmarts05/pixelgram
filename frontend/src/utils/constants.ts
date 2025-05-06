@@ -1,4 +1,5 @@
-import { Link } from "../types/link";
+import { RiBookmarkLine, RiSettingsLine, RiImageLine } from "react-icons/ri";
+import { Link, LinkWithIcon } from "../types/link";
 
 export const NAVBAR_HEIGHT = "4rem";
 
@@ -7,10 +8,14 @@ export const MENU_LINKS: Link[] = [
     { path: "/feed", name: "Feed" },
 ];
 
-export const ACCOUNT_LINKS: Link[] = [
-    { path: "/settings", name: "Settings" },
-    { path: "/my-posts", name: "My posts" },
-    { path: "/saved", name: "Saved" },
+export const ACCOUNT_LINKS: LinkWithIcon[] = [
+    {
+        link: { path: "/settings", name: "Settings" },
+        icon: RiSettingsLine,
+    },
+    { link: { path: "/my-posts", name: "My posts" }, icon: RiImageLine },
+
+    { link: { path: "/saved", name: "Saved" }, icon: RiBookmarkLine },
 ];
 
 export const API_URL = import.meta.env.DEV
