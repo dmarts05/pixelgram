@@ -1,12 +1,12 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React from "react";
 import { MdErrorOutline } from "react-icons/md";
-import InfiniteScrollIntersectionObserver from "../components/InfiniteScrollIntersectionObserver";
-import PostCard from "../components/post-card/PostCard";
-import { fetchPosts } from "../services/posts-service";
-import { Post } from "../types/post";
-import { NAVBAR_HEIGHT } from "../utils/constants";
-import { useAuthStore } from "../stores/auth-store";
+import InfiniteScrollIntersectionObserver from "../../components/InfiniteScrollIntersectionObserver";
+import PostCard from "../../components/post-card/PostCard";
+import { fetchPosts } from "../../services/posts-service";
+import { Post } from "../../types/post";
+import { NAVBAR_HEIGHT } from "../../utils/constants";
+import { useAuthStore } from "../../stores/auth-store";
 
 function AccountPostsPage(): React.ReactNode {
     const { userId } = useAuthStore();

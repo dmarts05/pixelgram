@@ -8,7 +8,8 @@ import FeedPage from "./pages/FeedPage";
 import LandingPage from "./pages/LandingPage";
 import LogInPage from "./pages/LogInPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import AccountPostsPage from "./pages/AccountPostsPage";
+import AccountPostPage from "./pages/account/AccountPostsPage";
+import SettingsPage from "./pages/account/SettingsPage";
 import SignUpPage from "./pages/SignUpPage";
 import { authGoogleCallback, getUserId } from "./services/auth-service";
 import { useAuthStore } from "./stores/auth-store";
@@ -82,7 +83,7 @@ function App(): React.ReactNode {
                         path="posts"
                         element={
                             <AuthenticatedRoute redirectTo="/">
-                                <AccountPostsPage />
+                                <AccountPostPage />
                             </AuthenticatedRoute>
                         }
                     />
@@ -90,7 +91,7 @@ function App(): React.ReactNode {
                         path="settings"
                         element={
                             <AuthenticatedRoute redirectTo="/">
-                                <div>Settings</div>
+                                <SettingsPage />
                             </AuthenticatedRoute>
                         }
                     />
