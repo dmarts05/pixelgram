@@ -2,7 +2,7 @@ import { useMutation } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import googleLogo from "../../assets/google-logo.webp";
-import { authGoogle, logIn } from "../../services/auth-service";
+import { authGoogle, getUserId, logIn } from "../../services/auth-service";
 import { useAuthStore } from "../../stores/auth-store";
 import InputField from "./InputField";
 
@@ -14,14 +14,13 @@ export type LogInFormData = {
 function LogInForm(): React.ReactNode {
     const navigate = useNavigate();
 
-    const setIsAuthenticated = useAuthStore(
-        (state) => state.setIsAuthenticated
-    );
+    const setUserId = useAuthStore((state) => state.setUserId);
 
     const regularAuthMutation = useMutation({
         mutationFn: logIn,
-        onSuccess: () => {
-            setIsAuthenticated(true);
+        onSuccess: async () => {
+            const userId = await getUserId();
+            setUserId(userId);
             navigate("/feed");
         },
     });

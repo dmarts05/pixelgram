@@ -8,26 +8,26 @@ import FeedPage from "./pages/FeedPage";
 import LandingPage from "./pages/LandingPage";
 import LogInPage from "./pages/LogInPage";
 import NotFoundPage from "./pages/NotFoundPage";
+import AccountPostPage from "./pages/account/AccountPostsPage";
+import SettingsPage from "./pages/account/SettingsPage";
 import SignUpPage from "./pages/SignUpPage";
-import { authGoogleCallback, isUserLoggedIn } from "./services/auth-service";
+import { authGoogleCallback, getUserId } from "./services/auth-service";
 import { useAuthStore } from "./stores/auth-store";
 import { clearQueryParams } from "./utils/navigation";
 
 function App(): React.ReactNode {
     const location = useLocation();
     const navigate = useNavigate();
-    const setIsAuthenticated = useAuthStore(
-        (state) => state.setIsAuthenticated
-    );
+    const setUserId = useAuthStore((state) => state.setUserId);
 
     // Check if the user is logged in when the app loads
     useEffect(() => {
         async function initAuth(): Promise<void> {
-            const isLoggedIn = await isUserLoggedIn();
-            setIsAuthenticated(isLoggedIn);
+            const userId = await getUserId();
+            setUserId(userId);
         }
         initAuth();
-    }, [setIsAuthenticated]);
+    }, [setUserId]);
 
     // When the url contains OAuth callback parameters, attempt to authenticate the user with Google
     useEffect(() => {
@@ -40,7 +40,8 @@ function App(): React.ReactNode {
             const query = window.location.search;
             try {
                 await authGoogleCallback(query);
-                setIsAuthenticated(true);
+                const userId = await getUserId();
+                setUserId(userId);
                 navigate("/feed");
             } finally {
                 clearQueryParams();
@@ -48,7 +49,7 @@ function App(): React.ReactNode {
         }
 
         handleOAuthCallback();
-    }, [location.search, navigate, setIsAuthenticated]);
+    }, [location.search, navigate, setUserId]);
 
     return (
         <Routes>
@@ -77,6 +78,32 @@ function App(): React.ReactNode {
                         </AuthenticatedRoute>
                     }
                 />
+                <Route path="account">
+                    <Route
+                        path="posts"
+                        element={
+                            <AuthenticatedRoute redirectTo="/">
+                                <AccountPostPage />
+                            </AuthenticatedRoute>
+                        }
+                    />
+                    <Route
+                        path="settings"
+                        element={
+                            <AuthenticatedRoute redirectTo="/">
+                                <SettingsPage />
+                            </AuthenticatedRoute>
+                        }
+                    />
+                    <Route
+                        path="saved"
+                        element={
+                            <AuthenticatedRoute redirectTo="/">
+                                <div>Saved</div>
+                            </AuthenticatedRoute>
+                        }
+                    />
+                </Route>
             </Route>
             <Route path="auth">
                 <Route

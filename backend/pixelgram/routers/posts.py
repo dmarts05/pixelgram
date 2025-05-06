@@ -134,7 +134,7 @@ async def post_pixelart(
     "/",
     summary="Retrieve paginated posts",
     description="Returns a paginated list of posts for infinite scrolling. "
-    "Use query parameters to control the page and page size.",
+    "Use query parameters to control the page and page size. You can filter by userId.",
     responses={
         200: {
             "description": "A paginated list of posts",
@@ -167,6 +167,10 @@ async def get_posts(
     page_size: int = Query(
         10, ge=1, le=100, description="The number of posts per page."
     ),
+    user_id: str | None = Query(
+        None,
+        description="The user ID to filter posts by.",
+    ),
 ):
     # Query posts ordered by creation date
     stmt = (
@@ -176,11 +180,19 @@ async def get_posts(
         .limit(page_size)
         .options(selectinload(Post.author))
     )
+
+    if user_id:
+        stmt = stmt.where(Post.user_id == user_id)
+
     result = await db.execute(stmt)
     posts = result.scalars().all()
 
     # Count total posts for pagination metadata
-    total_result = await db.execute(select(func.count(Post.id)))
+    count_stmt = select(func.count(Post.id))
+    if user_id:
+        count_stmt = count_stmt.where(Post.user_id == user_id)
+
+    total_result = await db.execute(count_stmt)
     total = total_result.scalar() or 0
 
     # Determine next page for infinite scrolling; returns None if no more pages.

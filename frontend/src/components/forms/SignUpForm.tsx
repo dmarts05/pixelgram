@@ -1,16 +1,10 @@
 import { useMutation } from "@tanstack/react-query";
-import { useForm } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { authGoogle, signUp } from "../../services/auth-service";
 import googleLogo from "../../assets/google-logo.webp";
 import InputField from "./InputField";
-
-export type SignUpFormData = {
-    username: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-};
+import { AccountFormData } from "../../types/account";
+import { useAccountForm } from "../../hooks/useAccountForm";
 
 function SignUpForm(): React.ReactNode {
     const navigate = useNavigate();
@@ -26,7 +20,7 @@ function SignUpForm(): React.ReactNode {
         mutationFn: authGoogle,
     });
 
-    function onSubmit(data: SignUpFormData): void {
+    function onSubmit(data: AccountFormData): void {
         regularAuthMutation.mutate(data);
     }
 
@@ -34,16 +28,7 @@ function SignUpForm(): React.ReactNode {
         googleAuthMutation.mutate();
     }
 
-    const {
-        register,
-        handleSubmit,
-        formState: { errors },
-        watch,
-    } = useForm<SignUpFormData>();
-
-    const usernameValue = watch("username");
-    const emailValue = watch("email");
-    const passwordValue = watch("password");
+    const { register, handleSubmit, errors, commonRules } = useAccountForm();
 
     return (
         <form
@@ -52,70 +37,36 @@ function SignUpForm(): React.ReactNode {
             noValidate
         >
             {/* Email Field */}
-            <InputField<SignUpFormData>
+            <InputField<AccountFormData>
                 name="email"
                 label="Email"
                 type="email"
                 register={register}
                 error={errors.email}
-                rules={{
-                    required: "Email is required",
-                    pattern: {
-                        value: /^\S+@\S+$/i,
-                        message: "Invalid email address",
-                    },
-                }}
+                rules={commonRules.email}
             />
 
             {/* Username Field */}
-            <InputField<SignUpFormData>
+            <InputField<AccountFormData>
                 name="username"
                 label="Username"
                 register={register}
                 error={errors.username}
-                rules={{
-                    required: "Username is required",
-                }}
+                rules={commonRules.username}
             />
 
             {/* Password Field */}
-            <InputField<SignUpFormData>
+            <InputField<AccountFormData>
                 name="password"
                 label="Password"
                 type="password"
                 register={register}
                 error={errors.password}
-                rules={{
-                    required: "Password is required",
-                    minLength: {
-                        value: 8,
-                        message: "Password must be at least 8 characters",
-                    },
-                    validate: (value: string) => {
-                        const isUsernameInPassword =
-                            usernameValue &&
-                            value
-                                .toLowerCase()
-                                .includes(usernameValue.toLowerCase());
-                        const isEmailInPassword =
-                            emailValue &&
-                            value
-                                .toLowerCase()
-                                .includes(emailValue.split("@")[0]);
-
-                        if (isUsernameInPassword) {
-                            return "Password cannot contain your username";
-                        }
-                        if (isEmailInPassword) {
-                            return "Password cannot contain your email";
-                        }
-                        return true;
-                    },
-                }}
+                rules={commonRules.password}
             />
 
             {/* Confirm Password Field */}
-            <InputField<SignUpFormData>
+            <InputField<AccountFormData>
                 name="confirmPassword"
                 label="Confirm Password"
                 type="password"
@@ -123,20 +74,19 @@ function SignUpForm(): React.ReactNode {
                 error={errors.confirmPassword}
                 rules={{
                     required: "Please confirm your password",
-                    validate: (value: string) =>
-                        value === passwordValue || "Passwords do not match",
+                    ...commonRules.confirmPassword,
                 }}
             />
 
             {/* Error Message */}
             {regularAuthMutation.isError && (
                 <p className="text-error text-sm text-center">
-                    {regularAuthMutation.error.message}
+                    {(regularAuthMutation.error as Error).message}
                 </p>
             )}
             {googleAuthMutation.isError && (
                 <p className="text-error text-sm text-center">
-                    {googleAuthMutation.error.message}
+                    {(googleAuthMutation.error as Error).message}
                 </p>
             )}
 

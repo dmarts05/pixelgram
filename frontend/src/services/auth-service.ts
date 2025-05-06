@@ -1,8 +1,8 @@
 import { LogInFormData } from "../components/forms/LogInForm";
-import { SignUpFormData } from "../components/forms/SignUpForm";
+import { AccountFormData } from "../types/account";
 import { fetchApi } from "./fetch-api";
 
-export async function signUp(data: SignUpFormData): Promise<void> {
+export async function signUp(data: AccountFormData): Promise<void> {
     const response = await fetchApi("auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -92,9 +92,15 @@ export async function logout(): Promise<void> {
     }
 }
 
-export async function isUserLoggedIn(): Promise<boolean> {
+export async function getUserId(): Promise<string | null> {
     const response = await fetchApi("users/me", {
         method: "GET",
     });
-    return response.ok;
+
+    if (!response.ok) {
+        return null;
+    }
+
+    const data = await response.json();
+    return data.id;
 }

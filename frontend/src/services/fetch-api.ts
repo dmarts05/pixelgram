@@ -14,8 +14,8 @@ export async function fetchApi(
 
     // If the response is 401 (Unauthorized), set user as not authenticated
     if (response.status === 401) {
-        const setIsAuthenticated = useAuthStore.getState().setIsAuthenticated;
-        setIsAuthenticated(false);
+        const setUserId = useAuthStore.getState().setUserId;
+        setUserId(null);
     }
 
     return response;
