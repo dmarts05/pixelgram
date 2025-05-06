@@ -10,25 +10,23 @@ import LogInPage from "./pages/LogInPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import MyPostsPage from "./pages/MyPostsPage";
 import SignUpPage from "./pages/SignUpPage";
-import { authGoogleCallback, isUserLoggedIn } from "./services/auth-service";
+import { authGoogleCallback, getUserId } from "./services/auth-service";
 import { useAuthStore } from "./stores/auth-store";
 import { clearQueryParams } from "./utils/navigation";
 
 function App(): React.ReactNode {
     const location = useLocation();
     const navigate = useNavigate();
-    const setIsAuthenticated = useAuthStore(
-        (state) => state.setIsAuthenticated
-    );
+    const setUserId = useAuthStore((state) => state.setUserId);
 
     // Check if the user is logged in when the app loads
     useEffect(() => {
         async function initAuth(): Promise<void> {
-            const isLoggedIn = await isUserLoggedIn();
-            setIsAuthenticated(isLoggedIn);
+            const userId = await getUserId();
+            setUserId(userId);
         }
         initAuth();
-    }, [setIsAuthenticated]);
+    }, [setUserId]);
 
     // When the url contains OAuth callback parameters, attempt to authenticate the user with Google
     useEffect(() => {
@@ -41,7 +39,8 @@ function App(): React.ReactNode {
             const query = window.location.search;
             try {
                 await authGoogleCallback(query);
-                setIsAuthenticated(true);
+                const userId = await getUserId();
+                setUserId(userId);
                 navigate("/feed");
             } finally {
                 clearQueryParams();
@@ -49,7 +48,7 @@ function App(): React.ReactNode {
         }
 
         handleOAuthCallback();
-    }, [location.search, navigate, setIsAuthenticated]);
+    }, [location.search, navigate, setUserId]);
 
     return (
         <Routes>

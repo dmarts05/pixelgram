@@ -2,17 +2,18 @@ import { RiAccountCircleLine, RiLogoutBoxRLine } from "react-icons/ri";
 import { useMutation } from "@tanstack/react-query";
 import { Link, useNavigate } from "react-router";
 import { logout } from "../../services/auth-service";
-import { useAuthStore } from "../../stores/auth-store";
+import { useAuthStore, useIsAuthenticated } from "../../stores/auth-store";
 import AccountLinks from "./AccountLinks";
 
 function AuthMenu(): React.ReactNode {
     const navigate = useNavigate();
-    const { isAuthenticated, setIsAuthenticated } = useAuthStore();
+    const { setUserId } = useAuthStore();
+    const isAuthenticated = useIsAuthenticated();
 
     const mutation = useMutation({
         mutationFn: logout,
         onSuccess: () => {
-            setIsAuthenticated(false);
+            setUserId(null);
             navigate("/");
         },
     });

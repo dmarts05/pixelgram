@@ -1,9 +1,9 @@
 import { RiMenu2Fill } from "react-icons/ri";
-import { useAuthStore } from "../../stores/auth-store";
+import { useIsAuthenticated } from "../../stores/auth-store";
 import MenuLinks from "./MenuLinks";
 
 function MobileMenu(): React.ReactNode {
-    const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+    const isAuthenticated = useIsAuthenticated();
 
     if (!isAuthenticated) {
         return null;

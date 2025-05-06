@@ -92,9 +92,15 @@ export async function logout(): Promise<void> {
     }
 }
 
-export async function isUserLoggedIn(): Promise<boolean> {
+export async function getUserId(): Promise<string | null> {
     const response = await fetchApi("users/me", {
         method: "GET",
     });
-    return response.ok;
+
+    if (!response.ok) {
+        return null;
+    }
+
+    const data = await response.json();
+    return data.id;
 }

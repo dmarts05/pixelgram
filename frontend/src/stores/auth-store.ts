@@ -1,12 +1,20 @@
 import { create } from "zustand";
 
 interface AuthState {
-    isAuthenticated: boolean;
-    setIsAuthenticated: (isAuthenticated: boolean) => void;
+    userId: string | null;
+    setUserId: (userId: string | null) => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-    isAuthenticated: false,
-    setIsAuthenticated: (isAuthenticated: boolean): void =>
-        set({ isAuthenticated }),
+    userId: null,
+    setUserId: (userId: string | null): void => {
+        console.log("Setting userId:", userId);
+        set({ userId });
+    },
 }));
+
+export const useIsAuthenticated = (): boolean =>
+    useAuthStore((state) => {
+        console.log("isAuthenticated", state.userId);
+        return state.userId !== null;
+    });
