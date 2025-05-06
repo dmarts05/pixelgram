@@ -5,7 +5,7 @@ from pixelgram.auth import (
     fastapi_users,
     google_oauth_client,
 )
-from pixelgram.schemas.user import UserCreate, UserRead
+from pixelgram.schemas.user import UserCreate, UserRead, UserUpdate
 from pixelgram.settings import settings
 
 auth_router = APIRouter(
@@ -31,3 +31,5 @@ auth_router.include_router(
     ),
     prefix="/google",
 )
+
+auth_router.include_router(fastapi_users.get_users_router(UserRead, UserUpdate))
