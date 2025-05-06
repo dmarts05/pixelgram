@@ -8,4 +8,4 @@ export type Link = {
 export type LinkWithIcon = {
     link: Link;
     icon: IconType;
-}
+};

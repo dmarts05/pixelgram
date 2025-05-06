@@ -6,7 +6,6 @@ function Links(): React.ReactNode {
     return (
         <>
             {ACCOUNT_LINKS.map(({ link: { path: to, name: label }, icon }) => (
-                
                 <li key={to}>
                     <NavLink
                         to={to}
