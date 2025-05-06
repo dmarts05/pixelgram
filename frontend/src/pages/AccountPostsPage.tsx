@@ -8,7 +8,7 @@ import { Post } from "../types/post";
 import { NAVBAR_HEIGHT } from "../utils/constants";
 import { useAuthStore } from "../stores/auth-store";
 
-function MyPostsPage(): React.ReactNode {
+function AccountPostsPage(): React.ReactNode {
     const { userId } = useAuthStore();
     const {
         data,
@@ -87,4 +87,4 @@ function MyPostsPage(): React.ReactNode {
     );
 }
 
-export default MyPostsPage;
+export default AccountPostsPage;

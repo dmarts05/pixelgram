@@ -8,7 +8,7 @@ import FeedPage from "./pages/FeedPage";
 import LandingPage from "./pages/LandingPage";
 import LogInPage from "./pages/LogInPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import MyPostsPage from "./pages/MyPostsPage";
+import AccountPostsPage from "./pages/AccountPostsPage";
 import SignUpPage from "./pages/SignUpPage";
 import { authGoogleCallback, getUserId } from "./services/auth-service";
 import { useAuthStore } from "./stores/auth-store";
@@ -77,14 +77,32 @@ function App(): React.ReactNode {
                         </AuthenticatedRoute>
                     }
                 />
-                <Route
-                    path="my-posts"
-                    element={
-                        <AuthenticatedRoute redirectTo="/">
-                            <MyPostsPage />
-                        </AuthenticatedRoute>
-                    }
-                />
+                <Route path="account">
+                    <Route
+                        path="posts"
+                        element={
+                            <AuthenticatedRoute redirectTo="/">
+                                <AccountPostsPage />
+                            </AuthenticatedRoute>
+                        }
+                    />
+                    <Route
+                        path="settings"
+                        element={
+                            <AuthenticatedRoute redirectTo="/">
+                                <div>Settings</div>
+                            </AuthenticatedRoute>
+                        }
+                    />
+                    <Route
+                        path="saved"
+                        element={
+                            <AuthenticatedRoute redirectTo="/">
+                                <div>Saved</div>
+                            </AuthenticatedRoute>
+                        }
+                    />
+                </Route>
             </Route>
             <Route path="auth">
                 <Route
