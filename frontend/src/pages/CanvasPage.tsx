@@ -63,16 +63,39 @@ function CanvasPage(): React.ReactElement {
         if (canvas && context) {
             let drawing = false;
 
-            function draw(e: MouseEvent): void {
+            function getTouchPos(e: TouchEvent): {x: number; y: number} {
+                if(canvas) {
+                    const rect = canvas?.getBoundingClientRect();
+                    const touch = e.touches[0];
+                    const scaleX = canvas?.width / rect?.width || 1; // relationship bitmap vs. element for X
+                    const scaleY = canvas?.height / rect?.height || 1; // relationship bitmap vs. element for Y
+
+                    return {
+                        x: (touch?.clientX - rect?.left) * scaleX || 1,
+                        y: (touch?.clientY - rect?.top) * scaleY || 1,
+                    };
+                }
+                return {x: 0, y: 0};
+                
+            }
+
+            function draw(e: MouseEvent | TouchEvent): void {
                 if (!drawing) return;
 
                 const rect = canvas?.getBoundingClientRect();
                 let x, y;
                 if (canvas && rect) {
-                    const scaleX = canvas?.width / rect.width || 1; // relationship bitmap vs. element for X
-                    const scaleY = canvas?.height / rect?.height || 1; // relationship bitmap vs. element for Y
-                    x = (e.clientX - rect.left) * scaleX || 1;
-                    y = (e.clientY - rect.top) * scaleY || 1;
+
+                    if(e instanceof TouchEvent) {
+                        const pos = getTouchPos(e);
+                        x = pos.x;
+                        y = pos.y;
+                    } else {
+                        const scaleX = canvas?.width / rect.width || 1; // relationship bitmap vs. element for X
+                        const scaleY = canvas?.height / rect?.height || 1; // relationship bitmap vs. element for Y
+                        x = (e.clientX - rect.left) * scaleX || 1;
+                        y = (e.clientY - rect.top) * scaleY || 1;
+                    }
 
                     if (context) {
                         context.lineWidth = pencilThickness;
@@ -93,7 +116,7 @@ function CanvasPage(): React.ReactElement {
                 }
             }
 
-            function startDrawing(e: MouseEvent): void {
+            function startDrawing(e: MouseEvent | TouchEvent): void {
                 drawing = true;
                 draw(e);
             }
@@ -103,14 +126,23 @@ function CanvasPage(): React.ReactElement {
                 context?.beginPath();
             }
 
+            // Mouse
             canvas.addEventListener("mousedown", startDrawing);
             canvas.addEventListener("mouseup", stopDrawing);
             canvas.addEventListener("mousemove", draw);
+
+            canvas.addEventListener("touchstart", startDrawing);
+            canvas.addEventListener("touchend", stopDrawing);
+            canvas.addEventListener("touchmove", draw);
 
             return (): void => {
                 canvas.removeEventListener("mousedown", startDrawing);
                 canvas.removeEventListener("mouseup", stopDrawing);
                 canvas.removeEventListener("mousemove", draw);
+
+                canvas.removeEventListener("touchstart", startDrawing);
+                canvas.removeEventListener("touchend", stopDrawing);
+                canvas.removeEventListener("touchmove", draw);
             };
         }
     }, [color, tool, pencilThickness]);
