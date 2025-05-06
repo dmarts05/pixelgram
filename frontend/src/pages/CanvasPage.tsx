@@ -31,8 +31,6 @@ function CanvasPage(): React.ReactElement {
                     const size =
                         Math.min(window.innerWidth, window.innerHeight) * 0.75;
                     if (canvas && context) {
-                        
-
                         canvas.style.width = `${size}px`;
                         canvas.style.height = `${size}px`;
 
@@ -63,8 +61,8 @@ function CanvasPage(): React.ReactElement {
         if (canvas && context) {
             let drawing = false;
 
-            function getTouchPos(e: TouchEvent): {x: number; y: number} {
-                if(canvas) {
+            function getTouchPos(e: TouchEvent): { x: number; y: number } {
+                if (canvas) {
                     const rect = canvas?.getBoundingClientRect();
                     const touch = e.touches[0];
                     const scaleX = canvas?.width / rect?.width || 1; // relationship bitmap vs. element for X
@@ -75,8 +73,7 @@ function CanvasPage(): React.ReactElement {
                         y: (touch?.clientY - rect?.top) * scaleY || 1,
                     };
                 }
-                return {x: 0, y: 0};
-                
+                return { x: 0, y: 0 };
             }
 
             function draw(e: MouseEvent | TouchEvent): void {
@@ -85,8 +82,7 @@ function CanvasPage(): React.ReactElement {
                 const rect = canvas?.getBoundingClientRect();
                 let x, y;
                 if (canvas && rect) {
-
-                    if(e instanceof TouchEvent) {
+                    if (e instanceof TouchEvent) {
                         const pos = getTouchPos(e);
                         x = pos.x;
                         y = pos.y;
@@ -200,8 +196,10 @@ function CanvasPage(): React.ReactElement {
     };
 
     return (
-        <div className="flex flex-row bg-base-200 m-4"
-            style={{maxHeight: `calc(100vh - ${NAVBAR_HEIGHT})`}}>
+        <div
+            className="flex flex-row bg-base-200 m-4"
+            style={{ maxHeight: `calc(100vh - ${NAVBAR_HEIGHT})` }}
+        >
             <div className="aside flex flex-col flex-1 items-end gap-2"></div>
 
             <div className="flex flex-col flex-2 max-h-full items-center ">
@@ -347,12 +345,38 @@ function CanvasPage(): React.ReactElement {
                             className="btn btn-circle  w-8 h-8 bg-gradient-to-r from-yellow-500 via-blue-500 to-purple-500 rainbow-animated"
                         ></button>
                         <div className="flex flex-col w-8 items-center gap-4">
-                            <button type="button" className="btn btn-circle w-8 h-8  border-white border-2" onClick={() => {setPencilThickness(pencilThickness - 1)}}>-</button>
-                            <input type="range" id="thicknessSlider" min="1" max="20" value={pencilThickness} onChange={(e) => setPencilThickness(Number(e.target.value))} className="range range-primary w-24 mt-6 mb-6" style={{
-                                transform: "rotate(90deg)",
-                                }} />
-                            <button type="button" className="btn btn-circle w-8 h-8  border-white border-2" onClick={() => {setPencilThickness(pencilThickness + 1)}}>+</button>
-
+                            <button
+                                type="button"
+                                className="btn btn-circle w-8 h-8  border-white border-2"
+                                onClick={() => {
+                                    setPencilThickness(pencilThickness - 1);
+                                }}
+                            >
+                                -
+                            </button>
+                            <input
+                                type="range"
+                                id="thicknessSlider"
+                                min="1"
+                                max="20"
+                                value={pencilThickness}
+                                onChange={(e) =>
+                                    setPencilThickness(Number(e.target.value))
+                                }
+                                className="range range-primary w-24 mt-6 mb-6"
+                                style={{
+                                    transform: "rotate(90deg)",
+                                }}
+                            />
+                            <button
+                                type="button"
+                                className="btn btn-circle w-8 h-8  border-white border-2"
+                                onClick={() => {
+                                    setPencilThickness(pencilThickness + 1);
+                                }}
+                            >
+                                +
+                            </button>
                         </div>
 
                         <input
@@ -364,25 +388,24 @@ function CanvasPage(): React.ReactElement {
                                 setColor(e.target.value);
                             }}
                         />
-
-                        
                     </div>
 
                     <div className="flex flex-col">
-                    <div className="card h-fit w-fit border-base-200 border-1 bg-white shadow-md items-center justify-center ml-4 mr-4">
-                        <canvas ref={canvasRef} id="canvas"></canvas>
-                    </div>
+                        <div className="card h-fit w-fit border-base-200 border-1 bg-white shadow-md items-center justify-center ml-4 mr-4">
+                            <canvas ref={canvasRef} id="canvas"></canvas>
+                        </div>
                         <footer className="footer justify-items-end mt-2">
-                                <form className="form" onSubmit={handleSubmit}>
-                                    <button type="submit" className="btn btn-primary mr-4">
-                                        Publish
-                                    </button>
-                                </form>
+                            <form className="form" onSubmit={handleSubmit}>
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary mr-4"
+                                >
+                                    Publish
+                                </button>
+                            </form>
                         </footer>
                     </div>
                 </div>
-
-                
             </div>
 
             <div className="flex flex-1"></div>
