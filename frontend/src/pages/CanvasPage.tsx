@@ -3,12 +3,14 @@ import { BsFillEraserFill } from "react-icons/bs";
 import { GoPencil } from "react-icons/go";
 import { MdOutlineUploadFile } from "react-icons/md";
 import PublishPixelartModal from "../components/forms/PublishPixelartModal";
+import { NAVBAR_HEIGHT } from "../utils/constants";
 
 function CanvasPage(): React.ReactElement {
     const [tool, setTool] = useState<"pencil" | "eraser">("pencil");
     const [color, setColor] = useState<string>("#000000");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [imageUrl, setImageUrl] = useState<string>("");
+    const [pencilThickness, setPencilThickness] = useState<number>(5);
 
     const canvasRef = React.useRef<HTMLCanvasElement | null>(null);
     const contextRef = React.useRef<CanvasRenderingContext2D | null>(null);
@@ -22,14 +24,13 @@ function CanvasPage(): React.ReactElement {
                 // Set canvas background color
                 context.fillStyle = "rgba(0,0,0,1)";
                 context.fillRect(0, 0, canvas.width, canvas.height);
+                canvas.width = 128;
+                canvas.height = 128;
 
                 function resizeCanvas(): void {
                     const size =
-                        Math.min(window.innerWidth, window.innerHeight) * 0.8;
+                        Math.min(window.innerWidth, window.innerHeight) * 0.75;
                     if (canvas && context) {
-                        canvas.width = 128;
-                        canvas.height = 128;
-
                         canvas.style.width = `${size}px`;
                         canvas.style.height = `${size}px`;
 
@@ -44,7 +45,7 @@ function CanvasPage(): React.ReactElement {
                 resizeCanvas();
 
                 //TODO: See if conserve real time resize and erase all content or not resize and preserve content
-                //window.addEventListener("resize", resizeCanvas);
+                window.addEventListener("resize", resizeCanvas);
 
                 return (): void => {
                     window.removeEventListener("resize", resizeCanvas);
@@ -60,19 +61,40 @@ function CanvasPage(): React.ReactElement {
         if (canvas && context) {
             let drawing = false;
 
-            function draw(e: MouseEvent): void {
+            function getTouchPos(e: TouchEvent): { x: number; y: number } {
+                if (canvas) {
+                    const rect = canvas?.getBoundingClientRect();
+                    const touch = e.touches[0];
+                    const scaleX = canvas?.width / rect?.width || 1; // relationship bitmap vs. element for X
+                    const scaleY = canvas?.height / rect?.height || 1; // relationship bitmap vs. element for Y
+
+                    return {
+                        x: (touch?.clientX - rect?.left) * scaleX || 1,
+                        y: (touch?.clientY - rect?.top) * scaleY || 1,
+                    };
+                }
+                return { x: 0, y: 0 };
+            }
+
+            function draw(e: MouseEvent | TouchEvent): void {
                 if (!drawing) return;
 
                 const rect = canvas?.getBoundingClientRect();
                 let x, y;
                 if (canvas && rect) {
-                    const scaleX = canvas?.width / rect.width || 1; // relationship bitmap vs. element for X
-                    const scaleY = canvas?.height / rect?.height || 1; // relationship bitmap vs. element for Y
-                    x = (e.clientX - rect.left) * scaleX || 1;
-                    y = (e.clientY - rect.top) * scaleY || 1;
+                    if (e instanceof TouchEvent) {
+                        const pos = getTouchPos(e);
+                        x = pos.x;
+                        y = pos.y;
+                    } else {
+                        const scaleX = canvas?.width / rect.width || 1; // relationship bitmap vs. element for X
+                        const scaleY = canvas?.height / rect?.height || 1; // relationship bitmap vs. element for Y
+                        x = (e.clientX - rect.left) * scaleX || 1;
+                        y = (e.clientY - rect.top) * scaleY || 1;
+                    }
 
                     if (context) {
-                        context.lineWidth = 5;
+                        context.lineWidth = pencilThickness;
                         context.lineCap = "round";
 
                         context.strokeStyle =
@@ -90,7 +112,7 @@ function CanvasPage(): React.ReactElement {
                 }
             }
 
-            function startDrawing(e: MouseEvent): void {
+            function startDrawing(e: MouseEvent | TouchEvent): void {
                 drawing = true;
                 draw(e);
             }
@@ -100,17 +122,26 @@ function CanvasPage(): React.ReactElement {
                 context?.beginPath();
             }
 
+            // Mouse
             canvas.addEventListener("mousedown", startDrawing);
             canvas.addEventListener("mouseup", stopDrawing);
             canvas.addEventListener("mousemove", draw);
+
+            canvas.addEventListener("touchstart", startDrawing);
+            canvas.addEventListener("touchend", stopDrawing);
+            canvas.addEventListener("touchmove", draw);
 
             return (): void => {
                 canvas.removeEventListener("mousedown", startDrawing);
                 canvas.removeEventListener("mouseup", stopDrawing);
                 canvas.removeEventListener("mousemove", draw);
+
+                canvas.removeEventListener("touchstart", startDrawing);
+                canvas.removeEventListener("touchend", stopDrawing);
+                canvas.removeEventListener("touchmove", draw);
             };
         }
-    }, [color, tool]);
+    }, [color, tool, pencilThickness]);
 
     // Upload image to canvas, applying resolution change
     function handleImageUpload(e: React.ChangeEvent<HTMLInputElement>): void {
@@ -165,12 +196,15 @@ function CanvasPage(): React.ReactElement {
     };
 
     return (
-        <div className="flex flex-row bg-base-100">
+        <div
+            className="flex flex-row bg-base-200 m-4"
+            style={{ maxHeight: `calc(100vh - ${NAVBAR_HEIGHT})` }}
+        >
             <div className="aside flex flex-col flex-1 items-end gap-2"></div>
 
-            <div className="flex flex-col flex-2 max-h-full items-center">
+            <div className="flex flex-col flex-2 max-h-full items-center ">
                 <div className="flex flex-row items-center">
-                    <div className="flex flex-col items-end gap-2">
+                    <div className="flex flex-col items-end gap-1">
                         <input
                             type="file"
                             accept="image/*"
@@ -182,7 +216,7 @@ function CanvasPage(): React.ReactElement {
                             onClick={() => {
                                 document.getElementById("imageInput")?.click();
                             }}
-                            className="btn btn-circle border-white border-2"
+                            className="btn btn-circle  w-8 h-8 border-white border-2"
                         >
                             {<MdOutlineUploadFile />}
                         </button>
@@ -190,7 +224,7 @@ function CanvasPage(): React.ReactElement {
                             onClick={() => {
                                 setTool("eraser");
                             }}
-                            className={`btn btn-circle border-white border-2 ${tool === "eraser" ? "bg-black" : ""}`}
+                            className={`btn btn-circle  w-8 h-8 border-white border-2 ${tool === "eraser" ? "bg-black" : ""}`}
                         >
                             <BsFillEraserFill
                                 className={
@@ -204,7 +238,7 @@ function CanvasPage(): React.ReactElement {
                                 setTool("pencil");
                                 setColor("#ef4444");
                             }}
-                            className="btn btn-circle bg-red-500 dark:bg-red-500 border-white border-2"
+                            className="btn btn-circle w-8 h-8 size-2 bg-red-500 dark:bg-red-500 border-white border-2"
                         >
                             {tool === "pencil" && color === "#ef4444" ? (
                                 <GoPencil className="stroke-2" />
@@ -217,7 +251,7 @@ function CanvasPage(): React.ReactElement {
                                 setTool("pencil");
                                 setColor("#fb923c");
                             }}
-                            className="btn btn-circle bg-orange-400 dark:bg-orange-400 border-white border-2"
+                            className="btn btn-circle  w-8 h-8 bg-orange-400 dark:bg-orange-400 border-white border-2"
                         >
                             {tool === "pencil" && color === "#fb923c" ? (
                                 <GoPencil className="stroke-2" />
@@ -230,7 +264,7 @@ function CanvasPage(): React.ReactElement {
                                 setTool("pencil");
                                 setColor("#fcd34d");
                             }}
-                            className="btn btn-circle bg-yellow-300 dark:bg-yellow-400  border-white border-2"
+                            className="btn btn-circle  w-8 h-8 bg-yellow-300  border-white border-2"
                         >
                             {tool === "pencil" && color === "#fcd34d" ? (
                                 <GoPencil className="stroke-2" />
@@ -243,7 +277,7 @@ function CanvasPage(): React.ReactElement {
                                 setTool("pencil");
                                 setColor("#4ade80");
                             }}
-                            className="btn btn-circle bg-green-400 border-white border-2"
+                            className="btn btn-circle  w-8 h-8 bg-green-400 border-white border-2"
                         >
                             {tool === "pencil" && color === "#4ade80" ? (
                                 <GoPencil className="stroke-2" />
@@ -256,7 +290,7 @@ function CanvasPage(): React.ReactElement {
                                 setTool("pencil");
                                 setColor("#3b82f6");
                             }}
-                            className="btn btn-circle bg-blue-500 border-white border-2"
+                            className="btn btn-circle  w-8 h-8 bg-blue-500 border-white border-2"
                         >
                             {tool === "pencil" && color === "#3b82f6" ? (
                                 <GoPencil className="stroke-2" />
@@ -269,7 +303,7 @@ function CanvasPage(): React.ReactElement {
                                 setTool("pencil");
                                 setColor("#8b5cf6");
                             }}
-                            className="btn btn-circle bg-purple-500 border-white border-2"
+                            className="btn btn-circle w-8 h-8 bg-purple-500 border-white border-2"
                         >
                             {tool === "pencil" && color === "#8b5cf6" ? (
                                 <GoPencil className="stroke-2" />
@@ -282,7 +316,7 @@ function CanvasPage(): React.ReactElement {
                                 setTool("pencil");
                                 setColor("#ffffff");
                             }}
-                            className="btn btn-circle light:bg-[#ffffff] dark:bg-[#cdcdcd] border-white border-2"
+                            className="btn btn-circle  w-8 h-8 bg-white border-white border-2"
                         >
                             {tool === "pencil" && color === "#ffffff" ? (
                                 <GoPencil className="stroke-2" />
@@ -295,7 +329,7 @@ function CanvasPage(): React.ReactElement {
                                 setTool("pencil");
                                 setColor("#000000");
                             }}
-                            className="btn btn-circle bg-black border-white border-2"
+                            className="btn btn-circle  w-8 h-8 bg-black border-white border-2"
                         >
                             {tool === "pencil" && color === "#000000" ? (
                                 <GoPencil className="text-white stroke-2" />
@@ -308,8 +342,43 @@ function CanvasPage(): React.ReactElement {
                             onClick={() =>
                                 document.getElementById("colorPicker")?.click()
                             }
-                            className="btn btn-circle bg-gradient-to-r from-yellow-500 via-blue-500 to-purple-500 rainbow-animated"
+                            className="btn btn-circle  w-8 h-8 bg-gradient-to-r from-yellow-500 via-blue-500 to-purple-500 rainbow-animated"
                         ></button>
+                        <div className="flex flex-col w-8 items-center gap-4">
+                            <button
+                                type="button"
+                                className="btn btn-circle w-8 h-8  border-white border-2"
+                                onClick={() => {
+                                    setPencilThickness(pencilThickness - 1);
+                                }}
+                            >
+                                -
+                            </button>
+                            <input
+                                type="range"
+                                id="thicknessSlider"
+                                min="1"
+                                max="20"
+                                value={pencilThickness}
+                                onChange={(e) =>
+                                    setPencilThickness(Number(e.target.value))
+                                }
+                                className="range range-primary w-24 mt-6 mb-6"
+                                style={{
+                                    transform: "rotate(90deg)",
+                                }}
+                            />
+                            <button
+                                type="button"
+                                className="btn btn-circle w-8 h-8  border-white border-2"
+                                onClick={() => {
+                                    setPencilThickness(pencilThickness + 1);
+                                }}
+                            >
+                                +
+                            </button>
+                        </div>
+
                         <input
                             type="color"
                             id="colorPicker"
@@ -321,18 +390,22 @@ function CanvasPage(): React.ReactElement {
                         />
                     </div>
 
-                    <div className="h-fit w-fit border-2 items-center justify-center">
-                        <canvas ref={canvasRef} id="canvas"></canvas>
+                    <div className="flex flex-col">
+                        <div className="card h-fit w-fit border-base-200 border-1 bg-white shadow-md items-center justify-center ml-4 mr-4">
+                            <canvas ref={canvasRef} id="canvas"></canvas>
+                        </div>
+                        <footer className="footer justify-items-end mt-2">
+                            <form className="form" onSubmit={handleSubmit}>
+                                <button
+                                    type="submit"
+                                    className="btn btn-primary mr-4"
+                                >
+                                    Publish
+                                </button>
+                            </form>
+                        </footer>
                     </div>
                 </div>
-
-                <footer className="footer justify-items-center">
-                    <form className="form" onSubmit={handleSubmit}>
-                        <button type="submit" className="btn btn-primary">
-                            Publish
-                        </button>
-                    </form>
-                </footer>
             </div>
 
             <div className="flex flex-1"></div>
