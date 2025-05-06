@@ -6,8 +6,10 @@ import PostCard from "../components/post-card/PostCard";
 import { fetchPosts } from "../services/posts-service";
 import { Post } from "../types/post";
 import { NAVBAR_HEIGHT } from "../utils/constants";
+import { useAuthStore } from "../stores/auth-store";
 
 function MyPostsPage(): React.ReactNode {
+    const { userId } = useAuthStore();
     const {
         data,
         error,
@@ -17,7 +19,7 @@ function MyPostsPage(): React.ReactNode {
         status,
     } = useInfiniteQuery({
         queryKey: ["posts"],
-        queryFn: ({pageParam}) => fetchPosts({ pageParam, userId: "me" }), // TODO: Replace with actual user ID
+        queryFn: ({ pageParam }) => fetchPosts({ pageParam, userId: userId }),
         initialPageParam: 1,
         getNextPageParam: (lastPage) => lastPage.nextPage,
         refetchInterval: 60000, // Refetch every minute

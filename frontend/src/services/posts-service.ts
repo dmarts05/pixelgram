@@ -4,7 +4,7 @@ import { fetchApi } from "./fetch-api";
 export type FetchPostsParams = {
     pageParam: number;
     pageSize?: number;
-    userId?: string;
+    userId?: string | null;
 };
 
 export type FetchPostsResponse = {

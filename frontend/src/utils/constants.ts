@@ -10,12 +10,12 @@ export const MENU_LINKS: Link[] = [
 
 export const ACCOUNT_LINKS: LinkWithIcon[] = [
     {
-        link: { path: "/settings", name: "Settings" },
+        link: { path: "/account/settings", name: "Settings" },
         icon: RiSettingsLine,
     },
-    { link: { path: "/my-posts", name: "My posts" }, icon: RiImageLine },
+    { link: { path: "/account/posts", name: "My posts" }, icon: RiImageLine },
 
-    { link: { path: "/saved", name: "Saved" }, icon: RiBookmarkLine },
+    { link: { path: "/account/saved", name: "Saved" }, icon: RiBookmarkLine },
 ];
 
 export const API_URL = import.meta.env.DEV
