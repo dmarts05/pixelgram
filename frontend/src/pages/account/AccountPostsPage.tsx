@@ -60,6 +60,9 @@ function AccountPostsPage(): React.ReactNode {
 
     return (
         <>
+            <header className="flex items-center justify-center p-8">
+                <h1 className="text-2xl font-bold">My Pixelarts</h1>
+            </header>
             <main className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 p-8">
                 {data.pages.map((page, pageIndex) => (
                     <React.Fragment key={pageIndex}>

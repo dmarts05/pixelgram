@@ -13,6 +13,7 @@ type InputFieldProps<T extends FieldValues> = {
     register: UseFormRegister<T>;
     error?: FieldError;
     rules?: RegisterOptions<T>;
+    disabled?: boolean;
 };
 
 function InputField<T extends FieldValues>({
@@ -22,6 +23,7 @@ function InputField<T extends FieldValues>({
     register,
     error,
     rules = {},
+    disabled = false,
 }: InputFieldProps<T>): React.ReactNode {
     return (
         <div className="flex flex-col gap-2">
@@ -31,6 +33,7 @@ function InputField<T extends FieldValues>({
                     placeholder={`${label}${rules?.required ? " *" : ""}`}
                     className={`input w-full ${error ? "input-error" : ""}`}
                     {...register(name, rules)}
+                    disabled={disabled}
                 />
                 <span>
                     {label}
