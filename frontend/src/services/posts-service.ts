@@ -16,7 +16,7 @@ export type FetchPostsResponse = {
 export async function fetchPosts({
     pageParam,
     pageSize = 10,
-    userId = undefined,
+    userId = null,
 }: FetchPostsParams): Promise<FetchPostsResponse> {
     const params = new URLSearchParams({
         page: String(pageParam),

@@ -1,11 +1,10 @@
-import { ReactNode } from "react";
 import { Navigate } from "react-router";
 import { useIsAuthenticated } from "../stores/auth-store";
 
-interface UnauthenticatedRouteProps {
-    children: ReactNode;
+type UnauthenticatedRouteProps = {
+    children: React.ReactNode;
     redirectTo: string;
-}
+};
 
 function UnauthenticatedRoute({
     children,

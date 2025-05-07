@@ -57,7 +57,7 @@ const DescriptionField = ({
     );
 };
 
-const PixelartPreview = ({ src }: { src: string }): React.ReactElement => (
+const PixelartPreview = ({ src }: { src: string }): React.ReactNode => (
     <div className="mt-4 justify-center flex">
         <img
             src={src}
@@ -75,7 +75,7 @@ const ModalActions = ({
     onClose: () => void;
     onPublish: () => void;
     disabled: boolean;
-}): React.ReactElement => (
+}): React.ReactNode => (
     <div className="modal-actions flex justify-center gap-4 mt-8">
         <button className="btn btn-outline" onClick={onClose}>
             Cancel
@@ -90,11 +90,7 @@ const ModalActions = ({
     </div>
 );
 
-const SuccessView = ({
-    onDone,
-}: {
-    onDone: () => void;
-}): React.ReactElement => (
+const SuccessView = ({ onDone }: { onDone: () => void }): React.ReactNode => (
     <div className="flex flex-col items-center gap-6 py-4">
         <div role="alert" className="alert alert-success">
             <svg
@@ -122,7 +118,7 @@ export default function PublishPixelartModal({
     imageUrl,
     isOpen,
     onClose,
-}: Props): React.ReactElement | null {
+}: Props): React.ReactNode | null {
     const [description, setDescription] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
     const [errorPlaceholder, setErrorPlaceholder] = useState<string | null>(
