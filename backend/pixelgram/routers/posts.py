@@ -44,6 +44,8 @@ posts_router = APIRouter(
                             "authorUsername": "catlover123",
                             "authorEmail": "catlover123@example.com",
                             "createdAt": "2025-05-05T09:34:49.976543+00:00",
+                            "likesCount": 0,
+                            "likedByUser": False,
                         }
                     }
                 }
@@ -113,7 +115,7 @@ async def post_pixelart(
         await db.commit()
         await db.refresh(new_post)
 
-        post_read = PostRead(
+        pr = PostRead(
             id=new_post.id,
             description=new_post.description,
             image_url=HttpUrl(new_post.image_url),
@@ -121,8 +123,10 @@ async def post_pixelart(
             author_username=user.username,
             author_email=user.email,
             created_at=new_post.created_at,
+            likes_count=0,
+            liked_by_user=False,
         )
-        return {"post": post_read.model_dump(by_alias=True)}
+        return {"post": pr.model_dump(by_alias=True)}
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
@@ -150,6 +154,8 @@ async def post_pixelart(
                                 "authorUsername": "catlover123",
                                 "authorEmail": "catlover123@example.com",
                                 "createdAt": "2025-05-05T09:34:49.976543+00:00",
+                                "likesCount": 23,
+                                "likedByUser": True,
                             }
                         ],
                         "nextPage": 2,
@@ -162,7 +168,7 @@ async def post_pixelart(
     },
 )
 async def get_posts(
-    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_active_user),
     page: int = Query(1, ge=1, description="The page number to retrieve."),
     page_size: int = Query(
         10, ge=1, le=100, description="The number of posts per page."
@@ -171,35 +177,32 @@ async def get_posts(
         None,
         description="The user ID to filter posts by.",
     ),
+    db: AsyncSession = Depends(get_async_session),
 ):
-    # Query posts ordered by creation date
     stmt = (
         select(Post)
         .order_by(Post.created_at.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
-        .options(selectinload(Post.author))
+        .options(selectinload(Post.author), selectinload(Post.post_likes))
     )
-
     if user_id:
         stmt = stmt.where(Post.user_id == user_id)
 
     result = await db.execute(stmt)
     posts = result.scalars().all()
 
-    # Count total posts for pagination metadata
     count_stmt = select(func.count(Post.id))
     if user_id:
         count_stmt = count_stmt.where(Post.user_id == user_id)
-
-    total_result = await db.execute(count_stmt)
-    total = total_result.scalar() or 0
-
-    # Determine next page for infinite scrolling; returns None if no more pages.
+    total = (await db.execute(count_stmt)).scalar() or 0
     next_page = page + 1 if (page * page_size) < total else None
 
-    post_reads = [
-        PostRead(
+    data = []
+    for post in posts:
+        likes_count = len(post.post_likes)
+        liked_by_user = any(like.user_id == user.id for like in post.post_likes)
+        pr = PostRead(
             id=post.id,
             description=post.description,
             image_url=HttpUrl(post.image_url),
@@ -207,11 +210,9 @@ async def get_posts(
             author_username=post.author.username,
             author_email=post.author.email,
             created_at=post.created_at,
+            likes_count=likes_count,
+            liked_by_user=liked_by_user,
         )
-        for post in posts
-    ]
-    return {
-        "data": [post.model_dump(by_alias=True) for post in post_reads],
-        "nextPage": next_page,
-        "total": total,
-    }
+        data.append(pr.model_dump(by_alias=True))
+
+    return {"data": data, "nextPage": next_page, "total": total}
