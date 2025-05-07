@@ -7,8 +7,8 @@ function AccountPostsPage(): React.ReactNode {
     const userId = useAuthStore((state) => state.userId);
 
     const headerContent = (
-        <header className="flex items-center justify-center p-8">
-            <h1 className="text-2xl font-bold">My Pixelarts</h1>
+        <header className="flex items-center justify-center pt-8">
+            <h1 className="text-2xl font-bold">My posts</h1>
         </header>
     );
 
