@@ -22,6 +22,8 @@ const DescriptionField = ({
     onGenerate: () => void;
     errorPlaceholder?: string;
 }): React.ReactNode => {
+    const [userHasTyped, setUserHasTyped] = useState(false);
+    
     return (
         <div className="mt-4 flex items-center gap-2">
             <div className="flex-1">
@@ -29,11 +31,12 @@ const DescriptionField = ({
                     <div className="skeleton textarea border-none h-10 mt-4 w-full rounded"></div>
                 ) : (
                     <textarea
-                        className={`textarea w-full resize-none h-10 mt-4`}
+                        className={`textarea w-full resize-none h-10 mt-4 ${errorPlaceholder && !userHasTyped ? "textarea-error" : ""}`}
                         maxLength={1000}
                         placeholder={errorPlaceholder || "Description"}
                         value={value}
                         onChange={(e) => {
+                            setUserHasTyped(e.target.value.length > 0);
                             onChange(e.target.value);
                         }}
                     />
