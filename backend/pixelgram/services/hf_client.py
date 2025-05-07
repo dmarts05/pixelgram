@@ -41,10 +41,10 @@ class HFClient:
             max_tokens=500,
             top_p=0.7,
         )
-        
+
         if not completion.choices or not completion.choices[0].message:
             raise ValueError("No valid response from the model.")
-        
+
         if not completion.choices[0].message.content:
             raise ValueError("No content in the response from the model.")
 
