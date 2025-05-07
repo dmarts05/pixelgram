@@ -1,20 +1,20 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
-import React, { ReactNode } from "react";
-import { MdErrorOutline } from "react-icons/md";
+import React from "react";
+import { Post } from "../types/post";
+import FullPageErrorAlert from "./FullPageErrorAlert";
+import FullPageSpinner from "./FullPageSpinner";
 import InfiniteScrollIntersectionObserver from "./InfiniteScrollIntersectionObserver";
 import PostCard from "./post-card/PostCard";
-import { Post } from "../types/post";
-import { NAVBAR_HEIGHT } from "../utils/constants";
 
-interface PostPage {
+type PostPage = {
     data: Post[];
     nextPage: number | null;
-}
+};
 
 interface PostsGridProps {
     queryKey: string[];
     queryFn: (params: { pageParam: number }) => Promise<PostPage>;
-    header?: ReactNode;
+    header?: React.ReactNode;
 }
 
 function PostsGrid({
@@ -39,35 +39,9 @@ function PostsGrid({
 
     switch (status) {
         case "pending":
-            return (
-                <div
-                    className="flex justify-center items-center"
-                    style={{
-                        height: `calc(100vh - ${NAVBAR_HEIGHT})`,
-                    }}
-                >
-                    <span className="loading loading-ring loading-xl"></span>
-                </div>
-            );
+            return <FullPageSpinner />;
         case "error":
-            return (
-                <div
-                    className="flex justify-center items-center"
-                    style={{
-                        height: `calc(100vh - ${NAVBAR_HEIGHT})`,
-                    }}
-                >
-                    <div
-                        role="alert"
-                        className="alert alert-error alert-soft !shadow-md w-80"
-                    >
-                        <MdErrorOutline className="text-xl" />
-                        <span>{String(error)}</span>
-                    </div>
-                </div>
-            );
-        case "success":
-            break;
+            return <FullPageErrorAlert errorMessage={String(error)} />;
     }
 
     return (

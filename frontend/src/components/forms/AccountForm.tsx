@@ -1,12 +1,19 @@
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
-import { getMyUser, updateUser } from "../../services/account-service";
-import InputField from "./InputField";
-import { AccountFormData } from "../../types/account";
 import { useAccountForm } from "../../hooks/useAccountForm";
+import { getMyUser, updateUser } from "../../services/account-service";
+import { AccountFormData } from "../../types/account";
+import FullPageErrorAlert from "../FullPageErrorAlert";
+import FullPageSpinner from "../FullPageSpinner";
+import InputField from "./InputField";
 
 function AccountForm(): React.ReactNode {
-    const { data: userData, isLoading } = useQuery({
+    const {
+        data: userData,
+        isLoading,
+        isError,
+        error,
+    } = useQuery({
         queryKey: ["user"],
         queryFn: getMyUser,
     });
@@ -25,11 +32,8 @@ function AccountForm(): React.ReactNode {
         }
     }, [userData, reset]);
 
-    const updateMutation = useMutation({
+    const mutation = useMutation({
         mutationFn: updateUser,
-        onSuccess: () => {
-            // TODO: Show success message and redirect to feed
-        },
     });
 
     function onSubmit(data: AccountFormData): void {
@@ -43,16 +47,16 @@ function AccountForm(): React.ReactNode {
         };
 
         if (Object.keys(updateData).length > 0) {
-            updateMutation.mutate(updateData);
+            mutation.mutate(updateData);
         }
     }
 
     if (isLoading) {
-        return (
-            <div className="flex justify-center">
-                <span className="loading loading-spinner loading-lg"></span>
-            </div>
-        );
+        return <FullPageSpinner />;
+    }
+
+    if (isError) {
+        return <FullPageErrorAlert errorMessage={String(error)} />;
     }
 
     return (
@@ -100,12 +104,12 @@ function AccountForm(): React.ReactNode {
                 rules={commonRules.confirmPassword}
             />
 
-            {updateMutation.isError && (
+            {mutation.isError && (
                 <p className="text-error text-sm text-center">
-                    {(updateMutation.error as Error).message}
+                    {(mutation.error as Error).message}
                 </p>
             )}
-            {updateMutation.isSuccess && (
+            {mutation.isSuccess && (
                 <p className="text-success text-sm text-center">
                     Account updated successfully!
                 </p>
@@ -114,9 +118,9 @@ function AccountForm(): React.ReactNode {
             <button
                 type="submit"
                 className="btn btn-primary w-full"
-                disabled={updateMutation.isPending}
+                disabled={mutation.isPending}
             >
-                {updateMutation.isPending ? (
+                {mutation.isPending ? (
                     <span className="loading loading-spinner loading-sm" />
                 ) : (
                     <span className="text-sm font-medium">Save</span>

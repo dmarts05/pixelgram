@@ -1,5 +1,5 @@
-import { RiAccountCircleLine, RiLogoutBoxRLine } from "react-icons/ri";
 import { useMutation } from "@tanstack/react-query";
+import { RiAccountCircleLine, RiLogoutBoxRLine } from "react-icons/ri";
 import { Link, useNavigate } from "react-router";
 import { logout } from "../../services/auth-service";
 import { useAuthStore, useIsAuthenticated } from "../../stores/auth-store";
@@ -27,7 +27,7 @@ function AuthMenu(): React.ReactNode {
                     </div>
                     <ul
                         tabIndex={0}
-                        className="menu menu-sm dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
+                        className="menu dropdown-content bg-base-100 rounded-box z-1 mt-3 w-52 p-2 shadow"
                     >
                         <AccountLinks />
                         <li>

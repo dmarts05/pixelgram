@@ -4,7 +4,7 @@ import { fetchPosts } from "../../services/posts-service";
 import { useAuthStore } from "../../stores/auth-store";
 
 function AccountPostsPage(): React.ReactNode {
-    const { userId } = useAuthStore();
+    const userId = useAuthStore((state) => state.userId);
 
     const headerContent = (
         <header className="flex items-center justify-center p-8">
