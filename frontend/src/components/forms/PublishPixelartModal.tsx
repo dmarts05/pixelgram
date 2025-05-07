@@ -23,7 +23,7 @@ const DescriptionField = ({
     errorPlaceholder?: string;
 }): React.ReactNode => {
     const [userHasTyped, setUserHasTyped] = useState(false);
-    
+
     return (
         <div className="mt-4 flex items-center gap-2">
             <div className="flex-1">
