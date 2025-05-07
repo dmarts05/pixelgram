@@ -59,7 +59,7 @@ async def get_caption(
     if image.size != REQUIRED_IMAGE_SIZE:
         raise HTTPException(status_code=400, detail="Image must be 128x128 pixels.")
 
-    caption = await hf_client.generate_caption(image_bytes)
+    caption = await hf_client.generate_caption(image)
 
     if not caption:
         raise HTTPException(status_code=500, detail="Failed to generate caption.")
