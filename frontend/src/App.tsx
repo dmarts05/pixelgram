@@ -9,6 +9,7 @@ import LandingPage from "./pages/LandingPage";
 import LogInPage from "./pages/LogInPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import AccountPostPage from "./pages/account/AccountPostsPage";
+import SavedPostsPage from "./pages/account/SavedPostsPage";
 import SettingsPage from "./pages/account/SettingsPage";
 import SignUpPage from "./pages/SignUpPage";
 import { authGoogleCallback, getUserId } from "./services/auth-service";
@@ -99,7 +100,7 @@ function App(): React.ReactNode {
                         path="saved"
                         element={
                             <AuthenticatedRoute redirectTo="/">
-                                <div>Saved</div>
+                                <SavedPostsPage />
                             </AuthenticatedRoute>
                         }
                     />
