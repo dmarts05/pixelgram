@@ -11,7 +11,8 @@ interface CommentProps {
     content: string;
     createdAt: Date;
     byUser: boolean;
-    refetch: () => void;
+    refetchPosts: () => void;
+    refetchComments: () => void;
 }
 
 function Comment({
@@ -21,7 +22,8 @@ function Comment({
     content,
     createdAt,
     byUser,
-    refetch,
+    refetchPosts,
+    refetchComments,
 }: CommentProps): React.ReactNode {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isClamped, setIsClamped] = useState(false);
@@ -30,7 +32,8 @@ function Comment({
     const deleteCommentMutation = useMutation({
         mutationFn: () => deleteComment(postId, commentId),
         onSuccess: () => {
-            refetch();
+            refetchPosts();
+            refetchComments();
         },
         onError: () => {
             alert("Failed to delete comment. Please try again later.");

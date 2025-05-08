@@ -5,13 +5,15 @@ import {
 } from "@tanstack/react-query";
 import { FaRegBookmark } from "react-icons/fa";
 import { PostPage } from "../../PostsGrid";
-import CommentsButton from "./comments/CommentsButton";
+import CommentsButton from "./CommentsButton";
 import LikeButton from "./LikeButton";
 
 interface PostCardActionsProps {
     postId: string;
     likesCount: number;
     likedByUser: boolean;
+    commentsCount: number;
+    commentedByUser: boolean;
     refetch: (
         options?: RefetchOptions
     ) => Promise<QueryObserverResult<InfiniteData<PostPage, unknown>, Error>>;
@@ -21,6 +23,8 @@ function PostCardActions({
     postId,
     likesCount,
     likedByUser,
+    commentsCount,
+    commentedByUser,
     refetch,
 }: PostCardActionsProps): React.ReactNode {
     return (
@@ -34,7 +38,14 @@ function PostCardActions({
                         refetch={refetch}
                     />
                 </div>
-                <CommentsButton postId={postId} />
+                <div className="flex justify-center items-center gap-1">
+                    <CommentsButton
+                        postId={postId}
+                        commentsCount={commentsCount}
+                        commentedByUser={commentedByUser}
+                        refetchPosts={refetch}
+                    />
+                </div>
             </div>
             <div className="flex gap-2">
                 <button

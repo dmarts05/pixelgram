@@ -23,7 +23,7 @@ function LikeButton({
     likedByUser,
     refetch,
 }: LikeButtonProps): React.ReactNode {
-    const mutation = useMutation({
+    const likeUnlikeMutation = useMutation({
         mutationFn: async () => {
             if (!likedByUser) {
                 await likePost(postId);
@@ -35,11 +35,11 @@ function LikeButton({
     });
 
     let likeCountElement: React.ReactNode = null;
-    if (mutation.isPending) {
+    if (likeUnlikeMutation.isPending) {
         likeCountElement = (
             <span className="loading loading-ring loading-xs"></span>
         );
-    } else if (mutation.isError) {
+    } else if (likeUnlikeMutation.isError) {
         likeCountElement = <span className="text-sm font-semibold">-</span>;
     } else {
         likeCountElement = (
@@ -50,7 +50,7 @@ function LikeButton({
     return (
         <>
             <button
-                onClick={() => mutation.mutate()}
+                onClick={() => likeUnlikeMutation.mutate()}
                 className="rounded-full text-lg hover:text-primary transition-colors cursor-pointer"
             >
                 {likedByUser ? <FaHeart /> : <FaRegHeart />}

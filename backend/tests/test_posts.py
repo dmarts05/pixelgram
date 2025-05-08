@@ -38,6 +38,8 @@ async def test_create_post_success():
             assert json_data["post"]["createdAt"] is not None
             assert json_data["post"]["likesCount"] == 0
             assert json_data["post"]["likedByUser"] is False
+            assert json_data["post"]["commentsCount"] == 0
+            assert json_data["post"]["commentedByUser"] is False
 
     assert response.status_code == 201
 

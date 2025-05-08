@@ -8,7 +8,8 @@ type CommentsBubblesProps = {
     hasNextPage: boolean;
     isFetchingNextPage: boolean;
     fetchNextPage: () => void;
-    refetch: () => void;
+    refetchPosts: () => void;
+    refetchComments: () => void;
 };
 
 function CommentsBubbles({
@@ -16,7 +17,8 @@ function CommentsBubbles({
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-    refetch,
+    refetchPosts,
+    refetchComments,
 }: CommentsBubblesProps): React.ReactNode {
     return (
         <div className="flex-grow h-[60vh] overflow-y-auto pb-1">
@@ -29,7 +31,8 @@ function CommentsBubbles({
                         content={comment.content}
                         createdAt={comment.createdAt}
                         byUser={comment.byUser}
-                        refetch={refetch}
+                        refetchPosts={refetchPosts}
+                        refetchComments={refetchComments}
                     />
                 </React.Fragment>
             ))}

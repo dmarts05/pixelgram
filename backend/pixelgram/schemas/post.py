@@ -8,6 +8,7 @@ from pixelgram.schemas.camel_model import CamelModel
 
 class PostBase(CamelModel):
     """Base schema for posts."""
+
     description: str
     image_url: HttpUrl
 
@@ -48,6 +49,7 @@ class PostCreate(PostBase):
 
 class PostRead(PostBase):
     """Post schema for reading posts."""
+
     id: UUID
     user_id: UUID
     author_username: str
@@ -55,3 +57,5 @@ class PostRead(PostBase):
     created_at: datetime
     likes_count: int
     liked_by_user: bool
+    comments_count: int
+    commented_by_user: bool

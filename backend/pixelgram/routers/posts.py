@@ -163,6 +163,8 @@ async def post_pixelart(
             created_at=post.created_at,
             likes_count=0,
             liked_by_user=False,
+            comments_count=0,
+            commented_by_user=False,
         )
     except ValueError as e:
         raise HTTPException(
@@ -195,6 +197,8 @@ async def post_pixelart(
                                 "createdAt": "2025-05-05T09:34:49.976543+00:00",
                                 "likesCount": 23,
                                 "likedByUser": True,
+                                "commentsCount": 5,
+                                "commentedByUser": True,
                             }
                         ],
                         "nextPage": 2,
@@ -252,6 +256,22 @@ async def get_posts(
     liked_result = await db.execute(liked_stmt)
     liked_post_ids = {post_id for (post_id,) in liked_result.all()}
 
+    # Fetch comments count for each post
+    comments_stmt = (
+        select(PostComment.post_id, func.count(PostComment.id))
+        .where(PostComment.post_id.in_(post_ids))
+        .group_by(PostComment.post_id)
+    )
+    comments_result = await db.execute(comments_stmt)
+    comments_map = {post_id: count for post_id, count in comments_result.all()}
+
+    # Fetch commented posts by the user
+    commented_stmt = select(PostComment.post_id).where(
+        PostComment.post_id.in_(post_ids), PostComment.user_id == user.id
+    )
+    commented_result = await db.execute(commented_stmt)
+    commented_post_ids = {post_id for (post_id,) in commented_result.all()}
+
     # Construct the response
     data = []
     for post in posts:
@@ -265,6 +285,8 @@ async def get_posts(
             created_at=post.created_at,
             likes_count=likes_map.get(post.id, 0),
             liked_by_user=post.id in liked_post_ids,
+            comments_count=comments_map.get(post.id, 0),
+            commented_by_user=post.id in commented_post_ids,
         )
         data.append(pr.model_dump(by_alias=True))
     return {"data": data, "nextPage": next_page, "total": total}

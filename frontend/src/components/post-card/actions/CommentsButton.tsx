@@ -1,14 +1,22 @@
 import { useInfiniteQuery } from "@tanstack/react-query";
 import React, { useState } from "react";
-import { FaRegComment } from "react-icons/fa";
-import { fetchPostComments } from "../../../../services/posts-service";
-import CommentsModal from "./CommentsModal";
+import { FaComment, FaRegComment } from "react-icons/fa";
+import { fetchPostComments } from "../../../services/posts-service";
+import CommentsModal from "./comments/CommentsModal";
 
 type CommentsButtonProps = {
     postId: string;
+    commentsCount: number;
+    commentedByUser: boolean;
+    refetchPosts: () => void;
 };
 
-function CommentsButton({ postId }: CommentsButtonProps): React.ReactNode {
+function CommentsButton({
+    postId,
+    commentsCount,
+    commentedByUser,
+    refetchPosts,
+}: CommentsButtonProps): React.ReactNode {
     const modalId = `comments-modal-${postId}`;
     const [isModalOpen, setIsModalOpen] = useState(false);
 
@@ -19,7 +27,7 @@ function CommentsButton({ postId }: CommentsButtonProps): React.ReactNode {
         hasNextPage,
         isFetchingNextPage,
         status,
-        refetch,
+        refetch: refetchComments,
     } = useInfiniteQuery({
         queryKey: ["comments", postId],
         queryFn: ({ pageParam }) => fetchPostComments(postId, pageParam),
@@ -45,8 +53,10 @@ function CommentsButton({ postId }: CommentsButtonProps): React.ReactNode {
                 onClick={handleOpenModal}
                 className="rounded-full text-lg hover:text-primary transition-colors cursor-pointer"
             >
-                <FaRegComment />
+                {commentedByUser ? <FaComment /> : <FaRegComment />}
             </button>
+
+            <span className="text-sm font-semibold">{commentsCount}</span>
 
             <CommentsModal
                 postId={postId}
@@ -57,7 +67,8 @@ function CommentsButton({ postId }: CommentsButtonProps): React.ReactNode {
                 hasNextPage={hasNextPage}
                 isFetchingNextPage={isFetchingNextPage}
                 fetchNextPage={fetchNextPage}
-                refetch={refetch}
+                refetchPosts={refetchPosts}
+                refetchComments={refetchComments}
                 onClose={handleCloseModal}
             />
         </>

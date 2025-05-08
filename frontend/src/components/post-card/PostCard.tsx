@@ -38,6 +38,8 @@ function PostCard({ post, refetch }: PostCardProps): React.ReactNode {
                     postId={post.id}
                     likesCount={post.likesCount}
                     likedByUser={post.likedByUser}
+                    commentsCount={post.commentsCount}
+                    commentedByUser={post.commentedByUser}
                     refetch={refetch}
                 />
                 <PostCardDescription description={post.description} />

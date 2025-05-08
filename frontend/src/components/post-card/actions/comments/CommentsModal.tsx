@@ -16,7 +16,8 @@ type CommentsModalProps = {
     hasNextPage: boolean;
     isFetchingNextPage: boolean;
     fetchNextPage: () => void;
-    refetch: () => void;
+    refetchPosts: () => void;
+    refetchComments: () => void;
     onClose: () => void;
 };
 
@@ -29,7 +30,8 @@ function CommentsModal({
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
-    refetch,
+    refetchPosts,
+    refetchComments,
     onClose,
 }: CommentsModalProps): React.ReactNode {
     let modalContent: React.ReactNode = null;
@@ -49,11 +51,15 @@ function CommentsModal({
                         hasNextPage={hasNextPage}
                         isFetchingNextPage={isFetchingNextPage}
                         fetchNextPage={fetchNextPage}
-                        refetch={refetch}
+                        refetchPosts={refetchPosts}
+                        refetchComments={refetchComments}
                     />
                     <SendCommentForm
                         postId={postId}
-                        onCommentSent={() => refetch()}
+                        onCommentSent={() => {
+                            refetchPosts();
+                            refetchComments();
+                        }}
                     />
                 </>
             );
