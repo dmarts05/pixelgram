@@ -10,6 +10,8 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from pixelgram.models.base import Base
 
 if TYPE_CHECKING:
+    from pixelgram.models.post_comment import PostComment
+    from pixelgram.models.post_like import PostLike
     from pixelgram.models.user import User
 
 
@@ -26,8 +28,18 @@ class Post(Base):
         default=lambda: datetime.now(timezone.utc),
         nullable=False,
     )
-
     user_id: Mapped[UUID] = mapped_column(
         ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
     author: Mapped[User] = relationship(back_populates="posts")
+    post_likes: Mapped[list[PostLike]] = relationship(
+        "PostLike",
+        back_populates="post",
+    )
+    post_comments: Mapped[list[PostComment]] = relationship(
+        "PostComment", back_populates="post", cascade="all, delete-orphan"
+    )
+
+    @property
+    def like_count(self) -> int:
+        return len(self.post_likes)

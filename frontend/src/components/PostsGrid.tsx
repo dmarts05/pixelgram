@@ -6,7 +6,7 @@ import FullPageSpinner from "./FullPageSpinner";
 import InfiniteScrollIntersectionObserver from "./InfiniteScrollIntersectionObserver";
 import PostCard from "./post-card/PostCard";
 
-type PostPage = {
+export type PostPage = {
     data: Post[];
     nextPage: number | null;
 };
@@ -29,6 +29,7 @@ function PostsGrid({
         hasNextPage,
         isFetchingNextPage,
         status,
+        refetch,
     } = useInfiniteQuery({
         queryKey,
         queryFn,
@@ -52,7 +53,7 @@ function PostsGrid({
                     <React.Fragment key={pageIndex}>
                         {page.data.map((post: Post) => (
                             <React.Fragment key={post.id}>
-                                <PostCard post={post} />
+                                <PostCard post={post} refetch={refetch} />
                             </React.Fragment>
                         ))}
                     </React.Fragment>

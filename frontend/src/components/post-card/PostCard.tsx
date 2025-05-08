@@ -1,5 +1,11 @@
+import {
+    InfiniteData,
+    QueryObserverResult,
+    RefetchOptions,
+} from "@tanstack/react-query";
 import { Post } from "../../types/post";
-import PostCardActions from "./PostCardActions";
+import { PostPage } from "../PostsGrid";
+import PostCardActions from "./actions/PostCardActions";
 import PostCardDescription from "./PostCardDescription";
 import PostCardHeader from "./PostCardHeader";
 import PostCardImage from "./PostCardImage";
@@ -7,11 +13,14 @@ import PostCardTimestamp from "./PostCardTimestamp";
 
 const POST_CARD_IMAGE_SIZE = 256;
 
-type PostCardProps = {
+interface PostCardProps {
     post: Post;
-};
+    refetch: (
+        options?: RefetchOptions
+    ) => Promise<QueryObserverResult<InfiniteData<PostPage, unknown>, Error>>;
+}
 
-function PostCard({ post }: PostCardProps): React.ReactNode {
+function PostCard({ post, refetch }: PostCardProps): React.ReactNode {
     return (
         <article
             className="card bg-base-100 shadow-md"
@@ -19,15 +28,19 @@ function PostCard({ post }: PostCardProps): React.ReactNode {
         >
             <PostCardHeader authorUsername={post.authorUsername} />
             <PostCardImage
+                postId={post.id}
                 imageUrl={post.imageUrl}
                 imageAlt={post.description}
                 height={POST_CARD_IMAGE_SIZE}
             />
             <div className="card-body">
                 <PostCardActions
-                    onLike={() => console.log("Like")}
-                    onComment={() => console.log("Comment")}
-                    onBookmark={() => console.log("Bookmark")}
+                    postId={post.id}
+                    likesCount={post.likesCount}
+                    likedByUser={post.likedByUser}
+                    commentsCount={post.commentsCount}
+                    commentedByUser={post.commentedByUser}
+                    refetch={refetch}
                 />
                 <PostCardDescription description={post.description} />
                 <PostCardTimestamp createdAt={post.createdAt} />

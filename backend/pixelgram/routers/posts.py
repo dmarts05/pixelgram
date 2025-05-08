@@ -1,17 +1,33 @@
 from io import BytesIO
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from fastapi import (
+    APIRouter,
+    Body,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Path,
+    Query,
+    Response,
+    UploadFile,
+    status,
+)
 from PIL import Image
 from pydantic import HttpUrl
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from pixelgram.auth import current_active_user
 from pixelgram.db import get_async_session
 from pixelgram.models.post import Post
+from pixelgram.models.post_comment import PostComment
+from pixelgram.models.post_like import PostLike
 from pixelgram.models.user import User
 from pixelgram.schemas.post import PostCreate, PostRead
+from pixelgram.schemas.post_comment import PostCommentCreate, PostCommentRead
 from pixelgram.services.supabase_client import (
     SupabaseStorageClient,
     get_supabase_client,
@@ -27,11 +43,11 @@ posts_router = APIRouter(
 
 @posts_router.post(
     "/",
-    status_code=201,
+    status_code=status.HTTP_201_CREATED,
     summary="Creates a pixelart post",
     description="Takes an uploaded image (must be 128x128 pixels) and its description and saves it as a pixelart post.",
     responses={
-        201: {
+        status.HTTP_201_CREATED: {
             "description": "Post successfully created",
             "content": {
                 "application/json": {
@@ -44,12 +60,14 @@ posts_router = APIRouter(
                             "authorUsername": "catlover123",
                             "authorEmail": "catlover123@example.com",
                             "createdAt": "2025-05-05T09:34:49.976543+00:00",
+                            "likesCount": 0,
+                            "likedByUser": False,
                         }
                     }
                 }
             },
         },
-        400: {
+        status.HTTP_400_BAD_REQUEST: {
             "description": "Invalid input (e.g., wrong size or type)",
             "content": {
                 "application/json": {
@@ -57,7 +75,7 @@ posts_router = APIRouter(
                 }
             },
         },
-        401: {"description": "Unauthorized"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
     },
 )
 async def post_pixelart(
@@ -68,66 +86,93 @@ async def post_pixelart(
     settings: Settings = Depends(get_settings),
     db: AsyncSession = Depends(get_async_session),
 ):
+    # Check if file is an image
     content_type = file.content_type
     if not content_type or not content_type.startswith("image/"):
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid content type. Only image files are allowed.",
         )
-
     image_bytes = await file.read()
-
     try:
         image = Image.open(BytesIO(image_bytes))
-    except Exception as e:
-        print(f"Error opening image: {e}")
-        raise HTTPException(status_code=400, detail="Invalid or corrupted image file.")
-
-    if len(image_bytes) > settings.max_img_mb_size * 1024 * 1024:
+    except Exception:
         raise HTTPException(
-            status_code=400,
-            detail=f"Image exceeds {settings.max_img_mb_size}MB size limit.",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or corrupted image file.",
         )
 
+    # Check if image does not exceed the maximum size and dimensions
+    if len(image_bytes) > settings.max_img_mb_size * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Image exceeds {settings.max_img_mb_size}MB size limit.",
+        )
     if image.size != REQUIRED_IMAGE_SIZE:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Image must be {REQUIRED_IMAGE_SIZE[0]}x{REQUIRED_IMAGE_SIZE[1]} pixels.",
         )
 
+    # Upload image to Supabase
     try:
         image_url = await supabase_client.upload(image)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Image upload failed: {str(e)}",
+        )
 
-        post_data = PostCreate(
+    # Create a new post and save it to the database
+    try:
+        pc = PostCreate(
             description=description,
             image_url=image_url,
             user_id=user.id,
         )
-        new_post = Post(
-            description=post_data.description,
-            image_url=str(post_data.image_url),
-            user_id=post_data.user_id,
-        )
-
-        db.add(new_post)
-        await db.commit()
-        await db.refresh(new_post)
-
-        post_read = PostRead(
-            id=new_post.id,
-            description=new_post.description,
-            image_url=HttpUrl(new_post.image_url),
-            user_id=new_post.user_id,
-            author_username=user.username,
-            author_email=user.email,
-            created_at=new_post.created_at,
-        )
-        return {"post": post_read.model_dump(by_alias=True)}
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid post data: {str(e)}",
+        )
+    post = Post(
+        description=pc.description,
+        image_url=str(pc.image_url),
+        user_id=pc.user_id,
+    )
+    try:
+        db.add(post)
+        await db.commit()
+        await db.refresh(post)
     except Exception as e:
         await db.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to save post: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save post: {str(e)}",
+        )
+
+    # Return the created post
+    try:
+        pr = PostRead(
+            id=post.id,
+            description=post.description,
+            image_url=HttpUrl(post.image_url),
+            user_id=post.user_id,
+            author_username=user.username,
+            author_email=user.email,
+            created_at=post.created_at,
+            likes_count=0,
+            liked_by_user=False,
+            comments_count=0,
+            commented_by_user=False,
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Invalid post data: {str(e)}",
+        )
+
+    return {"post": pr.model_dump(by_alias=True)}
 
 
 @posts_router.get(
@@ -136,7 +181,7 @@ async def post_pixelart(
     description="Returns a paginated list of posts for infinite scrolling. "
     "Use query parameters to control the page and page size. You can filter by userId.",
     responses={
-        200: {
+        status.HTTP_200_OK: {
             "description": "A paginated list of posts",
             "content": {
                 "application/json": {
@@ -150,6 +195,10 @@ async def post_pixelart(
                                 "authorUsername": "catlover123",
                                 "authorEmail": "catlover123@example.com",
                                 "createdAt": "2025-05-05T09:34:49.976543+00:00",
+                                "likesCount": 23,
+                                "likedByUser": True,
+                                "commentsCount": 5,
+                                "commentedByUser": True,
                             }
                         ],
                         "nextPage": 2,
@@ -158,21 +207,19 @@ async def post_pixelart(
                 }
             },
         },
-        401: {"description": "Unauthorized"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
     },
 )
 async def get_posts(
-    db: AsyncSession = Depends(get_async_session),
+    user: User = Depends(current_active_user),
     page: int = Query(1, ge=1, description="The page number to retrieve."),
     page_size: int = Query(
         10, ge=1, le=100, description="The number of posts per page."
     ),
-    user_id: str | None = Query(
-        None,
-        description="The user ID to filter posts by.",
-    ),
+    user_id: str | None = Query(None, description="The user ID to filter posts by."),
+    db: AsyncSession = Depends(get_async_session),
 ):
-    # Query posts ordered by creation date
+    # Get posts with pagination and filter by user_id if provided
     stmt = (
         select(Post)
         .order_by(Post.created_at.desc())
@@ -180,26 +227,55 @@ async def get_posts(
         .limit(page_size)
         .options(selectinload(Post.author))
     )
-
     if user_id:
         stmt = stmt.where(Post.user_id == user_id)
-
     result = await db.execute(stmt)
     posts = result.scalars().all()
+    post_ids = [post.id for post in posts]
 
-    # Count total posts for pagination metadata
+    # Count total posts for pagination and determine next page
     count_stmt = select(func.count(Post.id))
     if user_id:
         count_stmt = count_stmt.where(Post.user_id == user_id)
-
-    total_result = await db.execute(count_stmt)
-    total = total_result.scalar() or 0
-
-    # Determine next page for infinite scrolling; returns None if no more pages.
+    total = (await db.execute(count_stmt)).scalar() or 0
     next_page = page + 1 if (page * page_size) < total else None
 
-    post_reads = [
-        PostRead(
+    # Fetch likes count for each post
+    likes_stmt = (
+        select(PostLike.post_id, func.count(PostLike.user_id))
+        .where(PostLike.post_id.in_(post_ids))
+        .group_by(PostLike.post_id)
+    )
+    likes_result = await db.execute(likes_stmt)
+    likes_map = {post_id: count for post_id, count in likes_result.all()}
+
+    # Fetch liked posts by the user
+    liked_stmt = select(PostLike.post_id).where(
+        PostLike.post_id.in_(post_ids), PostLike.user_id == user.id
+    )
+    liked_result = await db.execute(liked_stmt)
+    liked_post_ids = {post_id for (post_id,) in liked_result.all()}
+
+    # Fetch comments count for each post
+    comments_stmt = (
+        select(PostComment.post_id, func.count(PostComment.id))
+        .where(PostComment.post_id.in_(post_ids))
+        .group_by(PostComment.post_id)
+    )
+    comments_result = await db.execute(comments_stmt)
+    comments_map = {post_id: count for post_id, count in comments_result.all()}
+
+    # Fetch commented posts by the user
+    commented_stmt = select(PostComment.post_id).where(
+        PostComment.post_id.in_(post_ids), PostComment.user_id == user.id
+    )
+    commented_result = await db.execute(commented_stmt)
+    commented_post_ids = {post_id for (post_id,) in commented_result.all()}
+
+    # Construct the response
+    data = []
+    for post in posts:
+        pr = PostRead(
             id=post.id,
             description=post.description,
             image_url=HttpUrl(post.image_url),
@@ -207,11 +283,275 @@ async def get_posts(
             author_username=post.author.username,
             author_email=post.author.email,
             created_at=post.created_at,
+            likes_count=likes_map.get(post.id, 0),
+            liked_by_user=post.id in liked_post_ids,
+            comments_count=comments_map.get(post.id, 0),
+            commented_by_user=post.id in commented_post_ids,
         )
-        for post in posts
-    ]
+        data.append(pr.model_dump(by_alias=True))
+    return {"data": data, "nextPage": next_page, "total": total}
+
+
+@posts_router.post(
+    "/{post_id}/like/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Like a post",
+    responses={
+        status.HTTP_204_NO_CONTENT: {"description": "Post liked"},
+        status.HTTP_404_NOT_FOUND: {"description": "Post not found"},
+        status.HTTP_409_CONFLICT: {"description": "Already liked"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
+    },
+)
+async def like_post(
+    post_id: UUID = Path(..., description="The ID of the post to like"),
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    # Check if post exists
+    post = await db.get(Post, post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
+        )
+
+    # Check if user has already liked the post
+    stmt = select(PostLike).where(
+        PostLike.post_id == post_id, PostLike.user_id == user.id
+    )
+    if (await db.execute(stmt)).scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Post already liked"
+        )
+
+    # Add like
+    db.add(PostLike(post_id=post_id, user_id=user.id))
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@posts_router.delete(
+    "/{post_id}/like/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Unlike a post",
+    responses={
+        status.HTTP_204_NO_CONTENT: {"description": "Post unliked"},
+        status.HTTP_400_BAD_REQUEST: {"description": "Post not liked"},
+        status.HTTP_404_NOT_FOUND: {"description": "Post not found"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
+    },
+)
+async def unlike_post(
+    post_id: UUID = Path(..., description="The ID of the post to unlike"),
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    # Check if post exists
+    post = await db.get(Post, post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
+        )
+
+    # Delete like
+    delete_stmt = (
+        delete(PostLike)
+        .where(PostLike.post_id == post_id, PostLike.user_id == user.id)
+        .execution_options(synchronize_session="fetch")
+    )
+    result = await db.execute(delete_stmt)
+    # If like was not deleted, it means the user didn't like the post in the first place
+    if result.rowcount == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Post not liked"
+        )
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@posts_router.get(
+    "/{post_id}/comments/",
+    summary="Retrieve paginated comments for a post",
+    description="Returns a paginated list of comments on a given post.",
+    responses={
+        status.HTTP_200_OK: {
+            "description": "A paginated list of comments",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "data": [
+                            {
+                                "id": "11111111-1111-1111-1111-111111111111",
+                                "postId": "00000000-0000-0000-0000-000000000001",
+                                "userId": "22222222-2222-2222-2222-222222222222",
+                                "authorUsername": "catlover123",
+                                "authorEmail": "catlover123@example.com",
+                                "content": "So cute!",
+                                "createdAt": "2025-05-07T12:34:56.789012+00:00",
+                                "byUser": False,
+                            }
+                        ],
+                        "nextPage": 2,
+                        "total": 15,
+                    }
+                }
+            },
+        },
+        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
+        status.HTTP_404_NOT_FOUND: {"description": "Post not found"},
+    },
+)
+async def get_post_comments(
+    post_id: UUID = Path(..., description="The ID of the post to fetch comments for"),
+    user: User = Depends(current_active_user),
+    page: int = Query(1, ge=1, description="The page number to retrieve."),
+    page_size: int = Query(
+        10, ge=1, le=100, description="The number of comments per page."
+    ),
+    db: AsyncSession = Depends(get_async_session),
+):
+    # Check if post exists
+    post = await db.get(Post, post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
+        )
+
+    # Get comments with pagination
+    stmt = (
+        select(PostComment)
+        .where(PostComment.post_id == post_id)
+        .order_by(PostComment.created_at.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .options(selectinload(PostComment.user))
+    )
+    result = await db.execute(stmt)
+    comments = result.scalars().all()
+
+    # Count total comments for pagination and determine next page
+    count_stmt = select(func.count(PostComment.id)).where(
+        PostComment.post_id == post_id
+    )
+    total = (await db.execute(count_stmt)).scalar() or 0
+    next_page = page + 1 if (page * page_size) < total else None
+
+    # Construct the response
+    data = []
+    for c in comments:
+        cr = PostCommentRead(
+            id=c.id,
+            post_id=c.post_id,
+            user_id=c.user_id,
+            author_username=c.user.username,
+            author_email=c.user.email,
+            content=c.content,
+            created_at=c.created_at,
+            by_user=(c.user_id == user.id),
+        )
+        data.append(cr.model_dump(by_alias=True))
+
+    return {"data": data, "nextPage": next_page, "total": total}
+
+
+@posts_router.post(
+    "/{post_id}/comments/",
+    status_code=status.HTTP_201_CREATED,
+    summary="Add a comment to a post",
+    responses={
+        status.HTTP_201_CREATED: {"description": "Comment created"},
+        status.HTTP_404_NOT_FOUND: {"description": "Post not found"},
+        status.HTTP_400_BAD_REQUEST: {"description": "Invalid input"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
+    },
+)
+async def post_comment(
+    post_id: UUID = Path(..., description="The ID of the post to comment on"),
+    payload: PostCommentCreate = Body(...),
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    # Check if post exists
+    post = await db.get(Post, post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
+        )
+
+    # Validate comment content and create comment
+    try:
+        comment = PostComment(
+            post_id=post_id,
+            user_id=user.id,
+            content=payload.content,
+        )
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid comment data: {str(e)}",
+        )
+    db.add(comment)
+    await db.commit()
+    await db.refresh(comment)
+
+    # Return the created comment
+    cr = PostCommentRead(
+        id=comment.id,
+        post_id=comment.post_id,
+        user_id=comment.user_id,
+        author_username=user.username,
+        author_email=user.email,
+        content=comment.content,
+        created_at=comment.created_at,
+        by_user=True,
+    )
     return {
-        "data": [post.model_dump(by_alias=True) for post in post_reads],
-        "nextPage": next_page,
-        "total": total,
+        "comment": cr.model_dump(by_alias=True),
     }
+
+
+@posts_router.delete(
+    "/{post_id}/comments/{comment_id}/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a comment",
+    responses={
+        status.HTTP_204_NO_CONTENT: {"description": "Comment deleted"},
+        status.HTTP_404_NOT_FOUND: {"description": "Post or comment not found"},
+        status.HTTP_403_FORBIDDEN: {"description": "Not comment owner"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
+    },
+)
+async def delete_comment(
+    post_id: UUID = Path(..., description="The ID of the post"),
+    comment_id: UUID = Path(..., description="The ID of the comment to delete"),
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    # Check if post exists
+    post = await db.get(Post, post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
+        )
+
+    # Check if comment exists
+    stmt = select(PostComment).where(
+        PostComment.id == comment_id, PostComment.post_id == post_id
+    )
+    result = await db.execute(stmt)
+    comment = result.scalar_one_or_none()
+    if not comment:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Comment not found"
+        )
+
+    # Check if user is the owner of the comment
+    if str(comment.user_id) != str(user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not comment owner"
+        )
+
+    # Delete the comment
+    await db.delete(comment)
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

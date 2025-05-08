@@ -6,4 +6,8 @@ export type Post = {
     authorUsername: string;
     authorEmail: string;
     createdAt: Date;
+    likesCount: number;
+    likedByUser: boolean;
+    commentsCount: number;
+    commentedByUser: boolean;
 };
