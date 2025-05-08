@@ -524,7 +524,7 @@ async def delete_comment(
         )
 
     # Check if user is the owner of the comment
-    if str(comment.user_id) != user.id:
+    if str(comment.user_id) != str(user.id):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not comment owner"
         )

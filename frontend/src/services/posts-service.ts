@@ -108,3 +108,16 @@ export async function postComment(
 
     return res.json();
 }
+
+export async function deleteComment(
+    postId: string,
+    commentId: string
+): Promise<void> {
+    const res = await fetchApi(`posts/${postId}/comments/${commentId}`, {
+        method: "DELETE",
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to delete comment");
+    }
+}

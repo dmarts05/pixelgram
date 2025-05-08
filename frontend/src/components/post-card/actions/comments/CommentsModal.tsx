@@ -49,6 +49,7 @@ function CommentsModal({
                         hasNextPage={hasNextPage}
                         isFetchingNextPage={isFetchingNextPage}
                         fetchNextPage={fetchNextPage}
+                        refetch={refetch}
                     />
                     <SendCommentForm
                         postId={postId}

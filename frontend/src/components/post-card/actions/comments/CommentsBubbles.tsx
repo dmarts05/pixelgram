@@ -8,6 +8,7 @@ type CommentsBubblesProps = {
     hasNextPage: boolean;
     isFetchingNextPage: boolean;
     fetchNextPage: () => void;
+    refetch: () => void;
 };
 
 function CommentsBubbles({
@@ -15,16 +16,20 @@ function CommentsBubbles({
     hasNextPage,
     isFetchingNextPage,
     fetchNextPage,
+    refetch,
 }: CommentsBubblesProps): React.ReactNode {
     return (
         <div className="flex-grow h-[60vh] overflow-y-auto pb-1">
             {comments.map((comment) => (
                 <React.Fragment key={comment.id}>
                     <Comment
+                        postId={comment.postId}
+                        commentId={comment.id}
                         authorUsername={comment.authorUsername}
                         content={comment.content}
                         createdAt={comment.createdAt}
                         byUser={comment.byUser}
+                        refetch={refetch}
                     />
                 </React.Fragment>
             ))}
