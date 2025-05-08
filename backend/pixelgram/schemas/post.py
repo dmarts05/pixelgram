@@ -51,3 +51,4 @@ class PostRead(PostBase):
     author_username: str
     author_email: str
     created_at: datetime
+    saved_by_user: bool

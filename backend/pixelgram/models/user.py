@@ -12,6 +12,7 @@ from pixelgram.models.oauth_account import OAuthAccount
 
 if TYPE_CHECKING:
     from pixelgram.models.post import Post
+    from pixelgram.models.post_saved import PostSaved
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
@@ -22,3 +23,8 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
         "OAuthAccount", lazy="joined"
     )
     posts: Mapped[list[Post]] = relationship("Post", back_populates="author")
+
+    posts_saved: Mapped[list[PostSaved]] = relationship(
+        "PostSaved",
+        back_populates="user",
+    )

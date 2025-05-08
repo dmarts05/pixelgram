@@ -10,6 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from pixelgram.models.base import Base
 
 if TYPE_CHECKING:
+    from pixelgram.models.post_saved import PostSaved
     from pixelgram.models.user import User
 
 
@@ -31,3 +32,8 @@ class Post(Base):
         ForeignKey("user.id", ondelete="CASCADE"), nullable=False
     )
     author: Mapped[User] = relationship(back_populates="posts")
+
+    posts_saved: Mapped[list[PostSaved]] = relationship(
+        "PostSaved",
+        back_populates="post",
+    )
