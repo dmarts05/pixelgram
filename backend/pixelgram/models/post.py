@@ -12,6 +12,7 @@ from pixelgram.models.base import Base
 if TYPE_CHECKING:
     from pixelgram.models.post_comment import PostComment
     from pixelgram.models.post_like import PostLike
+    from pixelgram.models.post_saved import PostSaved
     from pixelgram.models.user import User
 
 
@@ -43,3 +44,8 @@ class Post(Base):
     @property
     def like_count(self) -> int:
         return len(self.post_likes)
+
+    posts_saved: Mapped[list[PostSaved]] = relationship(
+        "PostSaved",
+        back_populates="post",
+    )
