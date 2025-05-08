@@ -5,7 +5,7 @@ import {
 } from "@tanstack/react-query";
 import { FaRegBookmark } from "react-icons/fa";
 import { PostPage } from "../../PostsGrid";
-import CommentsButton from "./CommentsButton";
+import CommentsButton from "./comments/CommentsButton";
 import LikeButton from "./LikeButton";
 
 interface PostCardActionsProps {

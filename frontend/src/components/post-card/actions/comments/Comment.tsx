@@ -1,19 +1,19 @@
 import { useEffect, useRef, useState } from "react";
-import PostCardTimestamp from "./PostCardTimestamp";
+import PostCardTimestamp from "../../PostCardTimestamp";
 
-type PostCardCommentProps = {
+type CommentProps = {
     authorUsername: string;
     content: string;
     createdAt: Date;
     byUser: boolean;
 };
 
-function PostCardComment({
+function Comment({
     authorUsername,
     content,
     createdAt,
     byUser,
-}: PostCardCommentProps): React.ReactNode {
+}: CommentProps): React.ReactNode {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isClamped, setIsClamped] = useState(false);
     const bubbleRef = useRef<HTMLDivElement | null>(null);
@@ -69,4 +69,4 @@ function PostCardComment({
     );
 }
 
-export default PostCardComment;
+export default Comment;
