@@ -41,11 +41,11 @@ class Post(Base):
         "PostComment", back_populates="post", cascade="all, delete-orphan"
     )
 
-    @property
-    def like_count(self) -> int:
-        return len(self.post_likes)
-
     posts_saved: Mapped[list[PostSaved]] = relationship(
         "PostSaved",
         back_populates="post",
     )
+
+    @property
+    def like_count(self) -> int:
+        return len(self.post_likes)
