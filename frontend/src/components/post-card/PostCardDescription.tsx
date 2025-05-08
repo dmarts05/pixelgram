@@ -20,8 +20,8 @@ function PostCardDescription({
 
         // When not expanded, the paragraph is clamped and we compare its scrollHeight with clientHeight.
         // This determines if there's hidden overflow content.
-        const isClamped = pElement.scrollHeight > pElement.clientHeight;
-        setIsClamped(isClamped);
+        const clamped = pElement.scrollHeight > pElement.clientHeight;
+        setIsClamped(clamped);
     }, []);
 
     return (

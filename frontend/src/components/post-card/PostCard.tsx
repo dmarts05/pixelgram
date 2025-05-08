@@ -28,6 +28,7 @@ function PostCard({ post, refetch }: PostCardProps): React.ReactNode {
         >
             <PostCardHeader authorUsername={post.authorUsername} />
             <PostCardImage
+                postId={post.id}
                 imageUrl={post.imageUrl}
                 imageAlt={post.description}
                 height={POST_CARD_IMAGE_SIZE}

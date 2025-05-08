@@ -12,6 +12,7 @@ from pixelgram.models.oauth_account import OAuthAccount
 
 if TYPE_CHECKING:
     from pixelgram.models.post import Post
+    from pixelgram.models.post_comment import PostComment
     from pixelgram.models.post_like import PostLike
 
 
@@ -26,6 +27,9 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     post_likes: Mapped[list[PostLike]] = relationship(
         "PostLike",
         back_populates="user",
+    )
+    post_comments: Mapped[list[PostComment]] = relationship(
+        "PostComment", back_populates="user", cascade="all, delete-orphan"
     )
 
     @property

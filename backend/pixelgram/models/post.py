@@ -10,6 +10,7 @@ from sqlalchemy.orm import Mapped, mapped_column, relationship
 from pixelgram.models.base import Base
 
 if TYPE_CHECKING:
+    from pixelgram.models.post_comment import PostComment
     from pixelgram.models.post_like import PostLike
     from pixelgram.models.user import User
 
@@ -34,6 +35,9 @@ class Post(Base):
     post_likes: Mapped[list[PostLike]] = relationship(
         "PostLike",
         back_populates="post",
+    )
+    post_comments: Mapped[list[PostComment]] = relationship(
+        "PostComment", back_populates="post", cascade="all, delete-orphan"
     )
 
     @property

@@ -3,8 +3,9 @@ import {
     QueryObserverResult,
     RefetchOptions,
 } from "@tanstack/react-query";
-import { FaRegBookmark, FaRegComment } from "react-icons/fa";
+import { FaRegBookmark } from "react-icons/fa";
 import { PostPage } from "../../PostsGrid";
+import CommentsButton from "./CommentsButton";
 import LikeButton from "./LikeButton";
 
 interface PostCardActionsProps {
@@ -33,12 +34,7 @@ function PostCardActions({
                         refetch={refetch}
                     />
                 </div>
-                <button
-                    onClick={() => console.log("Comment")}
-                    className="rounded-full text-lg hover:text-primary transition-colors cursor-pointer"
-                >
-                    <FaRegComment />
-                </button>
+                <CommentsButton postId={postId} />
             </div>
             <div className="flex gap-2">
                 <button

@@ -1,4 +1,5 @@
 import { Post } from "../types/post";
+import { PostComment } from "../types/post-comment";
 import { fetchApi } from "./fetch-api";
 
 export type FetchPostsParams = {
@@ -58,4 +59,52 @@ export async function unlikePost(postId: string): Promise<void> {
     if (!res.ok) {
         throw new Error("Failed to unlike post");
     }
+}
+
+export type FetchPostCommentsResponse = {
+    data: PostComment[];
+    nextPage: number | null;
+    total: number;
+};
+
+export async function fetchPostComments(
+    postId: string,
+    pageParam: number,
+    pageSize = 10
+): Promise<FetchPostCommentsResponse> {
+    const params = new URLSearchParams({
+        page: String(pageParam),
+        page_size: String(pageSize),
+    });
+
+    const res = await fetchApi(`posts/${postId}/comments?${params}`, {
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to fetch post comments");
+    }
+
+    return res.json();
+}
+
+export async function postComment(
+    postId: string,
+    commentText: string
+): Promise<PostComment> {
+    const res = await fetchApi(`posts/${postId}/comments`, {
+        method: "POST",
+        body: JSON.stringify({ content: commentText }),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to post comment");
+    }
+
+    return res.json();
 }

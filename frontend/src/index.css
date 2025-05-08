@@ -3,4 +3,5 @@
     themes:
         corporate --default,
         corporate --prefersdark;
+    exclude: rootscrollgutter;
 }

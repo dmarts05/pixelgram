@@ -1,26 +1,30 @@
+import Modal from "../Modal";
+
 type PostCardImageProps = {
+    postId: string;
     imageUrl: URL;
     imageAlt: string;
     height: number;
 };
 
 function PostCardImage({
+    postId,
     imageUrl,
     imageAlt,
     height,
 }: PostCardImageProps): React.ReactNode {
-    const dialogId = `image-modal-${imageUrl}`;
+    const modalId = `image-modal-${postId}`;
 
-    function openModal(): void {
-        const dialog = document.getElementById(dialogId) as HTMLDialogElement;
-        dialog.showModal();
+    function handleOpenModal(): void {
+        const modal = document.getElementById(modalId) as HTMLDialogElement;
+        modal.showModal();
     }
 
     return (
         <>
             <figure
-                onClick={openModal}
-                className="relative border-y border-base-200 cursor-pointer overflow-hidden"
+                onClick={handleOpenModal}
+                className="relative border-y border-base-200 cursor-pointer overflow-hidden select-none"
                 style={{ height: `${height}px` }}
             >
                 {/* Blurred background layer */}
@@ -43,20 +47,14 @@ function PostCardImage({
                 />
             </figure>
 
-            {/* Modal dialog for full image */}
-            <dialog id={dialogId} className="modal">
-                <div className="modal-box p-0">
-                    <img
-                        src={String(imageUrl)}
-                        alt={imageAlt}
-                        className="w-full"
-                        height={height}
-                    />
-                </div>
-                <form method="dialog" className="modal-backdrop">
-                    <button>close</button>
-                </form>
-            </dialog>
+            <Modal id={modalId} responsive={false} modalBoxClassName="p-0">
+                <img
+                    src={String(imageUrl)}
+                    alt={imageAlt}
+                    className="w-full"
+                    height={height}
+                />
+            </Modal>
         </>
     );
 }
