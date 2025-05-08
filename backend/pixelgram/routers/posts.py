@@ -1,15 +1,28 @@
 from io import BytesIO
+from uuid import UUID
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    Form,
+    HTTPException,
+    Path,
+    Query,
+    Response,
+    UploadFile,
+    status,
+)
 from PIL import Image
 from pydantic import HttpUrl
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from pixelgram.auth import current_active_user
 from pixelgram.db import get_async_session
 from pixelgram.models.post import Post
+from pixelgram.models.post_like import PostLike
 from pixelgram.models.user import User
 from pixelgram.schemas.post import PostCreate, PostRead
 from pixelgram.services.supabase_client import (
@@ -27,11 +40,11 @@ posts_router = APIRouter(
 
 @posts_router.post(
     "/",
-    status_code=201,
+    status_code=status.HTTP_201_CREATED,
     summary="Creates a pixelart post",
     description="Takes an uploaded image (must be 128x128 pixels) and its description and saves it as a pixelart post.",
     responses={
-        201: {
+        status.HTTP_201_CREATED: {
             "description": "Post successfully created",
             "content": {
                 "application/json": {
@@ -51,7 +64,7 @@ posts_router = APIRouter(
                 }
             },
         },
-        400: {
+        status.HTTP_400_BAD_REQUEST: {
             "description": "Invalid input (e.g., wrong size or type)",
             "content": {
                 "application/json": {
@@ -59,7 +72,7 @@ posts_router = APIRouter(
                 }
             },
         },
-        401: {"description": "Unauthorized"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
     },
 )
 async def post_pixelart(
@@ -70,68 +83,91 @@ async def post_pixelart(
     settings: Settings = Depends(get_settings),
     db: AsyncSession = Depends(get_async_session),
 ):
+    # Check if the file is an image
     content_type = file.content_type
     if not content_type or not content_type.startswith("image/"):
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid content type. Only image files are allowed.",
         )
-
     image_bytes = await file.read()
-
     try:
         image = Image.open(BytesIO(image_bytes))
-    except Exception as e:
-        print(f"Error opening image: {e}")
-        raise HTTPException(status_code=400, detail="Invalid or corrupted image file.")
-
-    if len(image_bytes) > settings.max_img_mb_size * 1024 * 1024:
+    except Exception:
         raise HTTPException(
-            status_code=400,
-            detail=f"Image exceeds {settings.max_img_mb_size}MB size limit.",
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid or corrupted image file.",
         )
 
+    # Check if the image does not exceed the maximum size and dimensions
+    if len(image_bytes) > settings.max_img_mb_size * 1024 * 1024:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Image exceeds {settings.max_img_mb_size}MB size limit.",
+        )
     if image.size != REQUIRED_IMAGE_SIZE:
         raise HTTPException(
-            status_code=400,
+            status_code=status.HTTP_400_BAD_REQUEST,
             detail=f"Image must be {REQUIRED_IMAGE_SIZE[0]}x{REQUIRED_IMAGE_SIZE[1]} pixels.",
         )
 
+    # Upload image to Supabase
     try:
         image_url = await supabase_client.upload(image)
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Image upload failed: {str(e)}",
+        )
 
-        post_data = PostCreate(
+    # Create a new post and save it to the database
+    try:
+        pc = PostCreate(
             description=description,
             image_url=image_url,
             user_id=user.id,
         )
-        new_post = Post(
-            description=post_data.description,
-            image_url=str(post_data.image_url),
-            user_id=post_data.user_id,
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid post data: {str(e)}",
+        )
+    post = Post(
+        description=pc.description,
+        image_url=str(pc.image_url),
+        user_id=pc.user_id,
+    )
+    try:
+        db.add(post)
+        await db.commit()
+        await db.refresh(post)
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to save post: {str(e)}",
         )
 
-        db.add(new_post)
-        await db.commit()
-        await db.refresh(new_post)
-
+    # Return the created post
+    try:
         pr = PostRead(
-            id=new_post.id,
-            description=new_post.description,
-            image_url=HttpUrl(new_post.image_url),
-            user_id=new_post.user_id,
+            id=post.id,
+            description=post.description,
+            image_url=HttpUrl(post.image_url),
+            user_id=post.user_id,
             author_username=user.username,
             author_email=user.email,
-            created_at=new_post.created_at,
+            created_at=post.created_at,
             likes_count=0,
             liked_by_user=False,
         )
-        return {"post": pr.model_dump(by_alias=True)}
     except ValueError as e:
-        raise HTTPException(status_code=400, detail=str(e))
-    except Exception as e:
-        await db.rollback()
-        raise HTTPException(status_code=500, detail=f"Failed to save post: {str(e)}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Invalid post data: {str(e)}",
+        )
+
+    return {"post": pr.model_dump(by_alias=True)}
 
 
 @posts_router.get(
@@ -140,7 +176,7 @@ async def post_pixelart(
     description="Returns a paginated list of posts for infinite scrolling. "
     "Use query parameters to control the page and page size. You can filter by userId.",
     responses={
-        200: {
+        status.HTTP_200_OK: {
             "description": "A paginated list of posts",
             "content": {
                 "application/json": {
@@ -164,7 +200,7 @@ async def post_pixelart(
                 }
             },
         },
-        401: {"description": "Unauthorized"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
     },
 )
 async def get_posts(
@@ -173,35 +209,49 @@ async def get_posts(
     page_size: int = Query(
         10, ge=1, le=100, description="The number of posts per page."
     ),
-    user_id: str | None = Query(
-        None,
-        description="The user ID to filter posts by.",
-    ),
+    user_id: str | None = Query(None, description="The user ID to filter posts by."),
     db: AsyncSession = Depends(get_async_session),
 ):
+    # Get posts with pagination and filter by user_id if provided
     stmt = (
         select(Post)
         .order_by(Post.created_at.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
-        .options(selectinload(Post.author), selectinload(Post.post_likes))
+        .options(selectinload(Post.author))
     )
     if user_id:
         stmt = stmt.where(Post.user_id == user_id)
-
     result = await db.execute(stmt)
     posts = result.scalars().all()
+    post_ids = [post.id for post in posts]
 
+    # Count total posts for pagination and determine next page
     count_stmt = select(func.count(Post.id))
     if user_id:
         count_stmt = count_stmt.where(Post.user_id == user_id)
     total = (await db.execute(count_stmt)).scalar() or 0
     next_page = page + 1 if (page * page_size) < total else None
 
+    # Fetch likes count for each post
+    likes_stmt = (
+        select(PostLike.post_id, func.count(PostLike.user_id))
+        .where(PostLike.post_id.in_(post_ids))
+        .group_by(PostLike.post_id)
+    )
+    likes_result = await db.execute(likes_stmt)
+    likes_map = {post_id: count for post_id, count in likes_result.all()}
+
+    # Fetch liked posts by the user
+    liked_stmt = select(PostLike.post_id).where(
+        PostLike.post_id.in_(post_ids), PostLike.user_id == user.id
+    )
+    liked_result = await db.execute(liked_stmt)
+    liked_post_ids = {post_id for (post_id,) in liked_result.all()}
+
+    # Construct the response
     data = []
     for post in posts:
-        likes_count = len(post.post_likes)
-        liked_by_user = any(like.user_id == user.id for like in post.post_likes)
         pr = PostRead(
             id=post.id,
             description=post.description,
@@ -210,9 +260,85 @@ async def get_posts(
             author_username=post.author.username,
             author_email=post.author.email,
             created_at=post.created_at,
-            likes_count=likes_count,
-            liked_by_user=liked_by_user,
+            likes_count=likes_map.get(post.id, 0),
+            liked_by_user=post.id in liked_post_ids,
         )
         data.append(pr.model_dump(by_alias=True))
-
     return {"data": data, "nextPage": next_page, "total": total}
+
+
+@posts_router.post(
+    "/{post_id}/like/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Like a post",
+    responses={
+        status.HTTP_204_NO_CONTENT: {"description": "Post liked"},
+        status.HTTP_404_NOT_FOUND: {"description": "Post not found"},
+        status.HTTP_409_CONFLICT: {"description": "Already liked"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
+    },
+)
+async def like_post(
+    post_id: UUID = Path(..., description="The ID of the post to like"),
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    # Check if the post exists
+    post = await db.get(Post, post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
+        )
+
+    # Check if the user has already liked the post
+    stmt = select(PostLike).where(
+        PostLike.post_id == post_id, PostLike.user_id == user.id
+    )
+    if (await db.execute(stmt)).scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Post already liked"
+        )
+
+    # Add like
+    db.add(PostLike(post_id=post_id, user_id=user.id))
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
+@posts_router.delete(
+    "/{post_id}/like/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Unlike a post",
+    responses={
+        status.HTTP_204_NO_CONTENT: {"description": "Post unliked"},
+        status.HTTP_400_BAD_REQUEST: {"description": "Post not liked"},
+        status.HTTP_404_NOT_FOUND: {"description": "Post not found"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
+    },
+)
+async def unlike_post(
+    post_id: UUID = Path(..., description="The ID of the post to unlike"),
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    # Check if the post exists
+    post = await db.get(Post, post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
+        )
+
+    # Delete like
+    delete_stmt = (
+        delete(PostLike)
+        .where(PostLike.post_id == post_id, PostLike.user_id == user.id)
+        .execution_options(synchronize_session="fetch")
+    )
+    result = await db.execute(delete_stmt)
+    # If like was not deleted, it means the user didn't like the post in the first place
+    if result.rowcount == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Post not liked"
+        )
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)

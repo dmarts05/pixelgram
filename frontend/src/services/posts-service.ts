@@ -39,3 +39,23 @@ export async function fetchPosts({
 
     return res.json();
 }
+
+export async function likePost(postId: string): Promise<void> {
+    const res = await fetchApi(`posts/${postId}/like`, {
+        method: "POST",
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to like post");
+    }
+}
+
+export async function unlikePost(postId: string): Promise<void> {
+    const res = await fetchApi(`posts/${postId}/like`, {
+        method: "DELETE",
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to unlike post");
+    }
+}
