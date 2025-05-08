@@ -215,3 +215,82 @@ async def get_posts(
         "nextPage": next_page,
         "total": total,
     }
+
+
+@posts_router.post(
+    "/{post_id}/save",
+    summary="Save a specific post by ID",
+    description="Saves a post for the current user.",
+    responses={
+        200: {
+            "description": "Post saved successfully",
+            "content": {
+                "application/json": {"example": {"message": "Post saved successfully"}}
+            },
+        },
+        401: {"description": "Unauthorized"},
+        404: {"description": "Post not found"},
+    },
+)
+async def save_post():
+    """
+    Save a post for the current user.
+    """
+    pass
+
+
+@posts_router.delete(
+    "/{post_id}/unsave",
+    summary="Unsave a specific post by ID",
+    description="Removes a post from the saved list for the current user.",
+    responses={
+        200: {
+            "description": "Post unsaved successfully",
+            "content": {
+                "application/json": {
+                    "example": {"message": "Post unsaved successfully"}
+                }
+            },
+        },
+        401: {"description": "Unauthorized"},
+        404: {"description": "Post not found"},
+    },
+)
+async def unsave_post():
+    """
+    Remove a post from the saved list for the current user.
+    """
+    pass
+
+
+@posts_router.get(
+    "/saved",
+    summary="Get all saved posts",
+    description="Retrieves all posts saved by the current user.",
+    responses={
+        200: {
+            "description": "List of saved posts",
+            "content": {
+                "application/json": {
+                    "example": {
+                        "data": [
+                            {
+                                "id": "00000000-0000-0000-0000-000000000001",
+                                "description": "A cat sitting on a chair",
+                                "imageUrl": "https://example.com/image.png",
+                                "userId": "00000000-0000-0000-0000-000000000001",
+                                "authorUsername": "catlover123",
+                                "authorEmail": "catlover123@email.com",
+                            }
+                        ]
+                    }
+                }
+            },
+        }
+    },
+)
+async def get_saved_posts():
+    """
+    Get all saved posts for the current user.
+    """
+    pass
