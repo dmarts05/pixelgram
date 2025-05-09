@@ -61,6 +61,24 @@ export async function unlikePost(postId: string): Promise<void> {
     }
 }
 
+export async function savePost(postId: string): Promise<void> {
+    const res = await fetchApi(`posts/${postId}/save`, {
+        method: "POST",
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to save post");
+    }
+}
+export async function unsavePost(postId: string): Promise<void> {
+    const res = await fetchApi(`posts/${postId}/save`, {
+        method: "DELETE",
+    });
+    if (!res.ok) {
+        throw new Error("Failed to unsave post");
+    }
+}
+
 export type FetchPostCommentsResponse = {
     data: PostComment[];
     nextPage: number | null;
