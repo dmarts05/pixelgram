@@ -8,6 +8,7 @@ export type Post = {
     createdAt: Date;
     likesCount: number;
     likedByUser: boolean;
+    savedByUser: boolean;
     commentsCount: number;
     commentedByUser: boolean;
 };

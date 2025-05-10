@@ -633,8 +633,27 @@ async def unsave_post(
     """
     Remove a post from the saved list for the current user.
     """
+    # Check if post exists
+    post = await db.get(Post, post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
+        )
 
-    pass
+    # Delete save
+    delete_stmt = (
+        delete(PostSaved)
+        .where(PostSaved.post_id == post_id, PostSaved.user_id == user.id)
+        .execution_options(synchronize_session="fetch")
+    )
+    result = await db.execute(delete_stmt)
+    # If save was not deleted, it means the user didn't save the post in the first place
+    if result.rowcount == 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Post not saved"
+        )
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @posts_router.get(
