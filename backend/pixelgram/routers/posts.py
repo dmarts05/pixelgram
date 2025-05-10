@@ -683,7 +683,6 @@ async def get_saved_posts(
         )
     # 1. Get all post IDs saved by the current user
     saved_posts_ids_stmt = select(PostSaved.post_id).where(PostSaved.user_id == user.id)
-
     result = await db.execute(saved_posts_ids_stmt)
     saved_posts_ids = [row[0] for row in result.fetchall()]
 
@@ -696,7 +695,11 @@ async def get_saved_posts(
         .order_by(Post.created_at.desc())
         .offset((page - 1) * page_size)
         .limit(page_size)
-        .options(selectinload(Post.author))
+        .options(
+            selectinload(Post.author),
+            selectinload(Post.post_likes),
+            selectinload(Post.post_comments),
+        )
     )
 
     result = await db.execute(stmt)
@@ -709,16 +712,54 @@ async def get_saved_posts(
     total = (await db.execute(count_stmt)).scalar() or 0
     next_page = page + 1 if (page * page_size) < total else None
 
+    # Fetch likes count for each post
+    likes_stmt = (
+        select(PostLike.post_id, func.count(PostLike.user_id))
+        .where(PostLike.post_id.in_(saved_posts_ids))
+        .group_by(PostLike.post_id)
+    )
+    likes_result = await db.execute(likes_stmt)
+    likes_map = {post_id: count for post_id, count in likes_result.all()}
+
+    # Fetch liked posts by the user
+    liked_stmt = select(PostLike.post_id).where(
+        PostLike.post_id.in_(saved_posts_ids), PostLike.user_id == user.id
+    )
+    liked_result = await db.execute(liked_stmt)
+    liked_post_ids = {post_id for (post_id,) in liked_result.all()}
+
+    # Fetch comments count for each post
+    comments_stmt = (
+        select(PostComment.post_id, func.count(PostComment.id))
+        .where(PostComment.post_id.in_(saved_posts_ids))
+        .group_by(PostComment.post_id)
+    )
+    comments_result = await db.execute(comments_stmt)
+    comments_map = {post_id: count for post_id, count in comments_result.all()}
+
+    # Fetch commented posts by the user
+    commented_stmt = select(PostComment.post_id).where(
+        PostComment.post_id.in_(saved_posts_ids), PostComment.user_id == user.id
+    )
+    commented_result = await db.execute(commented_stmt)
+    commented_post_ids = {post_id for (post_id,) in commented_result.all()}
+
     # Construct the response
     data = []
     for saved_post in saved_posts:
         pr = PostRead(
-            id=saved_post.post.id,
-            description=saved_post.post.description,
-            image_url=HttpUrl(saved_post.post.image_url),
-            user_id=saved_post.post.user_id,
-            author_username=saved_post.post.author.username,
-            author_email=saved_post.post.author.email,
+            id=saved_post.id,
+            description=saved_post.description,
+            image_url=HttpUrl(saved_post.image_url),
+            user_id=saved_post.user_id,
+            author_username=saved_post.author.username,
+            author_email=saved_post.author.email,
+            created_at=saved_post.created_at,
+            likes_count=likes_map.get(saved_post.id, 0),
+            liked_by_user=saved_post.id in liked_post_ids,
+            comments_count=comments_map.get(saved_post.id, 0),
+            commented_by_user=saved_post.id in commented_post_ids,
+            saved_by_user=True,
         )
         data.append(pr.model_dump(by_alias=True))
 
