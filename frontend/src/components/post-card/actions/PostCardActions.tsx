@@ -12,6 +12,7 @@ interface PostCardActionsProps {
     postId: string;
     likesCount: number;
     likedByUser: boolean;
+    savedByUser: boolean;
     commentsCount: number;
     commentedByUser: boolean;
     refetch: (
@@ -23,6 +24,7 @@ function PostCardActions({
     postId,
     likesCount,
     likedByUser,
+    savedByUser,
     commentsCount,
     commentedByUser,
     refetch,
@@ -50,7 +52,7 @@ function PostCardActions({
             <div className="flex gap-2">
                 <SaveButton
                     postId={postId}
-                    savedByUser={false} //TODO: Replace with actual savedByUser state
+                    savedByUser={savedByUser} //TODO: Replace with actual savedByUser state
                     />
             </div>
         </div>
