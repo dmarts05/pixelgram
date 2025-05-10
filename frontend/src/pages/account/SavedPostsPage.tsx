@@ -1,6 +1,6 @@
 import React from 'react';
 import PostsGrid from "../../components/PostsGrid";
-import { fetchPosts } from "../../services/posts-service";
+import { fetchSavedPosts } from "../../services/posts-service";
 import { useAuthStore } from '../../stores/auth-store';
 
 function SavedPostsPage(): React.ReactNode {
@@ -16,8 +16,8 @@ function SavedPostsPage(): React.ReactNode {
 
     return (
         <PostsGrid
-            queryKey={userId ? ["savedPosts", userId]:["posts"]}
-            queryFn={fetchPosts}
+            queryKey={userId ? ["savedPosts", userId] : ["savedPosts"]}
+            queryFn={({pageParam }) => fetchSavedPosts({pageParam, userId})}
             header ={headerContent}
             
             />

@@ -33,11 +33,11 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
         "PostComment", back_populates="user", cascade="all, delete-orphan"
     )
 
-    @property
-    def liked_posts(self) -> list[Post]:
-        return [pl.post for pl in self.post_likes]
-
     posts_saved: Mapped[list[PostSaved]] = relationship(
         "PostSaved",
         back_populates="user",
     )
+
+    @property
+    def liked_posts(self) -> list[Post]:
+        return [pl.post for pl in self.post_likes]
