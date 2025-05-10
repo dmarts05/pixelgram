@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from pixelgram.models.post import Post
     from pixelgram.models.post_comment import PostComment
     from pixelgram.models.post_like import PostLike
+    from pixelgram.models.post_saved import PostSaved
 
 
 class User(SQLAlchemyBaseUserTableUUID, Base):
@@ -30,6 +31,11 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
     )
     post_comments: Mapped[list[PostComment]] = relationship(
         "PostComment", back_populates="user", cascade="all, delete-orphan"
+    )
+
+    posts_saved: Mapped[list[PostSaved]] = relationship(
+        "PostSaved",
+        back_populates="user",
     )
 
     @property

@@ -59,3 +59,4 @@ class PostRead(PostBase):
     liked_by_user: bool
     comments_count: int
     commented_by_user: bool
+    saved_by_user: bool
