@@ -43,10 +43,10 @@ export async function fetchPosts({
 }
 
 export async function fetchSavedPosts({
-    pageParam, 
-    pageSize = 10, 
+    pageParam,
+    pageSize = 10,
     userId = null,
-}:FetchPostsParams): Promise<FetchPostsResponse> {
+}: FetchPostsParams): Promise<FetchPostsResponse> {
     const params = new URLSearchParams({
         page: String(pageParam),
         page_size: String(pageSize),
