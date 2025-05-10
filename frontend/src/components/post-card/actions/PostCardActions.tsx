@@ -3,15 +3,16 @@ import {
     QueryObserverResult,
     RefetchOptions,
 } from "@tanstack/react-query";
-import { FaRegBookmark } from "react-icons/fa";
 import { PostPage } from "../../PostsGrid";
 import CommentsButton from "./CommentsButton";
 import LikeButton from "./LikeButton";
+import SaveButton from "./SaveButton";
 
 interface PostCardActionsProps {
     postId: string;
     likesCount: number;
     likedByUser: boolean;
+    savedByUser: boolean;
     commentsCount: number;
     commentedByUser: boolean;
     refetch: (
@@ -23,6 +24,7 @@ function PostCardActions({
     postId,
     likesCount,
     likedByUser,
+    savedByUser,
     commentsCount,
     commentedByUser,
     refetch,
@@ -48,12 +50,10 @@ function PostCardActions({
                 </div>
             </div>
             <div className="flex gap-2">
-                <button
-                    onClick={() => console.log("Bookmark")}
-                    className="rounded-full text-lg hover:text-primary transition-colors cursor-pointer"
-                >
-                    <FaRegBookmark />
-                </button>
+                <SaveButton
+                    postId={postId}
+                    savedByUser={savedByUser} //TODO: Replace with actual savedByUser state
+                />
             </div>
         </div>
     );
