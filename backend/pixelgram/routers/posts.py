@@ -25,6 +25,7 @@ from pixelgram.db import get_async_session
 from pixelgram.models.post import Post
 from pixelgram.models.post_comment import PostComment
 from pixelgram.models.post_like import PostLike
+from pixelgram.models.post_saved import PostSaved
 from pixelgram.models.user import User
 from pixelgram.schemas.post import PostCreate, PostRead
 from pixelgram.schemas.post_comment import PostCommentCreate, PostCommentRead
@@ -272,6 +273,13 @@ async def get_posts(
     commented_result = await db.execute(commented_stmt)
     commented_post_ids = {post_id for (post_id,) in commented_result.all()}
 
+    # Fetch saved posts by the user
+    saved_stmt = select(PostSaved.post_id).where(
+        PostSaved.post_id.in_(post_ids), PostSaved.user_id == user.id
+    )
+    saved_result = await db.execute(saved_stmt)
+    saved_post_ids = {post_id for (post_id,) in saved_result.all()}
+
     # Construct the response
     data = []
     for post in posts:
@@ -287,6 +295,7 @@ async def get_posts(
             liked_by_user=post.id in liked_post_ids,
             comments_count=comments_map.get(post.id, 0),
             commented_by_user=post.id in commented_post_ids,
+            saved_by_user=post.id in saved_post_ids,
         )
         data.append(pr.model_dump(by_alias=True))
     return {"data": data, "nextPage": next_page, "total": total}
@@ -572,34 +581,59 @@ async def delete_comment(
         404: {"description": "Post not found"},
     },
 )
-async def save_post():
+async def save_post(
+    post_id: UUID = Path(..., description="The ID of the post to save"),
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_session),
+):
     """
     Save a post for the current user.
     """
-    pass
+
+    # Check if post exists
+    post = await db.get(Post, post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
+        )
+
+    # Check if user has already saved the post
+    stmt = select(PostSaved).where(
+        PostSaved.post_id == post_id, PostSaved.user_id == user.id
+    )
+
+    if (await db.execute(stmt)).scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Post already saved"
+        )
+
+    # Add save
+    db.add(PostSaved(post_id=post_id, user_id=user.id))
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
 @posts_router.delete(
-    "/{post_id}/unsave",
+    "/{post_id}/save",
+    status_code=status.HTTP_204_NO_CONTENT,
     summary="Unsave a specific post by ID",
     description="Removes a post from the saved list for the current user.",
     responses={
-        200: {
-            "description": "Post unsaved successfully",
-            "content": {
-                "application/json": {
-                    "example": {"message": "Post unsaved successfully"}
-                }
-            },
-        },
-        401: {"description": "Unauthorized"},
-        404: {"description": "Post not found"},
+        status.HTTP_204_NO_CONTENT: {"description": "Post unsaved successfully"},
+        status.HTTP_400_BAD_REQUEST: {"description": "Post not saved"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
+        status.HTTP_404_NOT_FOUND: {"description": "Post not found"},
     },
 )
-async def unsave_post():
+async def unsave_post(
+    post_id: UUID = Path(..., description="The ID of the post to unsave"),
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_session),
+):
     """
     Remove a post from the saved list for the current user.
     """
+
     pass
 
 
@@ -629,8 +663,63 @@ async def unsave_post():
         }
     },
 )
-async def get_saved_posts():
+async def get_saved_posts(
+    # user_id: UUID = Path(..., description="The user ID to filter posts by."),
+    user: User = Depends(current_active_user),
+    page: int = Query(1, ge=1, description="The page number to retrieve."),
+    page_size: int = Query(
+        10, ge=1, le=100, description="The number of posts per page."
+    ),
+    # user_id: str | None = Query(None, description="The user ID to filter posts by."),
+    db: AsyncSession = Depends(get_async_session),
+):
     """
     Get all saved posts for the current user.
     """
-    pass
+
+    if not user.id:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid user ID"
+        )
+    # 1. Get all post IDs saved by the current user
+    saved_posts_ids_stmt = select(PostSaved.post_id).where(PostSaved.user_id == user.id)
+
+    result = await db.execute(saved_posts_ids_stmt)
+    saved_posts_ids = [row[0] for row in result.fetchall()]
+
+    if not saved_posts_ids:
+        return {"data": [], "nextPage": None, "total": 0}
+
+    stmt = (
+        select(Post)
+        .where(Post.id.in_(saved_posts_ids))
+        .order_by(Post.created_at.desc())
+        .offset((page - 1) * page_size)
+        .limit(page_size)
+        .options(selectinload(Post.author))
+    )
+
+    result = await db.execute(stmt)
+    saved_posts = result.scalars().all()
+
+    # Count total saved posts for pagination and determine next page
+    count_stmt = select(func.count(PostSaved.id))
+    if user.id:
+        count_stmt = count_stmt.where(PostSaved.user_id == user.id)
+    total = (await db.execute(count_stmt)).scalar() or 0
+    next_page = page + 1 if (page * page_size) < total else None
+
+    # Construct the response
+    data = []
+    for saved_post in saved_posts:
+        pr = PostRead(
+            id=saved_post.post.id,
+            description=saved_post.post.description,
+            image_url=HttpUrl(saved_post.post.image_url),
+            user_id=saved_post.post.user_id,
+            author_username=saved_post.post.author.username,
+            author_email=saved_post.post.author.email,
+        )
+        data.append(pr.model_dump(by_alias=True))
+
+    return {"data": data, "nextPage": next_page, "total": total}

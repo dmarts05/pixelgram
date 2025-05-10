@@ -22,6 +22,7 @@ export async function fetchPosts({
     const params = new URLSearchParams({
         page: String(pageParam),
         page_size: String(pageSize),
+        user_id: userId || "",
     });
 
     if (userId) {
@@ -29,6 +30,33 @@ export async function fetchPosts({
     }
 
     const res = await fetchApi(`posts?${params}`, {
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to fetch posts");
+    }
+
+    return res.json();
+}
+
+export async function fetchSavedPosts({
+    pageParam, 
+    pageSize = 10, 
+    userId = null,
+}:FetchPostsParams): Promise<FetchPostsResponse> {
+    const params = new URLSearchParams({
+        page: String(pageParam),
+        page_size: String(pageSize),
+    });
+
+    if (userId) {
+        params.append("user_id", userId);
+    }
+
+    const res = await fetchApi(`posts/saved?${params}`, {
         headers: {
             "Content-Type": "application/json",
         },

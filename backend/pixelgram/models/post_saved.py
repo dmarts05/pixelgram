@@ -36,5 +36,5 @@ class PostSaved(Base):
         nullable=False,
     )
 
-    user: Mapped[User] = relationship("User", back_populates="post_saved")
-    post: Mapped[Post] = relationship("Post", back_populates="post_saved")
+    user: Mapped[User] = relationship("User", back_populates="posts_saved")
+    post: Mapped[Post] = relationship("Post", back_populates="posts_saved")
