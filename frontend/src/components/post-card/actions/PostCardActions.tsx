@@ -53,7 +53,7 @@ function PostCardActions({
                 <SaveButton
                     postId={postId}
                     savedByUser={savedByUser} //TODO: Replace with actual savedByUser state
-                    />
+                />
             </div>
         </div>
     );

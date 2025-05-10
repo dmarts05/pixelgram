@@ -1,14 +1,16 @@
-import {useState} from "react";
-import {useMutation} from "@tanstack/react-query";
+import { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { savePost, unsavePost } from "../../../services/posts-service";
-import {FaBookmark, FaRegBookmark} from "react-icons/fa";
+import { FaBookmark, FaRegBookmark } from "react-icons/fa";
 interface SavedButtonProps {
     postId: string;
     savedByUser: boolean;
 }
 
-function SaveButton({ postId,savedByUser }: SavedButtonProps): React.ReactNode {
-    
+function SaveButton({
+    postId,
+    savedByUser,
+}: SavedButtonProps): React.ReactNode {
     const [isSaved, setIsSaved] = useState<boolean>(savedByUser);
 
     const savePostMutation = useMutation({
@@ -16,22 +18,21 @@ function SaveButton({ postId,savedByUser }: SavedButtonProps): React.ReactNode {
             if (!isSaved) {
                 setIsSaved(true);
                 await savePost(postId);
-                
             } else {
                 setIsSaved(false);
                 await unsavePost(postId);
-                
             }
         },
-
     });
-    
+
     return (
         <button
-            onClick={() => {savePostMutation.mutate();}}
+            onClick={() => {
+                savePostMutation.mutate();
+            }}
             className="rounded-full text-lg hover:text-primary transition-colors cursor-pointer"
         >
-            {isSaved ? <FaBookmark/> : <FaRegBookmark/>}
+            {isSaved ? <FaBookmark /> : <FaRegBookmark />}
         </button>
     );
 }
