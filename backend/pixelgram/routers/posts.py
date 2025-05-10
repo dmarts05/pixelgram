@@ -166,6 +166,7 @@ async def post_pixelart(
             liked_by_user=False,
             comments_count=0,
             commented_by_user=False,
+            saved_by_user=False,
         )
     except ValueError as e:
         raise HTTPException(
@@ -567,7 +568,7 @@ async def delete_comment(
 
 
 @posts_router.post(
-    "/{post_id}/save",
+    "/{post_id}/save/",
     summary="Save a specific post by ID",
     description="Saves a post for the current user.",
     responses={
@@ -614,7 +615,7 @@ async def save_post(
 
 
 @posts_router.delete(
-    "/{post_id}/save",
+    "/{post_id}/save/",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Unsave a specific post by ID",
     description="Removes a post from the saved list for the current user.",
@@ -657,7 +658,7 @@ async def unsave_post(
 
 
 @posts_router.get(
-    "/saved",
+    "/saved/",
     summary="Get all saved posts",
     description="Retrieves all posts saved by the current user.",
     responses={
