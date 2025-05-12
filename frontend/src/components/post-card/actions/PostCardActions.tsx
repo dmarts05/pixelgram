@@ -7,6 +7,7 @@ import { PostPage } from "../../PostsGrid";
 import CommentsButton from "./CommentsButton";
 import LikeButton from "./LikeButton";
 import SaveButton from "./SaveButton";
+import DeleteButton from "./DeleteButton";
 
 interface PostCardActionsProps {
     postId: string;
@@ -18,6 +19,7 @@ interface PostCardActionsProps {
     refetch: (
         options?: RefetchOptions
     ) => Promise<QueryObserverResult<InfiniteData<PostPage, unknown>, Error>>;
+    showDeleteButton?: boolean;
 }
 
 function PostCardActions({
@@ -28,6 +30,7 @@ function PostCardActions({
     commentsCount,
     commentedByUser,
     refetch,
+    showDeleteButton,
 }: PostCardActionsProps): React.ReactNode {
     return (
         <div className="flex justify-between">
@@ -50,6 +53,10 @@ function PostCardActions({
                 </div>
             </div>
             <div className="flex gap-2">
+                {showDeleteButton && (
+                    <DeleteButton postId={postId} refetch={refetch} />
+                )}
+
                 <SaveButton postId={postId} savedByUser={savedByUser} />
             </div>
         </div>

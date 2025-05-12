@@ -36,6 +36,7 @@ class Post(Base):
     post_likes: Mapped[list[PostLike]] = relationship(
         "PostLike",
         back_populates="post",
+        cascade="all, delete-orphan",
     )
     post_comments: Mapped[list[PostComment]] = relationship(
         "PostComment", back_populates="post", cascade="all, delete-orphan"
@@ -44,6 +45,7 @@ class Post(Base):
     posts_saved: Mapped[list[PostSaved]] = relationship(
         "PostSaved",
         back_populates="post",
+        cascade="all, delete-orphan",
     )
 
     @property

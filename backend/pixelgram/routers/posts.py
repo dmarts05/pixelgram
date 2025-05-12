@@ -302,6 +302,40 @@ async def get_posts(
     return {"data": data, "nextPage": next_page, "total": total}
 
 
+@posts_router.delete(
+    "/{post_id}/",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="Delete a post",
+    responses={
+        status.HTTP_204_NO_CONTENT: {"description": "Post deleted"},
+        status.HTTP_404_NOT_FOUND: {"description": "Post not found"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
+    },
+)
+async def delete_post(
+    post_id: UUID = Path(..., description="The ID of the post"),
+    user: User = Depends(current_active_user),
+    db: AsyncSession = Depends(get_async_session),
+):
+    # Check if post exists
+    post = await db.get(Post, post_id)
+    if not post:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
+        )
+
+    # Check if user is the owner of the post
+    if str(post.user_id) != str(user.id):
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Not post owner"
+        )
+
+    # Delete the post
+    await db.delete(post)
+    await db.commit()
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
+
+
 @posts_router.post(
     "/{post_id}/like/",
     status_code=status.HTTP_204_NO_CONTENT,

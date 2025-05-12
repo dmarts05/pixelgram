@@ -971,3 +971,105 @@ async def test_unsave_post_missing_post():
         resp = await ac.delete("/posts/00000000-0000-0000-0000-000000000001/save/")
         assert resp.status_code == 404
         assert resp.json()["detail"] == "Post not found"
+
+
+@pytest.mark.asyncio
+async def test_delete_post_success():
+    async with app.router.lifespan_context(app):
+        await create_test_user()
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            image = create_test_image()
+            files = {"file": ("delete_post.png", image, "image/png")}
+            data = {"description": "Delete post test"}
+            create_resp = await ac.post("/posts/", files=files, data=data)
+            post_id = create_resp.json()["post"]["id"]
+
+            delete_resp = await ac.delete(f"/posts/{post_id}/")
+            assert delete_resp.status_code == 204
+
+            # Try to get the deleted post (should not be found in list)
+            get_resp = await ac.get("/posts/")
+            posts = get_resp.json()["data"]
+            assert all(p["id"] != post_id for p in posts)
+
+
+@pytest.mark.asyncio
+async def test_delete_post_not_found():
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        resp = await ac.delete("/posts/00000000-0000-0000-0000-000000000001/")
+        assert resp.status_code == 404
+        assert resp.json()["detail"] == "Post not found"
+
+
+@pytest.mark.asyncio
+async def test_delete_post_not_authorized():
+    async with app.router.lifespan_context(app):
+        await create_test_user()
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            image = create_test_image()
+            files = {"file": ("not_authorized_post.png", image, "image/png")}
+            data = {"description": "Not authorized delete post"}
+            create_resp = await ac.post("/posts/", files=files, data=data)
+            post_id = create_resp.json()["post"]["id"]
+
+            # Simulate a different user trying to delete the post
+            app.dependency_overrides[current_active_user] = lambda: get_test_user(
+                id="00000000-0000-0000-0000-000000000003",
+                username="unauthorized_user",
+                email="unauthorized_user@example.com",
+            )
+
+            delete_resp = await ac.delete(f"/posts/{post_id}/")
+            assert delete_resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_delete_post_cascades_comments_likes_saved():
+    async with app.router.lifespan_context(app):
+        await create_test_user()
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            # Create a post
+            image = create_test_image()
+            files = {"file": ("cascade_post.png", image, "image/png")}
+            data = {"description": "Cascade delete post"}
+            create_resp = await ac.post("/posts/", files=files, data=data)
+            post_id = create_resp.json()["post"]["id"]
+
+            # Add a comment
+            comment_data = {"content": "Coment to delete"}
+            comment_resp = await ac.post(
+                f"/posts/{post_id}/comments/", json=comment_data
+            )
+            assert comment_resp.status_code == 201
+
+            # Like the post
+            like_resp = await ac.post(f"/posts/{post_id}/like/")
+            assert like_resp.status_code == 204
+
+            # Save the post
+            save_resp = await ac.post(f"/posts/{post_id}/save/")
+            assert save_resp.status_code == 204
+
+            # Delete post
+            delete_resp = await ac.delete(f"/posts/{post_id}/")
+            assert delete_resp.status_code == 204
+
+            # Verify that the post is deleted
+            get_comments = await ac.get(f"/posts/{post_id}/comments/")
+            assert get_comments.status_code == 404
+
+            # Verify that the comment is deleted
+            unlike_resp = await ac.delete(f"/posts/{post_id}/like/")
+            assert unlike_resp.status_code == 404
+
+            # Verify that the like is deleted
+            unsave_resp = await ac.delete(f"/posts/{post_id}/save/")
+            assert unsave_resp.status_code == 404

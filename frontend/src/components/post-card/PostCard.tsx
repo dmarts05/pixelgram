@@ -18,9 +18,14 @@ interface PostCardProps {
     refetch: (
         options?: RefetchOptions
     ) => Promise<QueryObserverResult<InfiniteData<PostPage, unknown>, Error>>;
+    showDeleteButton?: boolean;
 }
 
-function PostCard({ post, refetch }: PostCardProps): React.ReactNode {
+function PostCard({
+    post,
+    refetch,
+    showDeleteButton,
+}: PostCardProps): React.ReactNode {
     return (
         <article
             className="card bg-base-100 shadow-md"
@@ -42,6 +47,7 @@ function PostCard({ post, refetch }: PostCardProps): React.ReactNode {
                     commentsCount={post.commentsCount}
                     commentedByUser={post.commentedByUser}
                     refetch={refetch}
+                    showDeleteButton={showDeleteButton}
                 />
                 <PostCardDescription description={post.description} />
                 <PostCardTimestamp createdAt={post.createdAt} />

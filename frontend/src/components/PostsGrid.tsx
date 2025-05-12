@@ -15,12 +15,14 @@ interface PostsGridProps {
     queryKey: string[];
     queryFn: (params: { pageParam: number }) => Promise<PostPage>;
     header?: React.ReactNode;
+    showDeleteButton?: boolean;
 }
 
 function PostsGrid({
     queryKey,
     queryFn,
     header,
+    showDeleteButton,
 }: PostsGridProps): React.ReactNode {
     const {
         data,
@@ -53,7 +55,11 @@ function PostsGrid({
                     <React.Fragment key={pageIndex}>
                         {page.data.map((post: Post) => (
                             <React.Fragment key={post.id}>
-                                <PostCard post={post} refetch={refetch} />
+                                <PostCard
+                                    post={post}
+                                    refetch={refetch}
+                                    showDeleteButton={showDeleteButton}
+                                />
                             </React.Fragment>
                         ))}
                     </React.Fragment>
