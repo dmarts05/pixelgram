@@ -17,6 +17,7 @@ function AccountPostsPage(): React.ReactNode {
             queryKey={userId ? ["posts", userId] : ["posts"]}
             queryFn={({ pageParam }) => fetchPosts({ pageParam, userId })}
             header={headerContent}
+            showDeleteButton={true}
         />
     );
 }
