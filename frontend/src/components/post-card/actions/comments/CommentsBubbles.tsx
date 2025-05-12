@@ -21,7 +21,7 @@ function CommentsBubbles({
     refetchComments,
 }: CommentsBubblesProps): React.ReactNode {
     return (
-        <div className="flex-grow h-[60vh] overflow-y-auto pb-1">
+        <div className="flex flex-col flex-grow h-[60vh] overflow-y-auto pb-1 gap-4">
             {comments.map((comment) => (
                 <React.Fragment key={comment.id}>
                     <Comment
