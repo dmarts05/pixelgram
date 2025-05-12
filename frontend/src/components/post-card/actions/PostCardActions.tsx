@@ -52,7 +52,7 @@ function PostCardActions({
             <div className="flex gap-2">
                 <SaveButton
                     postId={postId}
-                    savedByUser={savedByUser} //TODO: Replace with actual savedByUser state
+                    savedByUser={savedByUser}
                 />
             </div>
         </div>

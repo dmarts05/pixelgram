@@ -9,7 +9,7 @@ export async function fetchApi(
     const response = await fetch(fullUrl, {
         ...options,
         credentials: "include",
-        signal: AbortSignal.timeout(10000), // 10 seconds timeout
+        signal: AbortSignal.timeout(15000), // 15 seconds timeout
     });
 
     // If the response is 401 (Unauthorized), set user as not authenticated
