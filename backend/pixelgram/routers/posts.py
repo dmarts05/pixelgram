@@ -572,14 +572,9 @@ async def delete_comment(
     summary="Save a specific post by ID",
     description="Saves a post for the current user.",
     responses={
-        200: {
-            "description": "Post saved successfully",
-            "content": {
-                "application/json": {"example": {"message": "Post saved successfully"}}
-            },
-        },
-        401: {"description": "Unauthorized"},
-        404: {"description": "Post not found"},
+        status.HTTP_204_NO_CONTENT: {"description": "Post saved successfully"},
+        status.HTTP_404_NOT_FOUND: {"description": "Post not found"},
+        status.HTTP_409_CONFLICT: {"description": "Post already saved"},
     },
 )
 async def save_post(
@@ -622,7 +617,6 @@ async def save_post(
     responses={
         status.HTTP_204_NO_CONTENT: {"description": "Post unsaved successfully"},
         status.HTTP_400_BAD_REQUEST: {"description": "Post not saved"},
-        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
         status.HTTP_404_NOT_FOUND: {"description": "Post not found"},
     },
 )
@@ -662,8 +656,8 @@ async def unsave_post(
     summary="Get all saved posts",
     description="Retrieves all posts saved by the current user.",
     responses={
-        200: {
-            "description": "List of saved posts",
+        status.HTTP_200_OK: {
+            "description": "List of paginated saved posts",
             "content": {
                 "application/json": {
                     "example": {
