@@ -1,23 +1,22 @@
 import { useEffect } from "react";
-import { Route, Routes, useLocation, useNavigate } from "react-router";
+import { Route, Routes, useNavigate } from "react-router";
 import AuthenticatedRoute from "./components/AuthenticatedRoute";
 import UnauthenticatedRoute from "./components/UnauthenticatedRoute";
 import Layout from "./layouts/Layout";
+import AccountPostPage from "./pages/account/AccountPostsPage";
+import SavedPostsPage from "./pages/account/SavedPostsPage";
+import SettingsPage from "./pages/account/SettingsPage";
 import CanvasPage from "./pages/CanvasPage";
 import FeedPage from "./pages/FeedPage";
 import LandingPage from "./pages/LandingPage";
 import LogInPage from "./pages/LogInPage";
 import NotFoundPage from "./pages/NotFoundPage";
-import AccountPostPage from "./pages/account/AccountPostsPage";
-import SavedPostsPage from "./pages/account/SavedPostsPage";
-import SettingsPage from "./pages/account/SettingsPage";
 import SignUpPage from "./pages/SignUpPage";
 import { authGoogleCallback, getUserId } from "./services/auth-service";
 import { useAuthStore } from "./stores/auth-store";
 import { clearQueryParams } from "./utils/navigation";
 
 function App(): React.ReactNode {
-    const location = useLocation();
     const navigate = useNavigate();
     const setUserId = useAuthStore((state) => state.setUserId);
 
@@ -33,7 +32,8 @@ function App(): React.ReactNode {
     // When the url contains OAuth callback parameters, attempt to authenticate the user with Google
     useEffect(() => {
         async function handleOAuthCallback(): Promise<void> {
-            const urlParams = new URLSearchParams(location.search);
+            const url = new URL(window.location.href);
+            const urlParams = new URLSearchParams(url.search);
             if (!urlParams.has("state") || !urlParams.has("code")) {
                 return;
             }
@@ -50,7 +50,7 @@ function App(): React.ReactNode {
         }
 
         handleOAuthCallback();
-    }, [location.search, navigate, setUserId]);
+    }, [navigate, setUserId]);
 
     return (
         <Routes>

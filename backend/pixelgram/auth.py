@@ -144,7 +144,7 @@ def get_database_strategy(
 
 auth_backend = AuthenticationBackend(
     name="cookie",
-    transport=CookieTransport(),
+    transport=CookieTransport(cookie_samesite="none"),
     get_strategy=get_database_strategy,
 )
 """Authentication backend for cookie-based authentication."""
