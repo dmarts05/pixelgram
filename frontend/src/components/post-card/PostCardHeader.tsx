@@ -3,7 +3,6 @@ import { Link } from "react-router";
 type PostCardHeaderProps = {
     authorUsername: string;
     authorId: string;
-    authorName: string;
 };
 
 function PostCardHeader({
