@@ -15,6 +15,7 @@ import SignUpPage from "./pages/SignUpPage";
 import { authGoogleCallback, getUserId } from "./services/auth-service";
 import { useAuthStore } from "./stores/auth-store";
 import { clearQueryParams } from "./utils/navigation";
+import UserPostsPage from "./pages/users/PostsPage";
 
 function App(): React.ReactNode {
     const navigate = useNavigate();
@@ -104,6 +105,16 @@ function App(): React.ReactNode {
                             </AuthenticatedRoute>
                         }
                     />
+                </Route>
+                <Route path="users">
+                    <Route
+                        path=":userId"
+                        element={
+                            <AuthenticatedRoute redirectTo="/">
+                                <UserPostsPage />
+                            </AuthenticatedRoute>
+                        }
+                    ></Route>
                 </Route>
             </Route>
             <Route path="auth">
