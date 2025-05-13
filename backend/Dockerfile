@@ -25,4 +25,4 @@ RUN adduser -u 5678 --disabled-password --gecos "" appuser && \
 USER appuser
 
 # Start Gunicorn with uvicorn's worker to run your ASGI application.
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "-k", "uvicorn.workers.UvicornWorker", "pixelgram.__main__:app"]
+CMD ["gunicorn", "--bind", "0.0.0.0:80", "-k", "uvicorn.workers.UvicornWorker", "pixelgram.__main__:app"]
