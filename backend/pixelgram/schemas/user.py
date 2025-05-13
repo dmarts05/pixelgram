@@ -1,7 +1,7 @@
 import uuid
 
 from fastapi_users import schemas
-from pydantic import field_validator
+from pydantic import BaseModel, field_validator
 
 
 class UserRead(schemas.BaseUser[uuid.UUID]):
@@ -34,3 +34,10 @@ class UserUpdate(schemas.BaseUserUpdate):
         if v is not None and not v.strip():
             raise ValueError("Username cannot be empty")
         return v
+
+
+class UserPublicInfo(BaseModel):
+    """User schema for public information."""
+
+    id: uuid.UUID
+    username: str
