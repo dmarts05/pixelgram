@@ -1,4 +1,4 @@
-import { Account } from "../types/account";
+import { Account, AccountPublicData } from "../types/account";
 import { fetchApi } from "./fetch-api";
 
 export type FetchAccountData = {
@@ -35,6 +35,23 @@ export async function updateUser({
 
 export async function getMyUser(): Promise<Account> {
     const res = await fetchApi("users/me", {
+        method: "GET",
+        headers: {
+            "Content-Type": "application/json",
+        },
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to fetch posts");
+    }
+
+    return res.json();
+}
+
+export async function getUsernameById(
+    userId: string
+): Promise<AccountPublicData> {
+    const res = await fetchApi(`users/${userId}/info`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

@@ -13,3 +13,8 @@ export type Account = {
     isVerified: boolean;
     isSuperuser: boolean;
 };
+
+export type AccountPublicData = {
+    id: string;
+    username: string;
+};

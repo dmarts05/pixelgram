@@ -31,7 +31,10 @@ function PostCard({
             className="card bg-base-100 shadow-md"
             style={{ minWidth: `${POST_CARD_IMAGE_SIZE}px` }}
         >
-            <PostCardHeader authorUsername={post.authorUsername} />
+            <PostCardHeader
+                authorUsername={post.authorUsername}
+                authorId={post.userId}
+            />
             <PostCardImage
                 postId={post.id}
                 imageUrl={post.imageUrl}
