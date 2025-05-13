@@ -16,7 +16,7 @@ users_router = APIRouter(
 
 
 @users_router.get(
-    "/{user_id}/info",
+    "/{id}/info",
     summary="Get username by user ID",
     description="Returns the username associated with the given user ID.",
     response_model=UserPublicInfo,
@@ -40,14 +40,14 @@ users_router = APIRouter(
     },
 )
 async def get_username_by_id(
-    user_id: UUID,
+    id: UUID,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_session),
 ):
     """
     Get username by user ID.
     """
-    result = await db.execute(select(User).filter_by(id=user_id))
+    result = await db.execute(select(User).filter_by(id=id))
     user_row = result.unique().scalar_one_or_none()
     if not user_row:
         raise HTTPException(status_code=404, detail="User not found.")
