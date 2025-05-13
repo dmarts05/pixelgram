@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { Route, Routes, useLocation, useNavigate } from "react-router";
+import { Route, Routes, useNavigate } from "react-router";
 import AuthenticatedRoute from "./components/AuthenticatedRoute";
 import UnauthenticatedRoute from "./components/UnauthenticatedRoute";
 import Layout from "./layouts/Layout";
@@ -17,7 +17,6 @@ import { useAuthStore } from "./stores/auth-store";
 import { clearQueryParams } from "./utils/navigation";
 
 function App(): React.ReactNode {
-    const location = useLocation();
     const navigate = useNavigate();
     const setUserId = useAuthStore((state) => state.setUserId);
 
@@ -51,7 +50,7 @@ function App(): React.ReactNode {
         }
 
         handleOAuthCallback();
-    }, [location.search, navigate, setUserId]);
+    }, [navigate, setUserId]);
 
     return (
         <Routes>
