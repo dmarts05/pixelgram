@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Optional
 from uuid import UUID
 
 from pydantic import HttpUrl, field_validator
@@ -60,3 +61,13 @@ class PostRead(PostBase):
     comments_count: int
     commented_by_user: bool
     saved_by_user: bool
+
+
+class PaginatedPostsResponse(CamelModel):
+    data: list[PostRead]
+    nextPage: Optional[int]
+    total: int
+
+
+class PostResponse(CamelModel):
+    post: PostRead

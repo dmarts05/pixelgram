@@ -27,8 +27,18 @@ from pixelgram.models.post_comment import PostComment
 from pixelgram.models.post_like import PostLike
 from pixelgram.models.post_saved import PostSaved
 from pixelgram.models.user import User
-from pixelgram.schemas.post import PostCreate, PostRead
-from pixelgram.schemas.post_comment import PostCommentCreate, PostCommentRead
+from pixelgram.schemas.post import (
+    PaginatedPostsResponse,
+    PostCreate,
+    PostRead,
+    PostResponse,
+)
+from pixelgram.schemas.post_comment import (
+    CommentResponse,
+    PaginatedCommentsResponse,
+    PostCommentCreate,
+    PostCommentRead,
+)
 from pixelgram.services.supabase_client import (
     SupabaseStorageClient,
     get_supabase_client,
@@ -86,7 +96,7 @@ async def post_pixelart(
     supabase_client: SupabaseStorageClient = Depends(get_supabase_client),
     settings: Settings = Depends(get_settings),
     db: AsyncSession = Depends(get_async_session),
-):
+) -> PostResponse:
     # Check if file is an image
     content_type = file.content_type
     if not content_type or not content_type.startswith("image/"):
@@ -174,7 +184,7 @@ async def post_pixelart(
             detail=f"Invalid post data: {str(e)}",
         )
 
-    return {"post": pr.model_dump(by_alias=True)}
+    return PostResponse(post=pr)
 
 
 @posts_router.get(
@@ -220,7 +230,7 @@ async def get_posts(
     ),
     user_id: str | None = Query(None, description="The user ID to filter posts by."),
     db: AsyncSession = Depends(get_async_session),
-):
+) -> PaginatedPostsResponse:
     # Get posts with pagination and filter by user_id if provided
     stmt = (
         select(Post)
@@ -299,7 +309,7 @@ async def get_posts(
             saved_by_user=post.id in saved_post_ids,
         )
         data.append(pr.model_dump(by_alias=True))
-    return {"data": data, "nextPage": next_page, "total": total}
+    return PaginatedPostsResponse(data=data, nextPage=next_page, total=total)
 
 
 @posts_router.delete(
@@ -453,7 +463,7 @@ async def get_post_comments(
         10, ge=1, le=100, description="The number of comments per page."
     ),
     db: AsyncSession = Depends(get_async_session),
-):
+) -> PaginatedCommentsResponse:
     # Check if post exists
     post = await db.get(Post, post_id)
     if not post:
@@ -495,13 +505,14 @@ async def get_post_comments(
         )
         data.append(cr.model_dump(by_alias=True))
 
-    return {"data": data, "nextPage": next_page, "total": total}
+    return PaginatedCommentsResponse(data=data, nextPage=next_page, total=total)
 
 
 @posts_router.post(
     "/{post_id}/comments/",
     status_code=status.HTTP_201_CREATED,
     summary="Add a comment to a post",
+    response_model=CommentResponse,
     responses={
         status.HTTP_201_CREATED: {"description": "Comment created"},
         status.HTTP_404_NOT_FOUND: {"description": "Post not found"},
@@ -514,7 +525,7 @@ async def post_comment(
     payload: PostCommentCreate = Body(...),
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_session),
-):
+) -> CommentResponse:
     # Check if post exists
     post = await db.get(Post, post_id)
     if not post:
@@ -549,9 +560,7 @@ async def post_comment(
         created_at=comment.created_at,
         by_user=True,
     )
-    return {
-        "comment": cr.model_dump(by_alias=True),
-    }
+    return CommentResponse(comment=cr)
 
 
 @posts_router.delete(
@@ -720,7 +729,7 @@ async def get_saved_posts(
     ),
     # user_id: str | None = Query(None, description="The user ID to filter posts by."),
     db: AsyncSession = Depends(get_async_session),
-):
+) -> PaginatedPostsResponse:
     """
     Get all saved posts for the current user.
     """
@@ -735,7 +744,7 @@ async def get_saved_posts(
     saved_posts_ids = [row[0] for row in result.fetchall()]
 
     if not saved_posts_ids:
-        return {"data": [], "nextPage": None, "total": 0}
+        return PaginatedPostsResponse(data=[], nextPage=None, total=0)
 
     stmt = (
         select(Post)
@@ -811,4 +820,4 @@ async def get_saved_posts(
         )
         data.append(pr.model_dump(by_alias=True))
 
-    return {"data": data, "nextPage": next_page, "total": total}
+    return PaginatedPostsResponse(data=data, nextPage=next_page, total=total)
