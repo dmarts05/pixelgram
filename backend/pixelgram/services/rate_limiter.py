@@ -3,22 +3,27 @@ import time
 from fastapi import Depends, HTTPException, Request
 
 from pixelgram.auth import current_active_user
-from pixelgram.schemas import schemas
 
 # Memory to store users temporarily to control rate limiting
 
 rate_limit_memory = {}
 
-RATE_LIMIT = 1  # requests per second
-RATE_LIMIT_WINDOW = 60  # seconds
+RATE_LIMIT = 30  # requests per second
+RATE_LIMIT_WINDOW = 900  # seconds
 
 
-async def rate_limiter(
-    request: Request, user: schemas.UserRead = Depends(current_active_user)
-):
+async def rate_limiter(request: Request, user=Depends(current_active_user)):
     """
     Rate limiting dependency to limit the number of requests per user
     """
+
+    request = Request.scope["request"]
+    user = await current_active_user(request)
+    if user is None:
+        raise HTTPException(
+            status_code=401,
+            detail="User not authenticated",
+        )
 
     user_id = str(user.id)
     current_time = time.time()
