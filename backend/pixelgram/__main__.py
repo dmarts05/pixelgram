@@ -1,7 +1,9 @@
 from contextlib import asynccontextmanager
 
+import redis.asyncio as redis
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi_limiter import FastAPILimiter
 
 from pixelgram.auth import (
     fastapi_users,
@@ -18,6 +20,10 @@ from pixelgram.settings import settings
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await create_db_and_tables()
+    redis_connection = redis.from_url(
+        "redis://localhost", encoding="utf-8", decode_responses=True
+    )
+    await FastAPILimiter.init(redis_connection)
     yield
 
 
