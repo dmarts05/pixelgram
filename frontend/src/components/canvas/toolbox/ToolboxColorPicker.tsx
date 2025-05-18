@@ -1,4 +1,4 @@
-import {GoPencil} from "react-icons/go";
+import { GoPencil } from "react-icons/go";
 import { Tool } from "../../../types/tool";
 
 interface ToolboxColorPickerProps {
@@ -24,9 +24,14 @@ function ToolboxColorPicker({
                 }}
             />
             <button
-                onClick={() => {document.getElementById("colorPicker")?.click();setTool("picker");}}
+                onClick={() => {
+                    document.getElementById("colorPicker")?.click();
+                    setTool("picker");
+                }}
                 className="btn btn-circle w-8 h-8 bg-gradient-to-r from-yellow-500 via-blue-500 to-purple-500 rainbow-animated"
-            >{isSelected && <GoPencil className="stroke-2" />}</button>
+            >
+                {isSelected && <GoPencil className="stroke-2" />}
+            </button>
         </>
     );
 }
