@@ -3,7 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { MdAutoFixHigh } from "react-icons/md";
 import { useNavigate } from "react-router";
 import { autogenerateCaption, publishPost } from "../../services/posts-service";
-import BaseModal from "../BaseModal";
+import BaseModal from "../modals/BaseModal";
 
 interface Props {
     imageUrl: string;

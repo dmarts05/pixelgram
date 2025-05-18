@@ -4,7 +4,7 @@ import { FetchPostCommentsResponse } from "../../../../services/posts-service";
 import SendCommentForm from "../../../forms/SendCommentForm";
 import FullPageErrorAlert from "../../../FullPageErrorAlert";
 import FullPageSpinner from "../../../FullPageSpinner";
-import BaseModal from "../../../BaseModal";
+import BaseModal from "../../../modals/BaseModal";
 import CommentsBubbles from "./CommentsBubbles";
 
 type CommentsModalProps = {
