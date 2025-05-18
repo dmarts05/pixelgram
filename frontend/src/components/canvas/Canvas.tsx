@@ -17,6 +17,12 @@ function Canvas({
 }: CanvasProps): React.ReactNode {
     const contextRef = React.useRef<CanvasRenderingContext2D | null>(null);
 
+    const [cursor, setCursor] = React.useState<{x: number; y: number; visible: boolean}>({
+        x: 0,
+        y: 0,
+        visible: false,
+    });
+
     useEffect(() => {
         const canvas = canvasRef.current;
         const context = canvas?.getContext("2d");
@@ -43,6 +49,8 @@ function Canvas({
             }
         }
 
+        
+
         // Initial canvas size
         resizeCanvas();
 
@@ -52,10 +60,23 @@ function Canvas({
         // Cleanup event listener on unmount
         return (): void => {
             window.removeEventListener("resize", resizeCanvas);
+            
         };
     }, [canvasRef]);
 
-    function getCanvasPosition(e: MouseEvent | TouchEvent): {
+    
+
+    // Load tools and methods to draw on canvas when changing tool or color
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        const context = contextRef.current;
+        if (!canvas || !context) {
+            return;
+        }
+
+        let isDrawing = false;
+
+        function getCanvasPosition(e: MouseEvent | TouchEvent): {
         x: number;
         y: number;
     } {
@@ -101,16 +122,6 @@ function Canvas({
         context.moveTo(x, y);
     }
 
-    // Load tools and methods to draw on canvas when changing tool or color
-    useEffect(() => {
-        const canvas = canvasRef.current;
-        const context = contextRef.current;
-        if (!canvas || !context) {
-            return;
-        }
-
-        let isDrawing = false;
-
         function startDrawing(e: MouseEvent | TouchEvent): void {
             isDrawing = true;
             draw(e, isDrawing);
@@ -121,29 +132,79 @@ function Canvas({
             context!.beginPath();
         }
 
+        function updateCursor(e: MouseEvent | TouchEvent): void {
+            
+            let clientX: number, clientY: number;
+            if (e instanceof TouchEvent) {
+                if (e.touches.length === 0) return;
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            if(canvas) {
+                const rect = canvas.getBoundingClientRect();
+                setCursor({
+                    x: clientX - rect.left,
+                    y: clientY - rect.top,
+                    visible: true,
+                });
+            }   
+        }
+
+        function hideCursor():void {
+            setCursor((c) => ({ ...c, visible: false }));
+        }
+
+        canvas.addEventListener("mouseleave", hideCursor);
+        canvas.addEventListener("mouseenter", () => setCursor((c) => ({ ...c, visible: true })));
+        canvas.addEventListener("touchmove", updateCursor);
+        canvas.addEventListener("touchend", hideCursor);
+
         // Add event listeners for mouse and touch events
         canvas.addEventListener("mousedown", startDrawing);
         canvas.addEventListener("mouseup", stopDrawing);
-        canvas.addEventListener("mousemove", (e) => draw(e, isDrawing));
-        canvas.addEventListener("touchstart", startDrawing);
-        canvas.addEventListener("touchend", stopDrawing);
-        canvas.addEventListener("touchmove", (e) => draw(e, isDrawing));
+        canvas.addEventListener("mousemove", (e) => {updateCursor(e); draw(e, isDrawing)});
+        canvas.addEventListener("touchstart", (e) => {startDrawing(e)});
+        canvas.addEventListener("touchend", () => {hideCursor(); stopDrawing()});
+        canvas.addEventListener("touchmove", (e) => {updateCursor(e); draw(e, isDrawing)});
 
         // Cleanup event listeners on unmount
         return (): void => {
+            canvas.removeEventListener("mouseleave", hideCursor);
+            canvas.removeEventListener("mouseenter", () => setCursor((c) => ({ ...c, visible: true })));
+
             canvas.removeEventListener("mousedown", startDrawing);
-            canvas.removeEventListener("mouseup", stopDrawing);
-            canvas.removeEventListener("mousemove", (e) => draw(e, isDrawing));
+            window.removeEventListener("mouseup", stopDrawing);
+            canvas.removeEventListener("mousemove", (e) => {updateCursor(e); draw(e, isDrawing)});
 
             canvas.removeEventListener("touchstart", startDrawing);
-            canvas.removeEventListener("touchend", stopDrawing);
-            canvas.removeEventListener("touchmove", (e) => draw(e, isDrawing));
+            canvas.removeEventListener("touchend", () => {hideCursor(); stopDrawing()});
+            canvas.removeEventListener("touchmove", (e) => {updateCursor(e); draw(e, isDrawing)});
         };
-    });
+    }, [color, tool,pencilThickness, canvasRef]);
     return (
         <div className="flex flex-col gap-4">
             <div className="card bg-white shadow-md">
                 <canvas ref={canvasRef}></canvas>
+                {cursor.visible && tool === "pencil" && (
+                    <div
+                        style={{
+                            position: "absolute",
+                            pointerEvents: "none",
+                            left: cursor.x - pencilThickness * 2,
+                            top: cursor.y - pencilThickness * 2,
+                            width: pencilThickness * 4,
+                            height: pencilThickness * 4,
+                            borderRadius: "50%",
+                            border: `2px solid ${color}`,
+                            background: "transparent",
+                            zIndex: 10,
+                            boxSizing: "border-box",
+                        }}
+                    />
+                )}
             </div>
             <button
                 className="btn btn-primary justify-items-end"
