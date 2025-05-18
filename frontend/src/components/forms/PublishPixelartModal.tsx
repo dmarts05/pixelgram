@@ -129,8 +129,10 @@ export default function PublishPixelartModal({
     const navigate = useNavigate();
 
     const autogenerateMutation = useMutation({
-        mutationFn: async () => {return await autogenerateCaption(imageUrl) } ,
-        onSuccess: (data:string) => {
+        mutationFn: async () => {
+            return await autogenerateCaption(imageUrl);
+        },
+        onSuccess: (data: string) => {
             setDescription(data);
             setLoading(false);
         },
@@ -142,7 +144,9 @@ export default function PublishPixelartModal({
     });
 
     const publishMutation = useMutation({
-        mutationFn: async () => {await publishPost(imageUrl, description)},
+        mutationFn: async () => {
+            await publishPost(imageUrl, description);
+        },
         onSuccess: () => {
             setIsPublished(true);
             setLoading(false);
@@ -150,15 +154,13 @@ export default function PublishPixelartModal({
         onError: (error: Error) => {
             setErrorPlaceholder(error.message);
             setLoading(false);
-        }
-
+        },
     });
 
     const handleAutogenerate = async (): Promise<void> => {
         setLoading(true);
         setErrorPlaceholder(null);
         autogenerateMutation.mutate();
-        
     };
 
     const handlePublish = async (): Promise<void> => {

@@ -178,7 +178,6 @@ export async function deletePost(postId: string): Promise<void> {
 }
 
 export async function autogenerateCaption(imageUrl: string): Promise<string> {
-    
     try {
         // Convert dataURL to Blob
         const response = await fetch(imageUrl);
@@ -189,12 +188,12 @@ export async function autogenerateCaption(imageUrl: string): Promise<string> {
         formData.append("file", blob, "image.png");
 
         // Send as multipart/form-data
-        const apiResponse = await fetchApi('captions', {
+        const apiResponse = await fetchApi("captions", {
             method: "POST",
             body: formData,
         });
 
-        if(!apiResponse.ok) {
+        if (!apiResponse.ok) {
             const errorData = await apiResponse.json();
             throw new Error(
                 `Error while fetching the caption: ${errorData.detail || apiResponse.statusText}`
@@ -202,8 +201,7 @@ export async function autogenerateCaption(imageUrl: string): Promise<string> {
         }
         const data = await apiResponse.json();
         return data.caption;
-
-    } catch(error: unknown) {
+    } catch (error: unknown) {
         console.error("Error:", error);
         let errorMessage = "An unknown error occurred";
 
@@ -212,10 +210,13 @@ export async function autogenerateCaption(imageUrl: string): Promise<string> {
         }
 
         throw new Error(errorMessage);
-    }   
+    }
 }
 
-export async function publishPost(imageUrl:string, description:string):Promise<void> {
+export async function publishPost(
+    imageUrl: string,
+    description: string
+): Promise<void> {
     try {
         // Convert dataURL to Blob
         const response = await fetch(imageUrl);
