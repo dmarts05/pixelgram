@@ -45,7 +45,9 @@ const BaseModal: React.FC<BaseModalProps> = ({
         if (!dialog) return;
         const handleClose = (): void => onClose();
         dialog.addEventListener("close", handleClose);
-        return (): void => { dialog.removeEventListener("close", handleClose); };
+        return (): void => {
+            dialog.removeEventListener("close", handleClose);
+        };
     }, [onClose]);
 
     // Trap focus inside modal
@@ -79,7 +81,10 @@ const BaseModal: React.FC<BaseModalProps> = ({
                 )}
                 {children}
             </div>
-            <form method="dialog" className={`modal-backdrop ${backdropClassName}`}> 
+            <form
+                method="dialog"
+                className={`modal-backdrop ${backdropClassName}`}
+            >
                 <button aria-label="Close modal" onClick={onClose}></button>
             </form>
         </dialog>

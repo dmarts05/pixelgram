@@ -27,11 +27,7 @@ function ConfirmDeleteModal({
             <h3 className="font-bold text-lg">Confirm Deletion</h3>
             <p>Are you sure you want to delete this post?</p>
             <div className="modal-action">
-                <button
-                    className="btn"
-                    onClick={onCancel}
-                    disabled={isLoading}
-                >
+                <button className="btn" onClick={onCancel} disabled={isLoading}>
                     Cancel
                 </button>
                 <button

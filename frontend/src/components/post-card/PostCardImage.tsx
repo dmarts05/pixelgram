@@ -51,7 +51,10 @@ function PostCardImage({
                     role="button"
                     aria-label="Open image preview"
                     onClick={handleOpenModal}
-                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleOpenModal(); }}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ")
+                            handleOpenModal();
+                    }}
                 />
             </figure>
 
