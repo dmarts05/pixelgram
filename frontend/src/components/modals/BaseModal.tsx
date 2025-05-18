@@ -1,12 +1,5 @@
 import React, { useEffect, useRef } from "react";
 
-/**
- * Best practices for daisyUI modals:
- * - Use <dialog> for all modals.
- * - The opener button should have aria-haspopup="dialog" and aria-expanded.
- * - Use aria-label for modal accessibility.
- */
-
 interface BaseModalProps {
     isOpen: boolean;
     onClose: () => void;
@@ -15,7 +8,7 @@ interface BaseModalProps {
     modalBoxClassName?: string;
     backdropClassName?: string;
     ariaLabel?: string;
-    id?: string; // Optional id for accessibility or testing
+    id?: string;
 }
 
 const BaseModal: React.FC<BaseModalProps> = ({
