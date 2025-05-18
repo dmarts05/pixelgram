@@ -2,8 +2,7 @@ import React, { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { MdAutoFixHigh } from "react-icons/md";
 import { useNavigate } from "react-router";
-import { fetchApi } from "../../services/fetch-api";
-import { autogenerateCaption } from "../../services/posts-service";
+import { autogenerateCaption, publishPost } from "../../services/posts-service";
 
 interface Props {
     imageUrl: string;
@@ -142,6 +141,19 @@ export default function PublishPixelartModal({
         },
     });
 
+    const publishMutation = useMutation({
+        mutationFn: async () => {await publishPost(imageUrl, description)},
+        onSuccess: () => {
+            setIsPublished(true);
+            setLoading(false);
+        },
+        onError: (error: Error) => {
+            setErrorPlaceholder(error.message);
+            setLoading(false);
+        }
+
+    });
+
     const handleAutogenerate = async (): Promise<void> => {
         setLoading(true);
         setErrorPlaceholder(null);
@@ -151,42 +163,7 @@ export default function PublishPixelartModal({
 
     const handlePublish = async (): Promise<void> => {
         setLoading(true);
-        try {
-            // Convert dataURL to Blob
-            const response = await fetch(imageUrl);
-            const blob = await response.blob();
-
-            // Create FormData and add blob and description
-            const formData = new FormData();
-            formData.append("file", blob, "image.png");
-            formData.append("description", description);
-
-            const apiResponse = await fetchApi("posts", {
-                method: "POST",
-                body: formData,
-            });
-
-            if (!apiResponse.ok) {
-                const errorData = await apiResponse.json();
-                throw new Error(
-                    `Error while publishing the pixelart: ${errorData.detail || apiResponse.statusText}`
-                );
-            }
-
-            // Set published state to true on success
-            setIsPublished(true);
-        } catch (error: unknown) {
-            console.error("Error publishing pixelart:", error);
-            let errorMessage = "Ocurrió un error al publicar tu pixelart";
-
-            if (error instanceof Error) {
-                errorMessage = error.message;
-            }
-
-            setErrorPlaceholder(errorMessage);
-        } finally {
-            setLoading(false);
-        }
+        publishMutation.mutate();
     };
 
     const handleDone = (): void => {
