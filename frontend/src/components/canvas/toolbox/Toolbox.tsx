@@ -44,7 +44,11 @@ function Toolbox({
                     }}
                 />
             ))}
-            <ToolboxColorPicker setTool={setTool} setColor={setColor} />
+            <ToolboxColorPicker
+                selectedTool={tool}
+                setTool={setTool}
+                setColor={setColor}
+            />
             <ToolboxThicknessControl
                 thickness={pencilThickness}
                 setThickness={setPencilThickness}

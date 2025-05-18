@@ -5,7 +5,7 @@ import PublishPixelartModal from "../components/forms/PublishPixelartModal";
 import { NAVBAR_HEIGHT } from "../utils/constants";
 
 function CanvasPage(): React.ReactNode {
-    const [tool, setTool] = useState<"pencil" | "eraser">("pencil");
+    const [tool, setTool] = useState<"pencil" | "eraser" | "picker">("pencil");
     const [color, setColor] = useState<string>("#000000");
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
     const [imageUrl, setImageUrl] = useState<string>("");

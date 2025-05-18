@@ -22,7 +22,11 @@ function ToolboxColorButton({
             className={`btn btn-circle w-8 h-8 border-white border-2`}
             style={{ backgroundColor: thisColor }}
         >
-            {isSelected && <GoPencil className="stroke-2" />}
+            {isSelected && (
+                <GoPencil
+                    className={`stroke-2 ${thisColor === "#000000" ? "text-white" : ""}`}
+                />
+            )}
         </button>
     );
 }
