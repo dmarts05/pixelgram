@@ -17,7 +17,6 @@ function CommentsButton({
     commentedByUser,
     refetchPosts,
 }: CommentsButtonProps): React.ReactNode {
-    const modalId = `comments-modal-${postId}`;
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const {
@@ -39,8 +38,6 @@ function CommentsButton({
 
     function handleOpenModal(): void {
         setIsModalOpen(true);
-        const modal = document.getElementById(modalId) as HTMLDialogElement;
-        modal.showModal();
     }
 
     function handleCloseModal(): void {
@@ -52,6 +49,8 @@ function CommentsButton({
             <button
                 onClick={handleOpenModal}
                 className="rounded-full text-lg hover:text-primary transition-colors cursor-pointer"
+                aria-haspopup="dialog"
+                aria-expanded={isModalOpen}
             >
                 {commentedByUser ? <FaComment /> : <FaRegComment />}
             </button>
@@ -60,7 +59,7 @@ function CommentsButton({
 
             <CommentsModal
                 postId={postId}
-                modalId={modalId}
+                isOpen={isModalOpen}
                 status={status}
                 error={error}
                 data={data!}

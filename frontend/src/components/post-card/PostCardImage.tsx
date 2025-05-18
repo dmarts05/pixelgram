@@ -1,23 +1,24 @@
-import Modal from "../Modal";
+import React, { useState } from "react";
+import BaseModal from "../BaseModal";
 
 type PostCardImageProps = {
-    postId: string;
     imageUrl: URL;
     imageAlt: string;
     height: number;
 };
 
 function PostCardImage({
-    postId,
     imageUrl,
     imageAlt,
     height,
 }: PostCardImageProps): React.ReactNode {
-    const modalId = `image-modal-${postId}`;
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     function handleOpenModal(): void {
-        const modal = document.getElementById(modalId) as HTMLDialogElement;
-        modal.showModal();
+        setIsModalOpen(true);
+    }
+    function handleCloseModal(): void {
+        setIsModalOpen(false);
     }
 
     return (
@@ -44,17 +45,30 @@ function PostCardImage({
                         minWidth: height,
                         minHeight: height,
                     }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label="Open image preview"
+                    onClick={handleOpenModal}
+                    onKeyDown={e => { if (e.key === 'Enter' || e.key === ' ') handleOpenModal(); }}
                 />
             </figure>
 
-            <Modal id={modalId} responsive={false} modalBoxClassName="p-0">
-                <img
-                    src={String(imageUrl)}
-                    alt={imageAlt}
-                    className="w-full"
-                    height={height}
-                />
-            </Modal>
+            <BaseModal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                modalBoxClassName="p-0"
+                ariaLabel="Image preview dialog"
+            >
+                <h3 className="sr-only">Image preview</h3>
+                <div>
+                    <img
+                        src={String(imageUrl)}
+                        alt={imageAlt}
+                        className="w-full"
+                        height={height}
+                    />
+                </div>
+            </BaseModal>
         </>
     );
 }

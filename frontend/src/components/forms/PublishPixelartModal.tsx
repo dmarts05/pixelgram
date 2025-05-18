@@ -3,6 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { MdAutoFixHigh } from "react-icons/md";
 import { useNavigate } from "react-router";
 import { autogenerateCaption, publishPost } from "../../services/posts-service";
+import BaseModal from "../BaseModal";
 
 interface Props {
     imageUrl: string;
@@ -176,41 +177,31 @@ export default function PublishPixelartModal({
     if (!isOpen) return null;
 
     return (
-        <dialog className="modal modal-open">
-            <div className="modal-box">
-                <form method="dialog">
-                    <button
-                        className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-                        onClick={onClose}
-                    >
-                        ✕
-                    </button>
-                </form>
-                <h3 className="font-bold text-lg">Publish pixelart</h3>
-
-                {isPublished ? (
-                    <SuccessView onDone={handleDone} />
-                ) : (
-                    <>
-                        <PixelartPreview src={imageUrl} />
-                        <DescriptionField
-                            value={description}
-                            isLoading={loading}
-                            onChange={setDescription}
-                            onGenerate={handleAutogenerate}
-                            errorPlaceholder={errorPlaceholder || undefined}
-                        />
-                        <ModalActions
-                            onClose={onClose}
-                            onPublish={handlePublish}
-                            disabled={!description || loading}
-                        />
-                    </>
-                )}
-            </div>
-            <form method="dialog" className="modal-backdrop">
-                <button onClick={onClose}>close</button>
-            </form>
-        </dialog>
+        <BaseModal
+            isOpen={isOpen}
+            onClose={onClose}
+            ariaLabel="Publish pixelart dialog"
+        >
+            <h3 className="font-bold text-lg">Publish pixelart</h3>
+            {isPublished ? (
+                <SuccessView onDone={handleDone} />
+            ) : (
+                <>
+                    <PixelartPreview src={imageUrl} />
+                    <DescriptionField
+                        value={description}
+                        isLoading={loading}
+                        onChange={setDescription}
+                        onGenerate={handleAutogenerate}
+                        errorPlaceholder={errorPlaceholder || undefined}
+                    />
+                    <ModalActions
+                        onClose={onClose}
+                        onPublish={handlePublish}
+                        disabled={!description || loading}
+                    />
+                </>
+            )}
+        </BaseModal>
     );
 }
