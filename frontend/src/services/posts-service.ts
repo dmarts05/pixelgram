@@ -176,3 +176,76 @@ export async function deletePost(postId: string): Promise<void> {
         throw new Error("Failed to delete post");
     }
 }
+
+export async function autogenerateCaption(imageUrl: string): Promise<string> {
+    try {
+        // Convert dataURL to Blob
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+
+        // Create FormData and add blob
+        const formData = new FormData();
+        formData.append("file", blob, "image.png");
+
+        // Send as multipart/form-data
+        const apiResponse = await fetchApi("captions", {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!apiResponse.ok) {
+            const errorData = await apiResponse.json();
+            throw new Error(
+                `Error while fetching the caption: ${errorData.detail || apiResponse.statusText}`
+            );
+        }
+        const data = await apiResponse.json();
+        return data.caption;
+    } catch (error: unknown) {
+        console.error("Error:", error);
+        let errorMessage = "An unknown error occurred";
+
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+
+        throw new Error(errorMessage);
+    }
+}
+
+export async function publishPost(
+    imageUrl: string,
+    description: string
+): Promise<void> {
+    try {
+        // Convert dataURL to Blob
+        const response = await fetch(imageUrl);
+        const blob = await response.blob();
+
+        // Create FormData and add blob and description
+        const formData = new FormData();
+        formData.append("file", blob, "image.png");
+        formData.append("description", description);
+
+        const apiResponse = await fetchApi("posts", {
+            method: "POST",
+            body: formData,
+        });
+
+        if (!apiResponse.ok) {
+            const errorData = await apiResponse.json();
+            throw new Error(
+                `Error while publishing the pixelart: ${errorData.detail || apiResponse.statusText}`
+            );
+        }
+    } catch (error: unknown) {
+        console.error("Error publishing pixelart:", error);
+        let errorMessage = "An unknown error occurred";
+
+        if (error instanceof Error) {
+            errorMessage = error.message;
+        }
+
+        throw new Error(errorMessage);
+    }
+}
