@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import { useMutation } from "@tanstack/react-query";
 import { MdAutoFixHigh } from "react-icons/md";
 import { useNavigate } from "react-router";
 import { fetchApi } from "../../services/fetch-api";
+import { autogenerateCaption } from "../../services/posts-service";
 
 interface Props {
     imageUrl: string;
@@ -127,46 +129,24 @@ export default function PublishPixelartModal({
     const [isPublished, setIsPublished] = useState<boolean>(false);
     const navigate = useNavigate();
 
+    const autogenerateMutation = useMutation({
+        mutationFn: async () => {return await autogenerateCaption(imageUrl) } ,
+        onSuccess: (data:string) => {
+            setDescription(data);
+            setLoading(false);
+        },
+        onError: (error: Error) => {
+            setDescription("");
+            setErrorPlaceholder(error.message);
+            setLoading(false);
+        },
+    });
+
     const handleAutogenerate = async (): Promise<void> => {
         setLoading(true);
         setErrorPlaceholder(null);
-        try {
-            // Convert dataURL to Blob
-            const response = await fetch(imageUrl);
-            const blob = await response.blob();
-
-            // Create FormData and add blob
-            const formData = new FormData();
-            formData.append("file", blob, "image.png");
-
-            // Send as multipart/form-data
-            const apiResponse = await fetchApi("captions", {
-                method: "POST",
-                body: formData,
-            });
-
-            if (!apiResponse.ok) {
-                const errorData = await apiResponse.json();
-                throw new Error(
-                    `Error while fetching the caption: ${errorData.detail || apiResponse.statusText}`
-                );
-            }
-
-            const data = await apiResponse.json();
-            setDescription(data.caption);
-        } catch (error: unknown) {
-            console.error("Error:", error);
-            let errorMessage = "An unknown error occurred";
-
-            if (error instanceof Error) {
-                errorMessage = error.message;
-            }
-
-            setErrorPlaceholder(errorMessage);
-            setDescription("");
-        } finally {
-            setLoading(false);
-        }
+        autogenerateMutation.mutate();
+        
     };
 
     const handlePublish = async (): Promise<void> => {
