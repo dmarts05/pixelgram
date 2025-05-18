@@ -1,5 +1,5 @@
-import { useInfiniteQuery } from "@tanstack/react-query";
-import React from "react";
+import { useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import React, { useEffect, useState } from "react";
 import { Post } from "../types/post";
 import FullPageErrorAlert from "./FullPageErrorAlert";
 import FullPageSpinner from "./FullPageSpinner";
@@ -24,6 +24,7 @@ function PostsGrid({
     header,
     showDeleteButton,
 }: PostsGridProps): React.ReactNode {
+    const queryClient = useQueryClient();
     const {
         data,
         error,
@@ -40,6 +41,24 @@ function PostsGrid({
         refetchInterval: 60000, // Refetch every minute
     });
 
+    // Local state to store posts pages
+    const [postsPages, setPostsPages] = useState<PostPage[]>([]);
+
+    // Sync local state with react-query data
+    useEffect(() => {
+        if (data?.pages) {
+            setPostsPages(data.pages);
+        }
+    }, [data]);
+
+    // Cleanup posts when component unmounts
+    useEffect((): (() => void) => {
+        return (): void => {
+            setPostsPages([]);
+            queryClient.removeQueries({ queryKey });
+        };
+    }, [queryClient, queryKey]);
+
     switch (status) {
         case "pending":
             return <FullPageSpinner />;
@@ -51,7 +70,7 @@ function PostsGrid({
         <>
             {header}
             <main className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 p-8">
-                {data.pages.map((page, pageIndex) => (
+                {postsPages.map((page, pageIndex) => (
                     <React.Fragment key={pageIndex}>
                         {page.data.map((post: Post) => (
                             <React.Fragment key={post.id}>
