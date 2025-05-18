@@ -123,12 +123,15 @@ function Canvas({
     }
 
         function startDrawing(e: MouseEvent | TouchEvent): void {
+            console.log("startDrawing");
+            console.log(e.detail);
             isDrawing = true;
             draw(e, isDrawing);
         }
 
         function stopDrawing(): void {
             isDrawing = false;
+            console.log("stopDrawing");
             context!.beginPath();
         }
 
@@ -159,16 +162,14 @@ function Canvas({
 
         canvas.addEventListener("mouseleave", hideCursor);
         canvas.addEventListener("mouseenter", () => setCursor((c) => ({ ...c, visible: true })));
-        canvas.addEventListener("touchmove", updateCursor);
-        canvas.addEventListener("touchend", hideCursor);
 
         // Add event listeners for mouse and touch events
         canvas.addEventListener("mousedown", startDrawing);
         canvas.addEventListener("mouseup", stopDrawing);
         canvas.addEventListener("mousemove", (e) => {updateCursor(e); draw(e, isDrawing)});
-        canvas.addEventListener("touchstart", (e) => {startDrawing(e)});
-        canvas.addEventListener("touchend", () => {hideCursor(); stopDrawing()});
-        canvas.addEventListener("touchmove", (e) => {updateCursor(e); draw(e, isDrawing)});
+        canvas.addEventListener("touchstart", startDrawing);
+        canvas.addEventListener("touchend", stopDrawing);
+        canvas.addEventListener("touchmove", (e) => { draw(e, isDrawing)});
 
         // Cleanup event listeners on unmount
         return (): void => {
@@ -176,12 +177,12 @@ function Canvas({
             canvas.removeEventListener("mouseenter", () => setCursor((c) => ({ ...c, visible: true })));
 
             canvas.removeEventListener("mousedown", startDrawing);
-            window.removeEventListener("mouseup", stopDrawing);
+            canvas.removeEventListener("mouseup", stopDrawing);
             canvas.removeEventListener("mousemove", (e) => {updateCursor(e); draw(e, isDrawing)});
 
             canvas.removeEventListener("touchstart", startDrawing);
-            canvas.removeEventListener("touchend", () => {hideCursor(); stopDrawing()});
-            canvas.removeEventListener("touchmove", (e) => {updateCursor(e); draw(e, isDrawing)});
+            canvas.removeEventListener("touchend", stopDrawing);
+            canvas.removeEventListener("touchmove", (e) => { draw(e, isDrawing)});
         };
     }, [color, tool,pencilThickness, canvasRef]);
     return (
