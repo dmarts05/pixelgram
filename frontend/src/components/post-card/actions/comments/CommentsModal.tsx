@@ -72,6 +72,7 @@ function CommentsModal({
             isOpen={isOpen}
             onClose={onClose}
             ariaLabel="Comments dialog"
+            id={`comments-modal-${postId}`}
         >
             <h3 className="font-bold text-lg">Comments</h3>
             <div>{modalContent}</div>

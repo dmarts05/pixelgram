@@ -2,12 +2,14 @@ import React, { useState } from "react";
 import BaseModal from "../BaseModal";
 
 type PostCardImageProps = {
+    postId: string;
     imageUrl: URL;
     imageAlt: string;
     height: number;
 };
 
 function PostCardImage({
+    postId,
     imageUrl,
     imageAlt,
     height,
@@ -58,6 +60,7 @@ function PostCardImage({
                 onClose={handleCloseModal}
                 modalBoxClassName="p-0"
                 ariaLabel="Image preview dialog"
+                id={`image-preview-modal-${postId}`}
             >
                 <h3 className="sr-only">Image preview</h3>
                 <div>

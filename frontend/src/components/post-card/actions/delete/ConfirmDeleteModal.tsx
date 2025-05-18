@@ -15,12 +15,14 @@ function ConfirmDeleteModal({
     onCancel,
     onConfirm,
     isLoading,
-}: ConfirmDeleteModalProps): React.ReactNode {
+    postId,
+}: ConfirmDeleteModalProps & { postId: string }): React.ReactNode {
     return (
         <BaseModal
             isOpen={isOpen}
             onClose={onCancel}
             ariaLabel="Confirm deletion dialog"
+            id={`confirm-delete-modal-${postId}`}
         >
             <h3 className="font-bold text-lg">Confirm Deletion</h3>
             <p>Are you sure you want to delete this post?</p>

@@ -45,6 +45,7 @@ function DeleteButton({ postId, refetch }: DeleteButtonProps): React.ReactNode {
                 onCancel={() => setIsModalOpen(false)}
                 onConfirm={() => mutation.mutate()}
                 isLoading={mutation.isPending}
+                postId={postId}
             />
             {mutation.isError && (
                 <span className="text-sm font-semibold text-error">Error</span>
