@@ -6,7 +6,7 @@ import MobileMenu from "./MobileMenu";
 function Navbar(): React.ReactNode {
     return (
         <nav className="navbar bg-base-100 shadow-sm">
-            <div className="navbar-start gap-2">
+            <div className="navbar-start sm:gap-2 gap-0">
                 <div className="dropdown">
                     <MobileMenu />
                 </div>
@@ -20,7 +20,7 @@ function Navbar(): React.ReactNode {
                 <DesktopMenu />
             </div>
 
-            <div className="navbar-end">
+            <div className="navbar-end mr-7">
                 <AuthMenu />
             </div>
         </nav>
