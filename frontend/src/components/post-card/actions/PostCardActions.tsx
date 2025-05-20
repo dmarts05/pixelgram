@@ -7,7 +7,7 @@ import { PostPage } from "../../PostsGrid";
 import CommentsButton from "./CommentsButton";
 import LikeButton from "./LikeButton";
 import SaveButton from "./SaveButton";
-import DeleteButton from "./DeleteButton";
+import DeleteButton from "./delete/DeleteButton";
 
 interface PostCardActionsProps {
     postId: string;

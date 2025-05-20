@@ -1,4 +1,5 @@
-import Modal from "../Modal";
+import React, { useState } from "react";
+import Modal from "../modals/Modal";
 
 type PostCardImageProps = {
     postId: string;
@@ -13,11 +14,13 @@ function PostCardImage({
     imageAlt,
     height,
 }: PostCardImageProps): React.ReactNode {
-    const modalId = `image-modal-${postId}`;
+    const [isModalOpen, setIsModalOpen] = useState(false);
 
     function handleOpenModal(): void {
-        const modal = document.getElementById(modalId) as HTMLDialogElement;
-        modal.showModal();
+        setIsModalOpen(true);
+    }
+    function handleCloseModal(): void {
+        setIsModalOpen(false);
     }
 
     return (
@@ -44,16 +47,35 @@ function PostCardImage({
                         minWidth: height,
                         minHeight: height,
                     }}
+                    tabIndex={0}
+                    role="button"
+                    aria-label="Open image preview"
+                    onClick={handleOpenModal}
+                    onKeyDown={(e) => {
+                        if (e.key === "Enter" || e.key === " ")
+                            handleOpenModal();
+                    }}
                 />
             </figure>
 
-            <Modal id={modalId} responsive={false} modalBoxClassName="p-0">
-                <img
-                    src={String(imageUrl)}
-                    alt={imageAlt}
-                    className="w-full"
-                    height={height}
-                />
+            <Modal
+                isOpen={isModalOpen}
+                onClose={handleCloseModal}
+                ariaLabel="Image preview dialog"
+                id={`image-preview-modal-${postId}`}
+            >
+                <Modal.Content className="p-0">
+                    <h3 className="sr-only">Image preview</h3>
+                    <div>
+                        <img
+                            src={String(imageUrl)}
+                            alt={imageAlt}
+                            className="w-full"
+                            height={height}
+                        />
+                    </div>
+                </Modal.Content>
+                <Modal.Backdrop />
             </Modal>
         </>
     );

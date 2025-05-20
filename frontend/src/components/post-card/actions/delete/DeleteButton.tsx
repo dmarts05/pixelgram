@@ -6,9 +6,9 @@ import {
     QueryObserverResult,
     RefetchOptions,
 } from "@tanstack/react-query";
-import { deletePost } from "../../../services/posts-service";
-import { PostPage } from "../../PostsGrid";
-import ConfirmDeleteModal from "./delete/ConfirmDeleteModal";
+import { deletePost } from "../../../../services/posts-service";
+import { PostPage } from "../../../PostsGrid";
+import ConfirmDeleteModal from "./ConfirmDeletePostModal";
 
 interface DeleteButtonProps {
     postId: string;
@@ -34,7 +34,9 @@ function DeleteButton({ postId, refetch }: DeleteButtonProps): React.ReactNode {
         <>
             <button
                 onClick={() => setIsModalOpen(true)}
-                className="rounded-full text-lg hover:text-error transition-colors cursor-pointer"
+                className="text-lg hover:text-error transition-colors cursor-pointer"
+                aria-haspopup="dialog"
+                aria-expanded={isModalOpen}
             >
                 <FaRegTrashAlt />
             </button>
@@ -43,6 +45,7 @@ function DeleteButton({ postId, refetch }: DeleteButtonProps): React.ReactNode {
                 onCancel={() => setIsModalOpen(false)}
                 onConfirm={() => mutation.mutate()}
                 isLoading={mutation.isPending}
+                postId={postId}
             />
             {mutation.isError && (
                 <span className="text-sm font-semibold text-error">Error</span>

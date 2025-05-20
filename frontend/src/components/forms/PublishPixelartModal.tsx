@@ -3,6 +3,8 @@ import { useMutation } from "@tanstack/react-query";
 import { MdAutoFixHigh } from "react-icons/md";
 import { useNavigate } from "react-router";
 import { autogenerateCaption, publishPost } from "../../services/posts-service";
+import Modal from "../modals/Modal";
+import ModalButton from "../modals/ModalButton";
 
 interface Props {
     imageUrl: string;
@@ -16,12 +18,14 @@ const DescriptionField = ({
     onChange,
     onGenerate,
     errorPlaceholder,
+    disabled = false,
 }: {
     value: string;
     isLoading: boolean;
     onChange: (val: string) => void;
     onGenerate: () => void;
     errorPlaceholder?: string;
+    disabled?: boolean;
 }): React.ReactNode => {
     const [userHasTyped, setUserHasTyped] = useState(false);
 
@@ -46,7 +50,7 @@ const DescriptionField = ({
             <button
                 className="btn btn-circle btn-ghost"
                 onClick={onGenerate}
-                disabled={isLoading}
+                disabled={isLoading || disabled}
             >
                 {isLoading ? (
                     <span className="loading loading-spinner"></span>
@@ -72,22 +76,25 @@ const ModalActions = ({
     onClose,
     onPublish,
     disabled,
+    loading = false,
 }: {
     onClose: () => void;
     onPublish: () => void;
     disabled: boolean;
+    loading?: boolean;
 }): React.ReactNode => (
     <div className="modal-actions flex justify-center gap-4 mt-8">
-        <button className="btn btn-outline" onClick={onClose}>
+        <ModalButton variant="outline" onClick={onClose}>
             Cancel
-        </button>
-        <button
-            className="btn btn-primary"
+        </ModalButton>
+        <ModalButton
+            variant="primary"
             onClick={onPublish}
             disabled={disabled}
+            loading={loading}
         >
             Publish
-        </button>
+        </ModalButton>
     </div>
 );
 
@@ -121,7 +128,8 @@ export default function PublishPixelartModal({
     onClose,
 }: Props): React.ReactNode | null {
     const [description, setDescription] = useState<string>("");
-    const [loading, setLoading] = useState<boolean>(false);
+    const [generating, setGenerating] = useState<boolean>(false);
+    const [publishing, setPublishing] = useState<boolean>(false);
     const [errorPlaceholder, setErrorPlaceholder] = useState<string | null>(
         null
     );
@@ -134,12 +142,12 @@ export default function PublishPixelartModal({
         },
         onSuccess: (data: string) => {
             setDescription(data);
-            setLoading(false);
+            setGenerating(false);
         },
         onError: (error: Error) => {
             setDescription("");
             setErrorPlaceholder(error.message);
-            setLoading(false);
+            setGenerating(false);
         },
     });
 
@@ -149,22 +157,22 @@ export default function PublishPixelartModal({
         },
         onSuccess: () => {
             setIsPublished(true);
-            setLoading(false);
+            setPublishing(false);
         },
         onError: (error: Error) => {
             setErrorPlaceholder(error.message);
-            setLoading(false);
+            setPublishing(false);
         },
     });
 
     const handleAutogenerate = async (): Promise<void> => {
-        setLoading(true);
+        setGenerating(true);
         setErrorPlaceholder(null);
         autogenerateMutation.mutate();
     };
 
     const handlePublish = async (): Promise<void> => {
-        setLoading(true);
+        setPublishing(true);
         publishMutation.mutate();
     };
 
@@ -176,18 +184,13 @@ export default function PublishPixelartModal({
     if (!isOpen) return null;
 
     return (
-        <dialog className="modal modal-open">
-            <div className="modal-box">
-                <form method="dialog">
-                    <button
-                        className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-                        onClick={onClose}
-                    >
-                        ✕
-                    </button>
-                </form>
-                <h3 className="font-bold text-lg">Publish pixelart</h3>
-
+        <Modal
+            isOpen={isOpen}
+            onClose={onClose}
+            ariaLabel="Publish pixelart dialog"
+        >
+            <Modal.Content>
+                <Modal.Header>Publish pixelart</Modal.Header>
                 {isPublished ? (
                     <SuccessView onDone={handleDone} />
                 ) : (
@@ -195,22 +198,22 @@ export default function PublishPixelartModal({
                         <PixelartPreview src={imageUrl} />
                         <DescriptionField
                             value={description}
-                            isLoading={loading}
+                            isLoading={generating}
                             onChange={setDescription}
                             onGenerate={handleAutogenerate}
                             errorPlaceholder={errorPlaceholder || undefined}
+                            disabled={publishing}
                         />
                         <ModalActions
                             onClose={onClose}
                             onPublish={handlePublish}
-                            disabled={!description || loading}
+                            disabled={!description || generating || publishing}
+                            loading={publishing}
                         />
                     </>
                 )}
-            </div>
-            <form method="dialog" className="modal-backdrop">
-                <button onClick={onClose}>close</button>
-            </form>
-        </dialog>
+            </Modal.Content>
+            <Modal.Backdrop />
+        </Modal>
     );
 }
