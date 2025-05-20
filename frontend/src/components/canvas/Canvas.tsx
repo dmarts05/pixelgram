@@ -158,7 +158,12 @@ function Canvas({
             setCursor((c) => ({ ...c, visible: false }));
         }
 
-        canvas.addEventListener("mouseleave", hideCursor);
+        function onMouseLeave(): void {
+            hideCursor();
+            stopDrawing();
+        }
+
+        canvas.addEventListener("mouseleave", onMouseLeave);
         canvas.addEventListener("mouseenter", () =>
             setCursor((c) => ({ ...c, visible: true }))
         );
@@ -178,7 +183,7 @@ function Canvas({
 
         // Cleanup event listeners on unmount
         return (): void => {
-            canvas.removeEventListener("mouseleave", hideCursor);
+            canvas.removeEventListener("mouseleave", onMouseLeave);
             canvas.removeEventListener("mouseenter", () =>
                 setCursor((c) => ({ ...c, visible: true }))
             );
