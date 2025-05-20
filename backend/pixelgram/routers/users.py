@@ -48,4 +48,4 @@ async def get_username_by_id(
     """
     Get username by user ID.
     """
-    return await get_user_service(db).get_username_by_id(id)
+    return await user_service.get_username_by_id(id)

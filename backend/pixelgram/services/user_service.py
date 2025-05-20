@@ -1,9 +1,10 @@
 from uuid import UUID
 
-from fastapi import HTTPException
+from fastapi import Depends, HTTPException
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from pixelgram.db import get_async_session
 from pixelgram.models.user import User
 from pixelgram.schemas.user import UserPublicInfo
 
@@ -35,7 +36,7 @@ class UserService:
 
 
 def get_user_service(
-    db: AsyncSession,
+    db: AsyncSession = Depends(get_async_session),
 ) -> UserService:
     """
     Dependency to get the User service.
