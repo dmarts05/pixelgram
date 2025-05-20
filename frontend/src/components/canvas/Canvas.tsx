@@ -88,7 +88,10 @@ function Canvas({
             const scaleX = canvas.width / rect.width || 1;
             const scaleY = canvas.height / rect.height || 1;
 
-            const processedEvent = window.TouchEvent && e instanceof TouchEvent ? e.touches[0] : e as MouseEvent;
+            const processedEvent =
+                window.TouchEvent && e instanceof TouchEvent
+                    ? e.touches[0]
+                    : (e as MouseEvent);
             return {
                 x: (processedEvent.clientX - rect.left) * scaleX || 1,
                 y: (processedEvent.clientY - rect.top) * scaleY || 1,
