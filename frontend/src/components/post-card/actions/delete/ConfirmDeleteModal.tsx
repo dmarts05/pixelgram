@@ -1,5 +1,6 @@
 import React from "react";
 import Modal from "../../../modals/Modal";
+import ModalButton from "../../../modals/ModalButton";
 
 interface ConfirmDeleteModalProps {
     isOpen: boolean;
@@ -28,24 +29,21 @@ function ConfirmDeleteModal({
                 <Modal.Header>Confirm Deletion</Modal.Header>
                 <p>Are you sure you want to delete this post?</p>
                 <Modal.Footer>
-                    <button
-                        className="btn"
+                    <ModalButton
                         onClick={onCancel}
                         disabled={isLoading}
+                        variant="outline"
                     >
                         Cancel
-                    </button>
-                    <button
-                        className="btn btn-error w-18.75"
+                    </ModalButton>
+                    <ModalButton
                         onClick={onConfirm}
                         disabled={isLoading}
+                        variant="error"
+                        loading={isLoading}
                     >
-                        {isLoading ? (
-                            <span className="loading loading-spinner loading-xs" />
-                        ) : (
-                            "Delete"
-                        )}
-                    </button>
+                        Delete
+                    </ModalButton>
                 </Modal.Footer>
             </Modal.Content>
             <Modal.Backdrop />

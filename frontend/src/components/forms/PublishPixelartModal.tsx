@@ -4,6 +4,7 @@ import { MdAutoFixHigh } from "react-icons/md";
 import { useNavigate } from "react-router";
 import { autogenerateCaption, publishPost } from "../../services/posts-service";
 import Modal from "../modals/Modal";
+import ModalButton from "../modals/ModalButton";
 
 interface Props {
     imageUrl: string;
@@ -79,16 +80,12 @@ const ModalActions = ({
     disabled: boolean;
 }): React.ReactNode => (
     <div className="modal-actions flex justify-center gap-4 mt-8">
-        <button className="btn btn-outline" onClick={onClose}>
+        <ModalButton variant="outline" onClick={onClose}>
             Cancel
-        </button>
-        <button
-            className="btn btn-primary"
-            onClick={onPublish}
-            disabled={disabled}
-        >
+        </ModalButton>
+        <ModalButton variant="primary" onClick={onPublish} disabled={disabled}>
             Publish
-        </button>
+        </ModalButton>
     </div>
 );
 
