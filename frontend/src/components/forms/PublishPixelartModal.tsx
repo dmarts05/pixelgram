@@ -3,7 +3,7 @@ import { useMutation } from "@tanstack/react-query";
 import { MdAutoFixHigh } from "react-icons/md";
 import { useNavigate } from "react-router";
 import { autogenerateCaption, publishPost } from "../../services/posts-service";
-import BaseModal from "../modals/BaseModal";
+import Modal from "../modals/Modal";
 
 interface Props {
     imageUrl: string;
@@ -177,31 +177,34 @@ export default function PublishPixelartModal({
     if (!isOpen) return null;
 
     return (
-        <BaseModal
+        <Modal
             isOpen={isOpen}
             onClose={onClose}
             ariaLabel="Publish pixelart dialog"
         >
-            <h3 className="font-bold text-lg">Publish pixelart</h3>
-            {isPublished ? (
-                <SuccessView onDone={handleDone} />
-            ) : (
-                <>
-                    <PixelartPreview src={imageUrl} />
-                    <DescriptionField
-                        value={description}
-                        isLoading={loading}
-                        onChange={setDescription}
-                        onGenerate={handleAutogenerate}
-                        errorPlaceholder={errorPlaceholder || undefined}
-                    />
-                    <ModalActions
-                        onClose={onClose}
-                        onPublish={handlePublish}
-                        disabled={!description || loading}
-                    />
-                </>
-            )}
-        </BaseModal>
+            <Modal.Content>
+                <Modal.Header>Publish pixelart</Modal.Header>
+                {isPublished ? (
+                    <SuccessView onDone={handleDone} />
+                ) : (
+                    <>
+                        <PixelartPreview src={imageUrl} />
+                        <DescriptionField
+                            value={description}
+                            isLoading={loading}
+                            onChange={setDescription}
+                            onGenerate={handleAutogenerate}
+                            errorPlaceholder={errorPlaceholder || undefined}
+                        />
+                        <ModalActions
+                            onClose={onClose}
+                            onPublish={handlePublish}
+                            disabled={!description || loading}
+                        />
+                    </>
+                )}
+            </Modal.Content>
+            <Modal.Backdrop />
+        </Modal>
     );
 }

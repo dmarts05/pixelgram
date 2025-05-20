@@ -4,7 +4,7 @@ import { FetchPostCommentsResponse } from "../../../../services/posts-service";
 import SendCommentForm from "../../../forms/SendCommentForm";
 import FullPageErrorAlert from "../../../FullPageErrorAlert";
 import FullPageSpinner from "../../../FullPageSpinner";
-import BaseModal from "../../../modals/BaseModal";
+import Modal from "../../../modals/Modal";
 import CommentsBubbles from "./CommentsBubbles";
 
 type CommentsModalProps = {
@@ -68,15 +68,18 @@ function CommentsModal({
     }
 
     return (
-        <BaseModal
+        <Modal
             isOpen={isOpen}
             onClose={onClose}
             ariaLabel="Comments dialog"
             id={`comments-modal-${postId}`}
         >
-            <h3 className="font-bold text-lg">Comments</h3>
-            <div>{modalContent}</div>
-        </BaseModal>
+            <Modal.Content>
+                <Modal.Header>Comments</Modal.Header>
+                <div>{modalContent}</div>
+            </Modal.Content>
+            <Modal.Backdrop />
+        </Modal>
     );
 }
 

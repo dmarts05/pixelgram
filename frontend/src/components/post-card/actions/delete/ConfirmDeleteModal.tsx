@@ -1,5 +1,5 @@
 import React from "react";
-import BaseModal from "../../../modals/BaseModal";
+import Modal from "../../../modals/Modal";
 
 interface ConfirmDeleteModalProps {
     isOpen: boolean;
@@ -18,31 +18,38 @@ function ConfirmDeleteModal({
     postId,
 }: ConfirmDeleteModalProps & { postId: string }): React.ReactNode {
     return (
-        <BaseModal
+        <Modal
             isOpen={isOpen}
             onClose={onCancel}
             ariaLabel="Confirm deletion dialog"
             id={`confirm-delete-modal-${postId}`}
         >
-            <h3 className="font-bold text-lg">Confirm Deletion</h3>
-            <p>Are you sure you want to delete this post?</p>
-            <div className="modal-action">
-                <button className="btn" onClick={onCancel} disabled={isLoading}>
-                    Cancel
-                </button>
-                <button
-                    className="btn btn-error w-18.75"
-                    onClick={onConfirm}
-                    disabled={isLoading}
-                >
-                    {isLoading ? (
-                        <span className="loading loading-spinner loading-xs" />
-                    ) : (
-                        "Delete"
-                    )}
-                </button>
-            </div>
-        </BaseModal>
+            <Modal.Content>
+                <Modal.Header>Confirm Deletion</Modal.Header>
+                <p>Are you sure you want to delete this post?</p>
+                <Modal.Footer>
+                    <button
+                        className="btn"
+                        onClick={onCancel}
+                        disabled={isLoading}
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        className="btn btn-error w-18.75"
+                        onClick={onConfirm}
+                        disabled={isLoading}
+                    >
+                        {isLoading ? (
+                            <span className="loading loading-spinner loading-xs" />
+                        ) : (
+                            "Delete"
+                        )}
+                    </button>
+                </Modal.Footer>
+            </Modal.Content>
+            <Modal.Backdrop />
+        </Modal>
     );
 }
 

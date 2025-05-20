@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import BaseModal from "../modals/BaseModal";
+import Modal from "../modals/Modal";
 
 type PostCardImageProps = {
     postId: string;
@@ -58,23 +58,25 @@ function PostCardImage({
                 />
             </figure>
 
-            <BaseModal
+            <Modal
                 isOpen={isModalOpen}
                 onClose={handleCloseModal}
-                modalBoxClassName="p-0"
                 ariaLabel="Image preview dialog"
                 id={`image-preview-modal-${postId}`}
             >
-                <h3 className="sr-only">Image preview</h3>
-                <div>
-                    <img
-                        src={String(imageUrl)}
-                        alt={imageAlt}
-                        className="w-full"
-                        height={height}
-                    />
-                </div>
-            </BaseModal>
+                <Modal.Content className="p-0">
+                    <h3 className="sr-only">Image preview</h3>
+                    <div>
+                        <img
+                            src={String(imageUrl)}
+                            alt={imageAlt}
+                            className="w-full"
+                            height={height}
+                        />
+                    </div>
+                </Modal.Content>
+                <Modal.Backdrop />
+            </Modal>
         </>
     );
 }
