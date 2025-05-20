@@ -88,7 +88,10 @@ function Canvas({
             const scaleX = canvas.width / rect.width || 1;
             const scaleY = canvas.height / rect.height || 1;
 
-            const processedEvent = e instanceof TouchEvent ? e.touches[0] : e;
+            const processedEvent =
+                window.TouchEvent && e instanceof TouchEvent
+                    ? e.touches[0]
+                    : (e as MouseEvent);
             return {
                 x: (processedEvent.clientX - rect.left) * scaleX || 1,
                 y: (processedEvent.clientY - rect.top) * scaleY || 1,
@@ -122,27 +125,24 @@ function Canvas({
         }
 
         function startDrawing(e: MouseEvent | TouchEvent): void {
-            console.log("startDrawing");
-            console.log(e.detail);
             isDrawing = true;
             draw(e, isDrawing);
         }
 
         function stopDrawing(): void {
             isDrawing = false;
-            console.log("stopDrawing");
             context!.beginPath();
         }
 
         function updateCursor(e: MouseEvent | TouchEvent): void {
             let clientX: number, clientY: number;
-            if (e instanceof TouchEvent) {
+            if (window.TouchEvent && e instanceof TouchEvent) {
                 if (e.touches.length === 0) return;
                 clientX = e.touches[0].clientX;
                 clientY = e.touches[0].clientY;
             } else {
-                clientX = e.clientX;
-                clientY = e.clientY;
+                clientX = (e as MouseEvent).clientX;
+                clientY = (e as MouseEvent).clientY;
             }
             if (canvas) {
                 const rect = canvas.getBoundingClientRect();

@@ -16,7 +16,6 @@ function UserPostsPage(): React.ReactNode {
     });
 
     if (authorId === userId) {
-        console.log("User is trying to access their own posts");
         return <Navigate to="/account/posts" />;
     }
 
