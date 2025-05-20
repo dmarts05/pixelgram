@@ -26,7 +26,7 @@ const ConfirmDeleteCommentModal: React.FC<ConfirmDeleteCommentModalProps> = ({
         {isOpen && (
             <>
                 <Modal.Content>
-                    <Modal.Header>Confirm Comment Deletion</Modal.Header>
+                    <Modal.Header>Confirm delete comment</Modal.Header>
 
                     <p>Are you sure you want to delete this comment?</p>
 

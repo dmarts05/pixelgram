@@ -26,7 +26,7 @@ function ConfirmDeleteModal({
             id={`confirm-delete-modal-${postId}`}
         >
             <Modal.Content>
-                <Modal.Header>Confirm Deletion</Modal.Header>
+                <Modal.Header>Confirm delete</Modal.Header>
                 <p>Are you sure you want to delete this post?</p>
                 <Modal.Footer>
                     <ModalButton

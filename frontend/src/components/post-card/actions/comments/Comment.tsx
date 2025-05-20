@@ -60,7 +60,7 @@ function Comment({
     return (
         <div className="flex flex-col">
             <div className={`chat ${byUser ? "chat-end" : "chat-start"}`}>
-                <div className="chat-header">
+                <div className="chat-header mb-1.5">
                     <div className="flex items-center gap-2">
                         <strong className="font-semibold">
                             {authorUsername}
@@ -73,7 +73,7 @@ function Comment({
                             />
                             {byUser && (
                                 <button
-                                    className="btn btn-xs btn-circle btn-ghost"
+                                    className="text-xs hover:text-error transition-colors cursor-pointer"
                                     onClick={() => setIsModalOpen(true)}
                                     disabled={deleteCommentMutation.isPending}
                                     aria-label="Delete comment"

@@ -34,7 +34,7 @@ function DeleteButton({ postId, refetch }: DeleteButtonProps): React.ReactNode {
         <>
             <button
                 onClick={() => setIsModalOpen(true)}
-                className="rounded-full text-lg hover:text-error transition-colors cursor-pointer"
+                className="text-lg hover:text-error transition-colors cursor-pointer"
                 aria-haspopup="dialog"
                 aria-expanded={isModalOpen}
             >
