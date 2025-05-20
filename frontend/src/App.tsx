@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Route, Routes, useNavigate } from "react-router";
 import AuthenticatedRoute from "./components/AuthenticatedRoute";
+import FullPageSpinner from "./components/FullPageSpinner";
 import UnauthenticatedRoute from "./components/UnauthenticatedRoute";
 import Layout from "./layouts/Layout";
 import AccountPostPage from "./pages/account/AccountPostsPage";
@@ -12,14 +13,15 @@ import LandingPage from "./pages/LandingPage";
 import LogInPage from "./pages/LogInPage";
 import NotFoundPage from "./pages/NotFoundPage";
 import SignUpPage from "./pages/SignUpPage";
+import UserPostsPage from "./pages/users/PostsPage";
 import { authGoogleCallback, getUserId } from "./services/auth-service";
 import { useAuthStore } from "./stores/auth-store";
 import { clearQueryParams } from "./utils/navigation";
-import UserPostsPage from "./pages/users/PostsPage";
 
 function App(): React.ReactNode {
     const navigate = useNavigate();
     const setUserId = useAuthStore((state) => state.setUserId);
+    const [isAuth, setIsAuth] = useState(false);
 
     // Check if the user is logged in when the app loads
     useEffect(() => {
@@ -39,13 +41,16 @@ function App(): React.ReactNode {
                 return;
             }
 
+            setIsAuth(true);
             const query = window.location.search;
             try {
                 await authGoogleCallback(query);
                 const userId = await getUserId();
                 setUserId(userId);
+                setIsAuth(false);
                 navigate("/feed");
             } finally {
+                setIsAuth(false);
                 clearQueryParams();
             }
         }
@@ -60,7 +65,7 @@ function App(): React.ReactNode {
                     index
                     element={
                         <UnauthenticatedRoute redirectTo="/feed">
-                            <LandingPage />
+                            {isAuth ? <FullPageSpinner /> : <LandingPage />}
                         </UnauthenticatedRoute>
                     }
                 />
