@@ -10,9 +10,8 @@ from fastapi import (
     Response,
     status,
 )
-from sqlalchemy import func, select
+from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import selectinload
 
 from pixelgram.auth import current_active_user
 from pixelgram.db import get_async_session
@@ -23,7 +22,10 @@ from pixelgram.schemas.post_comment import (
     CommentResponse,
     PaginatedCommentsResponse,
     PostCommentCreate,
-    PostCommentRead,
+)
+from pixelgram.services.posts.comments import (
+    CommentService,
+    get_comment_service,
 )
 
 posts_comments_router = APIRouter(
@@ -72,6 +74,7 @@ async def get_post_comments(
         10, ge=1, le=100, description="The number of comments per page."
     ),
     db: AsyncSession = Depends(get_async_session),
+    comment_service: CommentService = Depends(get_comment_service),
 ) -> PaginatedCommentsResponse:
     # Check if post exists
     post = await db.get(Post, post_id)
@@ -80,41 +83,12 @@ async def get_post_comments(
             status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
         )
 
-    # Get comments with pagination
-    stmt = (
-        select(PostComment)
-        .where(PostComment.post_id == post_id)
-        .order_by(PostComment.created_at.desc())
-        .offset((page - 1) * page_size)
-        .limit(page_size)
-        .options(selectinload(PostComment.user))
+    return await comment_service.get_by_post_id(
+        post_id=post_id,
+        page=page,
+        page_size=page_size,
+        solicitor_id=user.id,
     )
-    result = await db.execute(stmt)
-    comments = result.scalars().all()
-
-    # Count total comments for pagination and determine next page
-    count_stmt = select(func.count(PostComment.id)).where(
-        PostComment.post_id == post_id
-    )
-    total = (await db.execute(count_stmt)).scalar() or 0
-    next_page = page + 1 if (page * page_size) < total else None
-
-    # Construct the response
-    data = []
-    for c in comments:
-        cr = PostCommentRead(
-            id=c.id,
-            post_id=c.post_id,
-            user_id=c.user_id,
-            author_username=c.user.username,
-            author_email=c.user.email,
-            content=c.content,
-            created_at=c.created_at,
-            by_user=(c.user_id == user.id),
-        )
-        data.append(cr.model_dump(by_alias=True))
-
-    return PaginatedCommentsResponse(data=data, nextPage=next_page, total=total)
 
 
 @posts_comments_router.post(
@@ -134,6 +108,7 @@ async def post_comment(
     payload: PostCommentCreate = Body(...),
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_session),
+    comment_service: CommentService = Depends(get_comment_service),
 ) -> CommentResponse:
     # Check if post exists
     post = await db.get(Post, post_id)
@@ -142,34 +117,9 @@ async def post_comment(
             status_code=status.HTTP_404_NOT_FOUND, detail="Post not found"
         )
 
-    # Validate comment content and create comment
-    try:
-        comment = PostComment(
-            post_id=post_id,
-            user_id=user.id,
-            content=payload.content,
-        )
-    except ValueError as e:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Invalid comment data: {str(e)}",
-        )
-    db.add(comment)
-    await db.commit()
-    await db.refresh(comment)
-
-    # Return the created comment
-    cr = PostCommentRead(
-        id=comment.id,
-        post_id=comment.post_id,
-        user_id=comment.user_id,
-        author_username=user.username,
-        author_email=user.email,
-        content=comment.content,
-        created_at=comment.created_at,
-        by_user=True,
+    return await comment_service.post_comment(
+        post_id=post_id, user=user, content=payload.content
     )
-    return CommentResponse(comment=cr)
 
 
 @posts_comments_router.delete(
@@ -188,6 +138,7 @@ async def delete_comment(
     comment_id: UUID = Path(..., description="The ID of the comment to delete"),
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_session),
+    comment_service: CommentService = Depends(get_comment_service),
 ):
     # Check if post exists
     post = await db.get(Post, post_id)
@@ -213,7 +164,5 @@ async def delete_comment(
             status_code=status.HTTP_403_FORBIDDEN, detail="Not comment owner"
         )
 
-    # Delete the comment
-    await db.delete(comment)
-    await db.commit()
+    await comment_service.delete_comment(comment)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
