@@ -6,9 +6,9 @@ import {
     QueryObserverResult,
     RefetchOptions,
 } from "@tanstack/react-query";
-import { deletePost } from "../../../services/posts-service";
-import { PostPage } from "../../PostsGrid";
-import ConfirmDeleteModal from "./delete/ConfirmDeleteModal";
+import { deletePost } from "../../../../services/posts-service";
+import { PostPage } from "../../../PostsGrid";
+import ConfirmDeleteModal from "./ConfirmDeletePostModal";
 
 interface DeleteButtonProps {
     postId: string;

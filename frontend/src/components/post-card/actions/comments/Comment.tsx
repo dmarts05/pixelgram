@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { FaRegTrashAlt } from "react-icons/fa";
 import { deleteComment } from "../../../../services/posts-service";
 import PostCardTimestamp from "../../PostCardTimestamp";
+import ConfirmDeleteCommentModal from "./ConfirmDeleteCommentModal";
 
 interface CommentProps {
     postId: string;
@@ -27,6 +28,7 @@ function Comment({
 }: CommentProps): React.ReactNode {
     const [isExpanded, setIsExpanded] = useState(false);
     const [isClamped, setIsClamped] = useState(false);
+    const [isModalOpen, setIsModalOpen] = useState(false);
     const bubbleRef = useRef<HTMLDivElement | null>(null);
 
     const deleteCommentMutation = useMutation({
@@ -34,17 +36,13 @@ function Comment({
         onSuccess: () => {
             refetchPosts();
             refetchComments();
+            setIsModalOpen(false);
         },
         onError: () => {
-            alert("Failed to delete comment. Please try again later.");
+            setIsModalOpen(false);
+            // Optionally show error UI
         },
     });
-
-    function handleDeleteComment(): void {
-        if (confirm("Are you sure you want to delete this comment?")) {
-            deleteCommentMutation.mutate();
-        }
-    }
 
     // Check if the bubble overflows when clamped.
     useEffect(() => {
@@ -76,8 +74,9 @@ function Comment({
                             {byUser && (
                                 <button
                                     className="btn btn-xs btn-circle btn-ghost"
-                                    onClick={handleDeleteComment}
+                                    onClick={() => setIsModalOpen(true)}
                                     disabled={deleteCommentMutation.isPending}
+                                    aria-label="Delete comment"
                                 >
                                     <FaRegTrashAlt />
                                 </button>
@@ -107,6 +106,16 @@ function Comment({
                         {isExpanded ? "Show less" : "Show more"}
                     </button>
                 </div>
+            )}
+            <ConfirmDeleteCommentModal
+                isOpen={isModalOpen}
+                onCancel={() => setIsModalOpen(false)}
+                onConfirm={() => deleteCommentMutation.mutate()}
+                isLoading={deleteCommentMutation.isPending}
+                commentId={commentId}
+            />
+            {deleteCommentMutation.isError && (
+                <span className="text-sm font-semibold text-error">Failed to delete comment. Please try again later.</span>
             )}
         </div>
     );
