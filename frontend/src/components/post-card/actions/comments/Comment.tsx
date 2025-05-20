@@ -115,7 +115,9 @@ function Comment({
                 commentId={commentId}
             />
             {deleteCommentMutation.isError && (
-                <span className="text-sm font-semibold text-error">Failed to delete comment. Please try again later.</span>
+                <span className="text-sm font-semibold text-error">
+                    Failed to delete comment. Please try again later.
+                </span>
             )}
         </div>
     );
