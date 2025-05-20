@@ -16,13 +16,33 @@ from pixelgram.schemas.post_comment import (
 
 
 class CommentService:
+    """
+    Service for handling post comments.
+    """
+
     def __init__(self, db: AsyncSession):
         self.db = db
 
     async def get_by_post_id(
         self, post_id: UUID, page: int, page_size: int, solicitor_id: UUID
     ) -> PaginatedCommentsResponse:
-        # Get comments with pagination
+        """
+        Retrieve paginated comments for a specific post.
+
+        Args:
+            post_id (UUID): The unique identifier of the post to retrieve comments for.
+            page (int): The current page number for pagination.
+            page_size (int): The number of comments to retrieve per page.
+            solicitor_id (UUID): The ID of the user making the request, used to determine comment ownership.
+
+        Returns:
+            PaginatedCommentsResponse: An object containing the list of comments, the next page number (if any), and the total number of comments.
+
+        Notes:
+            - Comments are ordered by creation date in descending order (most recent first).
+            - Each comment includes author information and a flag indicating if it was made by the requesting user.
+        """
+
         stmt = (
             select(PostComment)
             .where(PostComment.post_id == post_id)
@@ -61,6 +81,18 @@ class CommentService:
     async def post_comment(
         self, post_id: UUID, user: User, content: str
     ) -> CommentResponse:
+        """
+        Create and persist a new comment for a given post.
+        Args:
+            post_id (UUID): The unique identifier of the post to comment on.
+            user (User): The user creating the comment.
+            content (str): The content of the comment.
+        Returns:
+            CommentResponse: The response object containing the created comment details.
+        Raises:
+            HTTPException: If the comment data is invalid or cannot be created.
+        """
+
         # Validate comment content and create comment
         try:
             comment = PostComment(
@@ -91,6 +123,14 @@ class CommentService:
         return CommentResponse(comment=cr)
 
     async def delete_comment(self, comment: PostComment) -> None:
+        """
+        Asynchronously deletes a given comment from the database.
+        Args:
+            comment (PostComment): The comment instance to be deleted.
+        Returns:
+            None
+        """
+
         # Delete the comment
         await self.db.delete(comment)
         await self.db.commit()

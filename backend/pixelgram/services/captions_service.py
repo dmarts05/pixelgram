@@ -17,6 +17,16 @@ class CaptionsService:
         self,
         image: Image,
     ) -> Caption:
+        """
+        Asynchronously generates a caption for the given image using the Hugging Face client.
+        Args:
+            image (Image): The image object for which to generate a caption.
+        Returns:
+            Caption: An object containing the generated caption.
+        Raises:
+            HTTPException: If the caption generation fails.
+        """
+
         caption = await self.hf_client.generate_caption(image)
 
         if not caption:

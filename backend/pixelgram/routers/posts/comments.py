@@ -23,7 +23,7 @@ from pixelgram.schemas.post_comment import (
     PaginatedCommentsResponse,
     PostCommentCreate,
 )
-from pixelgram.services.posts.comments import (
+from pixelgram.services.posts.comment_service import (
     CommentService,
     get_comment_service,
 )
