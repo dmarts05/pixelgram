@@ -63,15 +63,18 @@ const BaseModal: React.FC<BaseModalProps> = ({
         >
             <div className={`modal-box ${modalBoxClassName}`}>
                 {showCloseButton && (
-                    <button
-                        className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
-                        onClick={onClose}
-                        aria-label="Close modal"
-                        type="button"
-                    >
-                        ✕
-                    </button>
+                    <form method="dialog">
+                        <button
+                            className="btn btn-sm btn-circle btn-ghost absolute right-2 top-2"
+                            onClick={onClose}
+                            aria-label="Close modal"
+                            type="button"
+                        >
+                            ✕
+                        </button>
+                    </form>
                 )}
+
                 {children}
             </div>
             <form
