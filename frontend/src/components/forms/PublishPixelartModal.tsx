@@ -18,12 +18,14 @@ const DescriptionField = ({
     onChange,
     onGenerate,
     errorPlaceholder,
+    disabled = false,
 }: {
     value: string;
     isLoading: boolean;
     onChange: (val: string) => void;
     onGenerate: () => void;
     errorPlaceholder?: string;
+    disabled?: boolean;
 }): React.ReactNode => {
     const [userHasTyped, setUserHasTyped] = useState(false);
 
@@ -48,7 +50,7 @@ const DescriptionField = ({
             <button
                 className="btn btn-circle btn-ghost"
                 onClick={onGenerate}
-                disabled={isLoading}
+                disabled={isLoading || disabled}
             >
                 {isLoading ? (
                     <span className="loading loading-spinner"></span>
@@ -74,16 +76,23 @@ const ModalActions = ({
     onClose,
     onPublish,
     disabled,
+    loading = false,
 }: {
     onClose: () => void;
     onPublish: () => void;
     disabled: boolean;
+    loading?: boolean;
 }): React.ReactNode => (
     <div className="modal-actions flex justify-center gap-4 mt-8">
         <ModalButton variant="outline" onClick={onClose}>
             Cancel
         </ModalButton>
-        <ModalButton variant="primary" onClick={onPublish} disabled={disabled}>
+        <ModalButton
+            variant="primary"
+            onClick={onPublish}
+            disabled={disabled}
+            loading={loading}
+        >
             Publish
         </ModalButton>
     </div>
@@ -119,7 +128,8 @@ export default function PublishPixelartModal({
     onClose,
 }: Props): React.ReactNode | null {
     const [description, setDescription] = useState<string>("");
-    const [loading, setLoading] = useState<boolean>(false);
+    const [generating, setGenerating] = useState<boolean>(false);
+    const [publishing, setPublishing] = useState<boolean>(false);
     const [errorPlaceholder, setErrorPlaceholder] = useState<string | null>(
         null
     );
@@ -132,12 +142,12 @@ export default function PublishPixelartModal({
         },
         onSuccess: (data: string) => {
             setDescription(data);
-            setLoading(false);
+            setGenerating(false);
         },
         onError: (error: Error) => {
             setDescription("");
             setErrorPlaceholder(error.message);
-            setLoading(false);
+            setGenerating(false);
         },
     });
 
@@ -147,22 +157,22 @@ export default function PublishPixelartModal({
         },
         onSuccess: () => {
             setIsPublished(true);
-            setLoading(false);
+            setPublishing(false);
         },
         onError: (error: Error) => {
             setErrorPlaceholder(error.message);
-            setLoading(false);
+            setPublishing(false);
         },
     });
 
     const handleAutogenerate = async (): Promise<void> => {
-        setLoading(true);
+        setGenerating(true);
         setErrorPlaceholder(null);
         autogenerateMutation.mutate();
     };
 
     const handlePublish = async (): Promise<void> => {
-        setLoading(true);
+        setPublishing(true);
         publishMutation.mutate();
     };
 
@@ -188,15 +198,17 @@ export default function PublishPixelartModal({
                         <PixelartPreview src={imageUrl} />
                         <DescriptionField
                             value={description}
-                            isLoading={loading}
+                            isLoading={generating}
                             onChange={setDescription}
                             onGenerate={handleAutogenerate}
                             errorPlaceholder={errorPlaceholder || undefined}
+                            disabled={publishing}
                         />
                         <ModalActions
                             onClose={onClose}
                             onPublish={handlePublish}
-                            disabled={!description || loading}
+                            disabled={!description || generating || publishing}
+                            loading={publishing}
                         />
                     </>
                 )}
