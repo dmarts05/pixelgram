@@ -49,6 +49,40 @@ class SupabaseStorageClient:
         url = f"{self.url}/storage/v1/object/public/{self.bucket}/{file_id}"
         return HttpUrl(url)
 
+    async def delete(self, file_url: HttpUrl) -> bool:
+        """
+        Deletes an image from Supabase storage based on its URL.
+
+        Args:
+            file_url (HttpUrl): The URL of the image to delete.
+
+        Returns:
+            bool: True if deletion was successful, False otherwise.
+
+        Raises:
+            Exception: If the deletion fails with an error other than 404.
+        """
+        # Extract file_id from the URL
+        try:
+            url_path = str(file_url).split(f"public/{self.bucket}/")[1]
+        except IndexError:
+            raise ValueError(f"Invalid Supabase URL format: {file_url}")
+
+        delete_url = f"{self.url}/storage/v1/object/{self.bucket}/{url_path}"
+
+        async with httpx.AsyncClient() as client:
+            response = await client.delete(delete_url, headers=self.headers)
+
+        # 200 means successful deletion
+        if response.status_code == 200:
+            return True
+        # 404 means file not found, which we'll treat as a "successful" deletion
+        elif response.status_code == 404:
+            return True
+        # Any other status code is an error
+        else:
+            raise Exception(f"Deletion failed: {response.text}")
+
     def _image_to_png_bytes(self, img: Image) -> bytes:
         """Convert a PIL Image object to PNG format bytes."""
         buffer = BytesIO()
