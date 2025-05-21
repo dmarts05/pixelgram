@@ -6,7 +6,7 @@ from PIL import Image
 from pixelgram.auth import current_active_user
 from pixelgram.models.user import User
 from pixelgram.schemas.caption import Caption
-from pixelgram.services.hf_client import HFClient, get_hf_client
+from pixelgram.services.captions_service import CaptionsService, get_captions_service
 from pixelgram.utils.constants import REQUIRED_IMAGE_SIZE
 
 captions_router = APIRouter(
@@ -40,7 +40,7 @@ captions_router = APIRouter(
 async def get_caption(
     user: User = Depends(current_active_user),
     file: UploadFile = File(...),
-    hf_client: HFClient = Depends(get_hf_client),
+    captions_service: CaptionsService = Depends(get_captions_service),
 ) -> Caption:
     content_type = file.content_type
     if not content_type or not content_type.startswith("image/"):
@@ -60,8 +60,4 @@ async def get_caption(
     if image.size != REQUIRED_IMAGE_SIZE:
         raise HTTPException(status_code=400, detail="Image must be 128x128 pixels.")
 
-    caption = await hf_client.generate_caption(image)
-
-    if not caption:
-        raise HTTPException(status_code=500, detail="Failed to generate caption.")
-    return Caption(caption=caption)
+    return await captions_service.generate(image)

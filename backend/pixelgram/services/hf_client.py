@@ -58,4 +58,10 @@ class HFClient:
 
 
 def get_hf_client() -> HFClient:
+    """
+    Dependency to get the Hugging Face client.
+
+    Returns:
+        HFClient: An instance of the HFClient class.
+    """
     return HFClient()

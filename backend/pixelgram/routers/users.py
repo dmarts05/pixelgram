@@ -1,13 +1,13 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, HTTPException
-from sqlalchemy import select
+from fastapi import APIRouter, Depends
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from pixelgram.auth import current_active_user
 from pixelgram.db import get_async_session
 from pixelgram.models.user import User
 from pixelgram.schemas.user import UserPublicInfo
+from pixelgram.services.user_service import UserService, get_user_service
 
 users_router = APIRouter(
     prefix="/users",
@@ -43,16 +43,9 @@ async def get_username_by_id(
     id: UUID,
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_session),
+    user_service: UserService = Depends(get_user_service),
 ):
     """
     Get username by user ID.
     """
-    result = await db.execute(select(User).filter_by(id=id))
-    user_row = result.unique().scalar_one_or_none()
-    if not user_row:
-        raise HTTPException(status_code=404, detail="User not found.")
-
-    return UserPublicInfo(
-        id=user_row.id,
-        username=user_row.username,
-    )
+    return await user_service.get_username_by_id(id)

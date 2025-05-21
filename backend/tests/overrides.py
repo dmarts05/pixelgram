@@ -35,6 +35,9 @@ class MockSupabaseClient:
     async def upload(self, img):
         return "https://mockstorage.com/image.png"
 
+    async def delete(self, file_id: str) -> None:
+        pass
+
 
 async def override_supabase_client() -> MockSupabaseClient:
     return MockSupabaseClient()
