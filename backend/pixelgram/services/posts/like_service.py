@@ -17,6 +17,17 @@ class LikeService:
         self.db = db
 
     async def like_post(self, post_id: UUID, user_id: UUID) -> None:
+        """
+        Asynchronously likes a post on behalf of a user.
+        Checks if the user has already liked the specified post. If so, raises an HTTP 409 Conflict exception.
+        Otherwise, adds a like to the post by the user and commits the change to the database.
+        Args:
+            post_id (UUID): The unique identifier of the post to like.
+            user_id (UUID): The unique identifier of the user liking the post.
+        Raises:
+            HTTPException: If the user has already liked the post (HTTP 409 Conflict).
+        """
+
         # Check if user has already liked the post
         stmt = select(PostLike).where(
             PostLike.post_id == post_id, PostLike.user_id == user_id
@@ -31,6 +42,17 @@ class LikeService:
         await self.db.commit()
 
     async def unlike_post(self, post_id: UUID, user_id: UUID) -> None:
+        """
+        Asynchronously removes a like from a post by a specific user.
+        Args:
+            post_id (UUID): The unique identifier of the post to unlike.
+            user_id (UUID): The unique identifier of the user unliking the post.
+        Raises:
+            HTTPException: If the user has not previously liked the post, raises a 400 Bad Request error.
+        Returns:
+            None
+        """
+
         # Delete like
         delete_stmt = (
             delete(PostLike)
