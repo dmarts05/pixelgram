@@ -193,6 +193,8 @@ async def delete_post(
     post_id: UUID = Path(..., description="The ID of the post"),
     user: User = Depends(current_active_user),
     db: AsyncSession = Depends(get_async_session),
+    supabase_client: SupabaseStorageClient = Depends(get_supabase_client),
+    post_service: PostService = Depends(get_post_service),
 ):
     # Check if post exists
     post = await db.get(Post, post_id)
@@ -208,6 +210,5 @@ async def delete_post(
         )
 
     # Delete the post
-    await db.delete(post)
-    await db.commit()
+    await post_service.delete_post(post)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

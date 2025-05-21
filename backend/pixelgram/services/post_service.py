@@ -183,6 +183,20 @@ class PostService:
             data.append(pr.model_dump(by_alias=True))
         return PaginatedPostsResponse(data=data, nextPage=next_page, total=total)
 
+    async def delete_post(self, post: Post):
+        # Delete the post from database
+        await self.db.delete(post)
+        await self.db.commit()
+
+        # Delete the image from Supabase
+        try:
+            await self.supabase.delete(HttpUrl(post.image_url))
+        except Exception as e:
+            raise HTTPException(
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail=f"Image deletion failed: {str(e)}",
+            )
+
 
 def get_post_service(
     db: AsyncSession = Depends(get_async_session),
