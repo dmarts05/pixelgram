@@ -60,15 +60,17 @@ class SupabaseStorageClient:
             bool: True if deletion was successful, False otherwise.
 
         Raises:
+            ValueError: If the URL format is invalid.
             Exception: If the deletion fails with an error other than 404.
         """
         # Extract file_id from the URL
-        try:
-            url_path = str(file_url).split(f"public/{self.bucket}/")[1]
-        except IndexError:
+        prefix = f"public/{self.bucket}/"
+        url_str = str(file_url)
+        if prefix not in url_str:
             raise ValueError(f"Invalid Supabase URL format: {file_url}")
+        file_id = url_str.split(prefix, 1)[1]
 
-        delete_url = f"{self.url}/storage/v1/object/{self.bucket}/{url_path}"
+        delete_url = f"{self.url}/storage/v1/object/{self.bucket}/{file_id}"
 
         async with httpx.AsyncClient() as client:
             response = await client.delete(delete_url, headers=self.headers)
