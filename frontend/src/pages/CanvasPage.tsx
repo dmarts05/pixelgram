@@ -53,7 +53,7 @@ function CanvasPage(): React.ReactNode {
         <>
             <main
                 className="flex justify-center items-center gap-4 p-4"
-                style={{ height: `calc(100vh - ${NAVBAR_HEIGHT} - 1px)` }}
+                style={{ height: `calc(100svh - ${NAVBAR_HEIGHT} - 1px)` }}
             >
                 <Toolbox
                     tool={tool}

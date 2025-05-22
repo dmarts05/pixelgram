@@ -8,7 +8,7 @@ function Hero(): React.ReactNode {
             className="hero bg-cover bg-center"
             style={{
                 backgroundImage: `url(${heroImg})`,
-                height: `calc(100vh - ${NAVBAR_HEIGHT})`,
+                height: `calc(100svh - ${NAVBAR_HEIGHT})`,
             }}
         >
             <div className="hero-overlay"></div>

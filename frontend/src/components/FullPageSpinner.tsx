@@ -5,7 +5,7 @@ function FullPageSpinner(): React.ReactNode {
         <div
             className="flex justify-center items-center"
             style={{
-                height: `calc(100vh - ${NAVBAR_HEIGHT})`,
+                height: `calc(100svh - ${NAVBAR_HEIGHT})`,
             }}
         >
             <span className="loading loading-ring loading-xl"></span>

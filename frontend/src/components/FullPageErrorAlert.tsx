@@ -12,7 +12,7 @@ function FullPageErrorAlert({
         <div
             className="flex justify-center items-center"
             style={{
-                height: `calc(100vh - ${NAVBAR_HEIGHT})`,
+                height: `calc(100svh - ${NAVBAR_HEIGHT})`,
             }}
         >
             <div
