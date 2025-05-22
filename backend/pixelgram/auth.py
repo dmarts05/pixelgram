@@ -46,7 +46,8 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
     async def delete(self, user: User, request: Optional[Request] = None) -> None:
         await self.post_service.delete_all_from(user)
-        await super().delete(user, request)
+        if await self.user_db.get(user.id) is not None:
+            await super().delete(user, request)
 
     async def oauth_callback(
         self,
