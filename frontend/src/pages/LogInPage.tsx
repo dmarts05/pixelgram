@@ -4,7 +4,7 @@ import LogInForm from "../components/forms/LogInForm";
 
 function LogInPage(): React.ReactNode {
     return (
-        <div className="flex items-center justify-center min-h-screen bg-base-200">
+        <div className="flex items-center justify-center min-h-dvh bg-base-200">
             <div className="card w-full max-w-md shadow-lg bg-base-100">
                 <div className="card-body flex flex-column gap-4">
                     <BrandLogo
