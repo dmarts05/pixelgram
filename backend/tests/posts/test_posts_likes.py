@@ -3,8 +3,8 @@ from httpx import ASGITransport, AsyncClient
 
 from pixelgram.__main__ import app
 from tests.utils import (
-    create_test_image,
     create_test_user,
+    create_test_post,
 )
 
 
@@ -15,11 +15,7 @@ async def test_like_and_verify():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("pixel.png", image, "image/png")}
-            data = {"description": "Test post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Test post", client=ac)
 
             like_resp = await ac.post(f"/posts/{post_id}/like/")
             assert like_resp.status_code == 204
@@ -37,13 +33,7 @@ async def test_duplicate_like():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            resp = await ac.post(
-                "/posts/",
-                files={"file": ("i.png", image, "image/png")},
-                data={"description": "Dup"},
-            )
-            post_id = resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Dup", client=ac)
 
             first = await ac.post(f"/posts/{post_id}/like/")
             assert first.status_code == 204
@@ -69,13 +59,7 @@ async def test_unlike_and_verify():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            resp = await ac.post(
-                "/posts/",
-                files={"file": ("u.png", image, "image/png")},
-                data={"description": "Unlike"},
-            )
-            post_id = resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Unlike", client=ac)
             await ac.post(f"/posts/{post_id}/like/")
 
             await ac.delete(f"/posts/{post_id}/like/")
@@ -93,13 +77,7 @@ async def test_unlike_without_like():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            resp = await ac.post(
-                "/posts/",
-                files={"file": ("v.png", image, "image/png")},
-                data={"description": "No like"},
-            )
-            post_id = resp.json()["post"]["id"]
+            post_id = await create_test_post(content="No like", client=ac)
 
             del_resp = await ac.delete(f"/posts/{post_id}/like/")
             assert del_resp.status_code == 400

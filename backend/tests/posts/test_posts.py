@@ -9,6 +9,7 @@ from pixelgram.settings import get_settings
 from tests.overrides import override_small_image_size_settings
 from tests.utils import (
     create_test_image,
+    create_test_post,
     create_test_user,
     get_test_user,
 )
@@ -134,40 +135,25 @@ async def test_create_post_description_too_long():
 async def test_get_posts_pagination():
     async with app.router.lifespan_context(app):
         await create_test_user()
-
-        # Create a number of posts using the POST endpoint.
         num_posts = 15
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
             for i in range(num_posts):
-                image = create_test_image()
-                files = {"file": ("valid.png", image, "image/png")}
-                data = {"description": f"Post number {i + 1}"}
-                resp = await ac.post("/posts/", files=files, data=data)
-                # Assert that each post was created successfully.
-                assert resp.status_code == 201, (
-                    f"Post creation failed on iteration {i + 1}"
-                )
-
+                await create_test_post(content=f"Post number {i + 1}", client=ac)
             # Query page 1 with page_size 10.
             get_resp = await ac.get("/posts/", params={"page": 1, "page_size": 10})
             assert get_resp.status_code == 200, "GET posts failed for page 1"
             json_data = get_resp.json()
-            # Expect 10 posts on the first page.
             assert "data" in json_data
             assert len(json_data["data"]) == 10
-            # nextPage should be 2 since there are 15 posts.
             assert json_data["nextPage"] == 2
             assert json_data["total"] == num_posts
-
             # Query page 2 with the same page_size.
             get_resp = await ac.get("/posts/", params={"page": 2, "page_size": 10})
             assert get_resp.status_code == 200, "GET posts failed for page 2"
             json_data = get_resp.json()
-            # Expect 5 posts on the second page.
             assert len(json_data["data"]) == 5
-            # No further page available.
             assert json_data["nextPage"] is None
             assert json_data["total"] == num_posts
 

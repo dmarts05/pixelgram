@@ -4,9 +4,9 @@ from httpx import ASGITransport, AsyncClient
 from pixelgram.__main__ import app
 from pixelgram.auth import current_active_user  # noqa: E402
 from tests.utils import (
-    create_test_image,
     create_test_user,
     get_test_user,
+    create_test_post,
 )
 
 
@@ -17,11 +17,7 @@ async def test_post_comment_success():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("comment.png", image, "image/png")}
-            data = {"description": "Comment test post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Comment test post", client=ac)
 
             comment_data = {"content": "This is a test comment"}
             comment_resp = await ac.post(
@@ -53,11 +49,7 @@ async def test_post_comment_invalid_content():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("comment_invalid.png", image, "image/png")}
-            data = {"description": "Comment test post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Comment test post", client=ac)
 
             comment_data = {"content": ""}
             comment_resp = await ac.post(
@@ -73,11 +65,7 @@ async def test_post_comment_content_too_long():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("comment_long.png", image, "image/png")}
-            data = {"description": "Comment test post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Comment test post", client=ac)
 
             long_comment = "A" * 1001
             comment_data = {"content": long_comment}
@@ -94,11 +82,7 @@ async def test_get_comments_success():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("get_comments.png", image, "image/png")}
-            data = {"description": "Get comments test post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Comment test post", client=ac)
 
             comment_data = {"content": "This is a test comment"}
             await ac.post(f"/posts/{post_id}/comments/", json=comment_data)
@@ -122,11 +106,7 @@ async def test_get_comments_empty():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("empty_comments.png", image, "image/png")}
-            data = {"description": "Empty comments test post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Empty comments test post", client=ac)
 
             get_comments_resp = await ac.get(f"/posts/{post_id}/comments/")
             assert get_comments_resp.status_code == 200
@@ -146,11 +126,7 @@ async def test_get_comments_pagination():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("pagination_comments.png", image, "image/png")}
-            data = {"description": "Pagination comments test post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Pagination comments test post", client=ac)
 
             # Create 15 comments
             for i in range(15):
@@ -190,11 +166,7 @@ async def test_get_comments_invalid_page():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("invalid_page.png", image, "image/png")}
-            data = {"description": "Invalid page test post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Invalid page test post", client=ac)
 
             get_comments_resp = await ac.get(
                 f"/posts/{post_id}/comments/", params={"page": 0, "page_size": 10}
@@ -209,11 +181,7 @@ async def test_get_comments_invalid_query_params():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("invalid_query.png", image, "image/png")}
-            data = {"description": "Invalid query test post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Invalid query test post", client=ac)
 
             get_comments_resp = await ac.get(
                 f"/posts/{post_id}/comments/",
@@ -229,11 +197,7 @@ async def test_get_comments_no_query_params():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("no_query.png", image, "image/png")}
-            data = {"description": "No query params test post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="No query params test post", client=ac)
 
             get_comments_resp = await ac.get(f"/posts/{post_id}/comments/")
     assert get_comments_resp.status_code == 200
@@ -253,11 +217,7 @@ async def test_get_comments_page_number_out_of_range():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("out_of_range.png", image, "image/png")}
-            data = {"description": "Out of range test post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Out of range test post", client=ac)
 
             get_comments_resp = await ac.get(
                 f"/posts/{post_id}/comments/", params={"page": 2, "page_size": 3}
@@ -279,11 +239,7 @@ async def test_delete_comment_success():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("delete_comment.png", image, "image/png")}
-            data = {"description": "Delete comment test post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Delete comment test post", client=ac)
 
             comment_data = {"content": "This is a test comment"}
             comment_resp = await ac.post(
@@ -314,11 +270,7 @@ async def test_delete_comment_missing_comment():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("missing_comment.png", image, "image/png")}
-            data = {"description": "Missing comment test post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Missing comment test post", client=ac)
 
             delete_resp = await ac.delete(
                 f"/posts/{post_id}/comments/00000000-0000-0000-0000-000000000002/"
@@ -334,11 +286,7 @@ async def test_delete_comment_not_authorized():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("not_authorized.png", image, "image/png")}
-            data = {"description": "Not authorized test post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Not authorized test post", client=ac)
 
             comment_data = {"content": "This is a test comment"}
             comment_resp = await ac.post(

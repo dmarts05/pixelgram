@@ -3,8 +3,8 @@ from httpx import ASGITransport, AsyncClient
 
 from pixelgram.__main__ import app
 from tests.utils import (
-    create_test_image,
     create_test_user,
+    create_test_post,
 )
 
 
@@ -15,11 +15,7 @@ async def test_save_post_and_verify():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("pixel2.png", image, "image/png")}
-            data = {"description": "Test save post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Test save post", client=ac)
 
             save_resp = await ac.post(f"/posts/{post_id}/save/")
             assert save_resp.status_code == 204
@@ -38,11 +34,7 @@ async def test_save_post_already_saved():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("already_saved.png", image, "image/png")}
-            data = {"description": "Already saved post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Already saved post", client=ac)
 
             first_save_resp = await ac.post(f"/posts/{post_id}/save/")
             assert first_save_resp.status_code == 204
@@ -68,11 +60,7 @@ async def test_unsave_post_and_verify():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("unsave.png", image, "image/png")}
-            data = {"description": "Test unsave post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Test unsave post", client=ac)
             await ac.post(f"/posts/{post_id}/save/")
 
             unsave_resp = await ac.delete(f"/posts/{post_id}/save/")
@@ -90,11 +78,7 @@ async def test_unsave_post_not_saved():
         async with AsyncClient(
             transport=ASGITransport(app=app), base_url="http://test"
         ) as ac:
-            image = create_test_image()
-            files = {"file": ("not_saved.png", image, "image/png")}
-            data = {"description": "Not saved post"}
-            create_resp = await ac.post("/posts/", files=files, data=data)
-            post_id = create_resp.json()["post"]["id"]
+            post_id = await create_test_post(content="Not saved post", client=ac)
 
             unsave_resp = await ac.delete(f"/posts/{post_id}/save/")
             assert unsave_resp.status_code == 400
