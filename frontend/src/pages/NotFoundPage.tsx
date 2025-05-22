@@ -2,7 +2,7 @@ import { Link } from "react-router";
 
 function NotFoundPage(): React.ReactNode {
     return (
-        <div className="min-h-dvh bg-base-200 flex items-center">
+        <div className="min-h-svh bg-base-200 flex items-center">
             <div className="text-center w-full">
                 <h1 className="text-8xl font-bold">404</h1>
                 <p className="my-6 text-2xl">
