@@ -1,4 +1,5 @@
 import uuid
+from collections.abc import AsyncGenerator
 from typing import Optional, Union
 
 from fastapi import Depends, Request
@@ -25,6 +26,7 @@ from pixelgram.db import get_access_token_db, get_user_db
 from pixelgram.models.access_token import AccessToken
 from pixelgram.models.user import User
 from pixelgram.schemas.user import UserCreate
+from pixelgram.services.post_service import PostService, get_post_service
 from pixelgram.settings import settings
 
 google_oauth_client = GoogleOAuth2(
@@ -37,6 +39,15 @@ google_oauth_client = GoogleOAuth2(
 class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
     reset_password_token_secret = settings.secret
     verification_token_secret = settings.secret
+
+    def __init__(self, user_db: SQLAlchemyUserDatabase, post_service: PostService):
+        super().__init__(user_db)
+        self.post_service = post_service
+
+    async def delete(self, user: User, request: Optional[Request] = None) -> None:
+        await self.post_service.delete_all_from(user)
+        if await self.user_db.get(user.id) is not None:
+            await super().delete(user, request)
 
     async def oauth_callback(
         self,
@@ -94,7 +105,7 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
 
         return user  # type: ignore
 
-    async def validate_password(
+    async def validate_password(  # type: ignore
         self,
         password: str,
         user: Union[UserCreate, User],
@@ -124,12 +135,15 @@ class UserManager(UUIDIDMixin, BaseUserManager[User, uuid.UUID]):
         pass
 
 
-async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):
+async def get_user_manager(
+    user_db: SQLAlchemyUserDatabase = Depends(get_user_db),
+    post_service: PostService = Depends(get_post_service),
+) -> AsyncGenerator[UserManager, None]:
     """
     Get user manager instance.
     This function is a dependency that can be used in FastAPI routes.
     """
-    yield UserManager(user_db)
+    yield UserManager(user_db, post_service)
 
 
 def get_database_strategy(

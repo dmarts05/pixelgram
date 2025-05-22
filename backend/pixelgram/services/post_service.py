@@ -34,7 +34,21 @@ class PostService:
         self.db = db
         self.supabase = supabase
 
-    async def create_post(self, user: User, description: str, image: Image):
+    async def create_post(
+        self, user: User, description: str, image: Image
+    ) -> PostResponse:
+        """
+        Asynchronously creates a new post for a user, including image upload and database persistence.
+        Args:
+            user (User): The user creating the post.
+            description (str): The description of the post.
+            image (Image): The image file to be uploaded and attached to the post.
+        Raises:
+            HTTPException: If image upload fails, post data is invalid, or database operations fail.
+        Returns:
+            PostResponse: The response object containing the created post's data.
+        """
+
         # Upload image to Supabase
         try:
             image_url = await self.supabase.upload(image)
@@ -102,7 +116,25 @@ class PostService:
         page: int = 1,
         page_size: int = 10,
         user_id: Optional[str] = None,
-    ):
+    ) -> PaginatedPostsResponse:
+        """
+        Retrieve paginated posts with additional metadata for the given user.
+        Args:
+            user (User): The current authenticated user requesting the posts.
+            page (int, optional): The page number for pagination. Defaults to 1.
+            page_size (int, optional): The number of posts per page. Defaults to 10.
+            user_id (Optional[str], optional): If provided, filters posts by this user ID.
+        Returns:
+            PaginatedPostsResponse: An object containing the list of posts with metadata,
+                the next page number (if available), and the total number of posts.
+        The response includes, for each post:
+            - Post details (id, description, image_url, user_id, author info, created_at)
+            - Number of likes and comments
+            - Whether the current user has liked, commented, or saved the post
+        Raises:
+            Any exceptions raised by the underlying database operations.
+        """
+
         # Get posts with pagination and filter by user_id if provided
         stmt = (
             select(Post)
@@ -183,19 +215,48 @@ class PostService:
             data.append(pr.model_dump(by_alias=True))
         return PaginatedPostsResponse(data=data, nextPage=next_page, total=total)
 
-    async def delete_post(self, post: Post):
-        # Delete the post from database
-        await self.db.delete(post)
-        await self.db.commit()
+    async def delete_post(self, post: Post) -> None:
+        """
+        Asynchronously deletes a post and its associated image.
+        This method performs the following actions:
+        1. Deletes the image associated with the given post from Supabase storage.
+        2. Deletes the post record from the database.
+        Args:
+            post (Post): The post instance to be deleted.
+        Raises:
+            HTTPException: If image deletion from Supabase fails, raises an HTTP 500 error with details.
+        """
 
         # Delete the image from Supabase
         try:
             await self.supabase.delete(HttpUrl(post.image_url))
-        except Exception as e:
+        except Exception:
             raise HTTPException(
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-                detail=f"Image deletion failed: {str(e)}",
+                detail="Image deletion from storage failed.",
             )
+
+        # Delete the post from database
+        await self.db.delete(post)
+        await self.db.commit()
+
+    async def delete_all_from(self, user: User) -> None:
+        """
+        Asynchronously deletes all posts created by the specified user, including their associated images.
+        Args:
+            user (User): The user whose posts are to be deleted.
+        Returns:
+            None
+        """
+
+        # Fetch all posts by the user
+        stmt = select(Post).where(Post.user_id == user.id)
+        result = await self.db.execute(stmt)
+        posts = result.scalars().all()
+
+        # Delete each post and its associated image
+        for post in posts:
+            await self.delete_post(post)
 
 
 def get_post_service(

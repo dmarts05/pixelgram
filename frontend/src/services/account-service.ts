@@ -64,3 +64,13 @@ export async function getUsernameById(
 
     return res.json();
 }
+
+export async function deleteAccount(): Promise<void> {
+    const res = await fetchApi("users/me", {
+        method: "DELETE",
+    });
+
+    if (!res.ok) {
+        throw new Error("Failed to fetch posts");
+    }
+}

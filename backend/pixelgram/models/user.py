@@ -22,20 +22,30 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
 
     username: Mapped[str] = mapped_column(index=True)
     oauth_accounts: Mapped[list[OAuthAccount]] = relationship(
-        "OAuthAccount", lazy="joined"
+        "OAuthAccount",
+        lazy="joined",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
     posts: Mapped[list[Post]] = relationship("Post", back_populates="author")
     post_likes: Mapped[list[PostLike]] = relationship(
         "PostLike",
         back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
     post_comments: Mapped[list[PostComment]] = relationship(
-        "PostComment", back_populates="user", cascade="all, delete-orphan"
+        "PostComment",
+        back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     posts_saved: Mapped[list[PostSaved]] = relationship(
         "PostSaved",
         back_populates="user",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     @property

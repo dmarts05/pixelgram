@@ -1,9 +1,9 @@
 from uuid import UUID
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from pixelgram.auth import current_active_user
+from pixelgram.auth import UserManager, current_active_user, get_user_manager
 from pixelgram.db import get_async_session
 from pixelgram.models.user import User
 from pixelgram.schemas.user import UserPublicInfo
@@ -49,3 +49,22 @@ async def get_username_by_id(
     Get username by user ID.
     """
     return await user_service.get_username_by_id(id)
+
+
+@users_router.delete(
+    "/me",
+    summary="Delete your account",
+    description="Deletes the account of the currently authenticated user.",
+    status_code=status.HTTP_204_NO_CONTENT,
+    response_class=Response,
+    responses={
+        status.HTTP_204_NO_CONTENT: {"description": "User deleted successfully"},
+        status.HTTP_401_UNAUTHORIZED: {"description": "Unauthorized"},
+    },
+)
+async def delete_me(
+    user: User = Depends(current_active_user),
+    user_manager: UserManager = Depends(get_user_manager),
+):
+    await user_manager.delete(user, None)
+    return Response(status_code=status.HTTP_204_NO_CONTENT)
