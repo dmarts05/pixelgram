@@ -3,8 +3,8 @@ from httpx import ASGITransport, AsyncClient
 
 from pixelgram.__main__ import app
 from tests.utils import (
-    create_test_user,
     create_test_post,
+    create_test_user,
 )
 
 
