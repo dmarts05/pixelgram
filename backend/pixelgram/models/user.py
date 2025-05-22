@@ -22,7 +22,10 @@ class User(SQLAlchemyBaseUserTableUUID, Base):
 
     username: Mapped[str] = mapped_column(index=True)
     oauth_accounts: Mapped[list[OAuthAccount]] = relationship(
-        "OAuthAccount", lazy="joined"
+        "OAuthAccount",
+        lazy="joined",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
     posts: Mapped[list[Post]] = relationship("Post", back_populates="author")
     post_likes: Mapped[list[PostLike]] = relationship(

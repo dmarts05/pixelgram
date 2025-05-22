@@ -37,12 +37,12 @@ app.add_middleware(
 )
 
 app.include_router(auth_router)
+app.include_router(users_router)
 app.include_router(
     fastapi_users.get_users_router(UserRead, UserUpdate),
     prefix="/users",
     tags=["users"],
 )
-app.include_router(users_router)
 app.include_router(captions_router)
 app.include_router(posts_router)
 
