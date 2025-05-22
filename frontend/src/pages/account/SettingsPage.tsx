@@ -2,9 +2,10 @@ import AccountForm from "../../components/forms/AccountForm";
 import { NAVBAR_HEIGHT } from "../../utils/constants";
 import ConfirmDeleteAccountModal from "../../components/account/ConfirmDeleteAccountModal";
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
-import { deleteAccount } from "../../services/account-service";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { deleteAccount, getMyUser } from "../../services/account-service";
 import { useAuthStore } from "../../stores/auth-store";
+import FullPageSpinner from "../../components/FullPageSpinner";
 
 function SettingsPage(): React.ReactNode {
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -17,11 +18,20 @@ function SettingsPage(): React.ReactNode {
         },
     });
 
+    const { isLoading } = useQuery({
+        queryKey: ["user"],
+        queryFn: getMyUser,
+    });
+
+    if (isLoading) {
+        return <FullPageSpinner />;
+    }
+
     return (
         <main
-            className="flex items-center justify-center"
+            className="flex justify-center"
             style={{
-                height: `calc(100vh - ${NAVBAR_HEIGHT})`,
+                marginTop: NAVBAR_HEIGHT,
             }}
         >
             <div className="card w-full max-w-md shadow-lg bg-base-100">
