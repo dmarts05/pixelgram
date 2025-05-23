@@ -93,7 +93,7 @@ function PostsGrid({
                 }}
                 hasNextPage={hasNextPage}
                 isFetchingNextPage={isFetchingNextPage}
-                className="flex justify-center items-center pb-8 px-8"
+                className="flex justify-center items-center pb-8 px-8 h-10"
                 noMoreItemsMessage="No more posts to load."
             />
         </>
