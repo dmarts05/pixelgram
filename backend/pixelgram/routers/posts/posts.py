@@ -13,6 +13,7 @@ from fastapi import (
     UploadFile,
     status,
 )
+from fastapi_limiter.depends import RateLimiter
 from PIL import Image
 from pydantic import HttpUrl
 from sqlalchemy import func, select
@@ -54,6 +55,7 @@ posts_router.include_router(saved_posts_router)
 
 @posts_router.post(
     "/",
+    dependencies=[Depends(RateLimiter(times=30, seconds=900))],
     status_code=status.HTTP_201_CREATED,
     summary="Creates a pixelart post",
     description="Takes an uploaded image (must be 128x128 pixels) and its description and saves it as a pixelart post.",
@@ -189,6 +191,7 @@ async def post_pixelart(
 
 @posts_router.get(
     "/",
+    dependencies=[Depends(RateLimiter(times=30, seconds=900))],
     summary="Retrieve paginated posts",
     description="Returns a paginated list of posts for infinite scrolling. "
     "Use query parameters to control the page and page size. You can filter by userId.",
@@ -314,6 +317,7 @@ async def get_posts(
 
 @posts_router.delete(
     "/{post_id}/",
+    dependencies=[Depends(RateLimiter(times=30, seconds=900))],
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a post",
     responses={

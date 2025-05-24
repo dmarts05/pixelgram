@@ -8,6 +8,7 @@ from fastapi import (
     Response,
     status,
 )
+from fastapi_limiter.depends import RateLimiter
 from sqlalchemy import delete, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -25,6 +26,7 @@ post_likes_router = APIRouter(
 
 @post_likes_router.post(
     "/",
+    dependencies=[Depends(RateLimiter(times=30, seconds=900))],
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Like a post",
     responses={
@@ -63,6 +65,7 @@ async def like_post(
 
 @post_likes_router.delete(
     "/",
+    dependencies=[Depends(RateLimiter(times=30, seconds=900))],
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Unlike a post",
     responses={

@@ -10,6 +10,7 @@ from fastapi import (
     Response,
     status,
 )
+from fastapi_limiter.depends import RateLimiter
 from sqlalchemy import func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -34,6 +35,7 @@ posts_comments_router = APIRouter(
 
 @posts_comments_router.get(
     "/",
+    dependencies=[Depends(RateLimiter(times=30, seconds=900))],
     summary="Retrieve paginated comments for a post",
     description="Returns a paginated list of comments on a given post.",
     responses={
@@ -119,6 +121,7 @@ async def get_post_comments(
 
 @posts_comments_router.post(
     "/",
+    dependencies=[Depends(RateLimiter(times=30, seconds=900))],
     status_code=status.HTTP_201_CREATED,
     summary="Add a comment to a post",
     response_model=CommentResponse,
@@ -174,6 +177,7 @@ async def post_comment(
 
 @posts_comments_router.delete(
     "/{comment_id}/",
+    dependencies=[Depends(RateLimiter(times=30, seconds=900))],
     status_code=status.HTTP_204_NO_CONTENT,
     summary="Delete a comment",
     responses={

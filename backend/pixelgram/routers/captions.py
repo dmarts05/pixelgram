@@ -1,6 +1,7 @@
 from io import BytesIO
 
 from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi_limiter.depends import RateLimiter
 from PIL import Image
 
 from pixelgram.auth import current_active_user
@@ -17,6 +18,7 @@ captions_router = APIRouter(
 
 @captions_router.post(
     "/",
+    dependencies=[Depends(RateLimiter(times=30, seconds=900))],
     summary="Generate a caption for an image",
     description="Takes an uploaded image (must be 128x128 pixels) and returns a generated caption. Only image files are allowed.",
     responses={

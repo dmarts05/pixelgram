@@ -21,10 +21,11 @@ from pixelgram.settings import settings
 async def lifespan(app: FastAPI):
     await create_db_and_tables()
     redis_connection = redis.from_url(
-        "redis://localhost", encoding="utf-8", decode_responses=True
+        settings.redis_uri, encoding="utf-8", decode_responses=True
     )
     await FastAPILimiter.init(redis_connection)
     yield
+    await FastAPILimiter.close()
 
 
 app = FastAPI(

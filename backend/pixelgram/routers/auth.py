@@ -8,10 +8,7 @@ from pixelgram.auth import (
 from pixelgram.schemas.user import UserCreate, UserRead, UserUpdate
 from pixelgram.settings import settings
 
-auth_router = APIRouter(
-    prefix="/auth",
-    tags=["auth"],
-)
+auth_router = APIRouter(prefix="/auth", tags=["auth"])
 auth_router.include_router(fastapi_users.get_auth_router(auth_backend))
 auth_router.include_router(
     fastapi_users.get_register_router(UserRead, UserCreate),

@@ -15,6 +15,7 @@ class Settings(BaseSettings):
     supabase_service_key: str = ""
     supabase_bucket: str = ""
     max_img_mb_size: float = 5
+    redis_uri: str = ""
 
 
 settings = Settings()
