@@ -167,4 +167,10 @@ The frontend pipeline will run the following actions:
 - Build the project for production
 - Check that code maintains Prettier format and pass linting with ESLint
 
+The project is deployed using Render, with different services used, one for frontend and one for backend. In Render, the backend service contains all the environment variables needed to run the project correctly.
+
 ## Project organization and metodology
+
+The metodology used was based in Scrum, with weekly sprints. In each meeting we planned the next sprint, the work done and retrospective.
+
+The tasks distribution was made to be equitative between all team members, with tasks for both frontend and backend.
