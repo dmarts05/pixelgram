@@ -151,4 +151,20 @@ To run the tests, you need to open the backend dev container. Then, there are tw
 
 ## CI/CD and Deployment
 
-To integrate new features correctly into the project, we used GitHub Actions
+To integrate new features correctly into the project and to ensure stability and quality, we used GitHub Actions. There are separate CI pipelines for both frontend and backend.
+
+The backend pipeline will run the following actions:
+
+- Clone repository and configure Python 3.13
+- Install uv tool and sync the defined dependencies
+- Run style and linting checks with Ruff
+- Run the unit tests mentioned in the previous sections
+
+The frontend pipeline will run the following actions:
+
+- Clone repository and configure Bun as a JavaScript/TypeScript runtime
+- Install Bun dependencies
+- Build the project for production
+- Check that code maintains Prettier format and pass linting with ESLint
+
+## Project organization and metodology
