@@ -1,9 +1,10 @@
 from io import BytesIO
 
-from fastapi import APIRouter, Depends, File, HTTPException, UploadFile
+from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from PIL import Image
 
 from pixelgram.auth import current_active_user
+from pixelgram.limiter import limiter
 from pixelgram.models.user import User
 from pixelgram.schemas.caption import Caption
 from pixelgram.services.captions_service import CaptionsService, get_captions_service
@@ -37,7 +38,9 @@ captions_router = APIRouter(
         401: {"description": "Unauthorized"},
     },
 )
+@limiter.limit("30/15minutes")
 async def get_caption(
+    request: Request,
     user: User = Depends(current_active_user),
     file: UploadFile = File(...),
     captions_service: CaptionsService = Depends(get_captions_service),
