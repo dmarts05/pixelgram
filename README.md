@@ -129,3 +129,26 @@ This project supports development with Dev Containers in order to maintain a con
 
 > [!NOTE]
 > 🐳 Make sure Docker is running and both containers can run in parallel on your system.
+
+## Testing the project
+
+Pixelgram project contains unit tests for the backend, to guarantee that functionality implemented works properly.
+
+The tests were made using pytest library for Python.
+
+All the test files are located in the "tests" folder, inside the backend
+
+### Running the tests
+
+To run the tests, you need to open the backend dev container. Then, there are two ways to test the backend:
+
+- Using the Testing section in Visual Studio Code. You must have the Python extension installed.
+- Running the following command:
+
+  ```bash
+  pytest
+  ```
+
+## CI/CD and Deployment
+
+To integrate new features correctly into the project, we used GitHub Actions
