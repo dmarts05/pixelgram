@@ -83,19 +83,18 @@ function PostsGrid({
                         ))}
                     </React.Fragment>
                 ))}
+                <InfiniteScrollIntersectionObserver
+                    onIntersect={(): void => {
+                        if (hasNextPage) {
+                            fetchNextPage();
+                        }
+                    }}
+                    hasNextPage={hasNextPage}
+                    isFetchingNextPage={isFetchingNextPage}
+                    className="flex justify-center items-center pb-8 px-8 h-10 mb-4"
+                    noMoreItemsMessage="No more posts to load."
+                />
             </main>
-
-            <InfiniteScrollIntersectionObserver
-                onIntersect={(): void => {
-                    if (hasNextPage) {
-                        fetchNextPage();
-                    }
-                }}
-                hasNextPage={hasNextPage}
-                isFetchingNextPage={isFetchingNextPage}
-                className="flex justify-center items-center pb-8 px-8 h-20"
-                noMoreItemsMessage="No more posts to load."
-            />
         </>
     );
 }
