@@ -1,13 +1,26 @@
 import pytest
+import redis.asyncio as redis
+from fastapi_limiter import FastAPILimiter
 from httpx import ASGITransport, AsyncClient
 
 from pixelgram.__main__ import app
 from pixelgram.auth import current_active_user  # noqa: E402
+from pixelgram.settings import settings
 from tests.utils import (
     create_test_image,
     create_test_user,
     get_test_user,
 )
+
+
+@pytest.fixture(autouse=True)
+async def before():
+    redis_connection = redis.from_url(
+        settings.redis_uri, encoding="utf-8", decode_responses=True
+    )
+    await FastAPILimiter.init(redis_connection)
+    yield
+    await FastAPILimiter.close()
 
 
 @pytest.mark.asyncio
@@ -355,3 +368,30 @@ async def test_delete_comment_not_authorized():
 
             delete_resp = await ac.delete(f"/posts/{post_id}/comments/{comment_id}/")
             assert delete_resp.status_code == 403
+
+
+@pytest.mark.asyncio
+async def test_delete_comment_too_many_requests():
+    async with app.router.lifespan_context(app):
+        await create_test_user()
+        async with AsyncClient(
+            transport=ASGITransport(app=app), base_url="http://test"
+        ) as ac:
+            image = create_test_image()
+            files = {"file": ("too_many_requests.png", image, "image/png")}
+            data = {"description": "Too many requests test post"}
+            create_resp = await ac.post("/posts/", files=files, data=data)
+            post_id = create_resp.json()["post"]["id"]
+
+            comment_data = {"content": "This is a test comment"}
+            comment_resp = await ac.post(
+                f"/posts/{post_id}/comments/", json=comment_data
+            )
+            comment_id = comment_resp.json()["comment"]["id"]
+
+            # Simulate too many requests
+            for _ in range(30):
+                await ac.delete(f"/posts/{post_id}/comments/{comment_id}/")
+
+            delete_resp = await ac.delete(f"/posts/{post_id}/comments/{comment_id}/")
+            assert delete_resp.status_code == 429

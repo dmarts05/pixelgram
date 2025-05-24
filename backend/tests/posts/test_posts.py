@@ -13,6 +13,14 @@ from tests.utils import (
     get_test_user,
 )
 
+# Disable rate limiting for tests by overriding the dependency
+try:
+    from fastapi_limiter.depends import RateLimiter
+
+    app.dependency_overrides[RateLimiter] = lambda *a, **kw: None
+except ImportError:
+    pass
+
 
 @pytest.mark.asyncio
 async def test_create_post_success():

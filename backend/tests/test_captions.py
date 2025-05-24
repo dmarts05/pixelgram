@@ -1,12 +1,25 @@
 from io import BytesIO
 
 import pytest
+import redis.asyncio as redis
+from fastapi_limiter import FastAPILimiter
 from httpx import ASGITransport, AsyncClient
 
 from pixelgram.__main__ import app
 from pixelgram.services.hf_client import get_hf_client
+from pixelgram.settings import settings
 from tests.overrides import override_fail_hf_client
 from tests.utils import create_test_image
+
+
+@pytest.fixture(autouse=True)
+async def before_and_after():
+    redis_connection = redis.from_url(
+        settings.redis_uri, encoding="utf-8", decode_responses=True
+    )
+    await FastAPILimiter.init(redis_connection)
+    yield
+    await FastAPILimiter.close()
 
 
 @pytest.mark.asyncio
@@ -76,3 +89,20 @@ async def test_generate_caption_failure():
     assert "Failed to generate caption." in response.json()["detail"]
 
     app.dependency_overrides.pop(get_hf_client)
+
+
+@pytest.mark.asyncio
+async def test_generate_caption_too_many_requests():
+    async with AsyncClient(
+        transport=ASGITransport(app=app), base_url="http://test"
+    ) as ac:
+        for _ in range(30):
+            image = create_test_image()
+            files = {"file": ("test.png", image, "image/png")}
+            response = await ac.post("/captions/", files=files)
+
+            if response.status_code == 429:
+                break
+
+    assert response.status_code == 429
+    assert "Too Many Requests" in response.text
