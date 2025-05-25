@@ -5,7 +5,7 @@
 Pixelgram is a web application that allows users to create, publish and share Pixel Arts with a size of 128x128 pixels, as well as interact with other creations through comments and “likes”, all in a visual environment similar to that of social networks such as Instagram.
 It includes features such as an interactive canvas, automatic generation of descriptions using AI, and the ability to import images to convert them into Pixel Art.
 
-## ✨ Features
+## Features
 
 - 🎨 **Interactive Canvas**: A user-friendly interface for creating Pixel Art.
 - 🖼️ **Image Import**: Convert images into Pixel Art.
@@ -15,7 +15,7 @@ It includes features such as an interactive canvas, automatic generation of desc
 - 📱 **Responsive Design**: Optimized for both desktop and mobile devices.
 - 🔐 **User Authentication**: Secure login and registration system. Google OAuth 2.0 support.
 
-## ⚙️ Development Environment
+## Environment
 
 This project supports development with Dev Containers in order to maintain a consistent setup across environments.
 
@@ -79,7 +79,7 @@ This project supports development with Dev Containers in order to maintain a con
 
    To work with them:
 
-   #### 🔧 Open the Frontend Dev Container
+   #### Open the Frontend Dev Container
 
    1. Open **Visual Studio Code**.
    2. Navigate to the `frontend/` folder.
@@ -99,7 +99,7 @@ This project supports development with Dev Containers in order to maintain a con
       ```
    8. Open your browser and navigate to [`http://localhost:5173`](http://localhost:5173) to view the frontend app.
 
-   #### 🔧 Open the Backend Dev Container
+   #### Open the Backend Dev Container
 
    1. Open a **new Visual Studio Code window**.
 
@@ -125,12 +125,12 @@ This project supports development with Dev Containers in order to maintain a con
    6. Open your browser and navigate to [`http://localhost:8000/docs`](http://localhost:8000/docs) to view the backend API.
 
 > [!TIP]
-> 🧠 Keep both Visual Studio Code windows open — one for the frontend and one for the backend — to work on both services simultaneously.
+> Keep both Visual Studio Code windows open — one for the frontend and one for the backend — to work on both services simultaneously.
 
 > [!NOTE]
-> 🐳 Make sure Docker is running and both containers can run in parallel on your system.
+> Make sure Docker is running and both containers can run in parallel on your system.
 
-## Testing the project
+## Testing
 
 Pixelgram project contains unit tests for the backend, to guarantee that functionality implemented works properly.
 
@@ -146,31 +146,7 @@ To run the tests, you need to open the backend dev container. Then, there are tw
 - Running the following command:
 
   ```bash
-  pytest
+  uv run pytest
   ```
 
-## CI/CD and Deployment
-
-To integrate new features correctly into the project and to ensure stability and quality, we used GitHub Actions. There are separate CI pipelines for both frontend and backend.
-
-The backend pipeline will run the following actions:
-
-- Clone repository and configure Python 3.13
-- Install uv tool and sync the defined dependencies
-- Run style and linting checks with Ruff
-- Run the unit tests mentioned in the previous sections
-
-The frontend pipeline will run the following actions:
-
-- Clone repository and configure Bun as a JavaScript/TypeScript runtime
-- Install Bun dependencies
-- Build the project for production
-- Check that code maintains Prettier format and pass linting with ESLint
-
-The project is deployed using Render, with different services used, one for frontend and one for backend. In Render, the backend service contains all the environment variables needed to run the project correctly.
-
-## Project organization and metodology
-
-The metodology used was based in Scrum, with weekly sprints. In each meeting we planned the next sprint, the work done and retrospective.
-
-The tasks distribution was made to be equitative between all team members, with tasks for both frontend and backend.
+## Linting and formatting
