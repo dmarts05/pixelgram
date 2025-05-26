@@ -150,3 +150,33 @@ To run the tests, you need to open the backend dev container. Then, there are tw
   ```
 
 ## Linting and formatting
+
+To maintain a consistent formatting among developers of the application, we use some linting libraries: Prettier and ...
+
+In backend, when you save changes on any file, content will automatically be linted and formatted according to the specifications found in the file ...
+
+In frontend, we must make the linting procedure manually. To check if there are mistakes in the files, we can run the following command in the frontend container:
+
+To check formatting
+
+```bash
+bun prettier
+```
+
+To check linting
+
+```bash
+bun eslint
+```
+
+If we want to fix all formatting issues found, we can run the following command:
+
+```bash
+bun prettier:fix
+```
+
+If we want to fix all formatting issues found, we can run the following command:
+
+```bash
+bun eslint:fix
+```
