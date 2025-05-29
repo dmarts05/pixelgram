@@ -5,7 +5,12 @@
 Pixelgram is a web application that allows users to create, publish and share Pixel Arts with a size of 128x128 pixels, as well as interact with other creations through comments and “likes”, all in a visual environment similar to that of social networks such as Instagram.
 It includes features such as an interactive canvas, automatic generation of descriptions using AI, and the ability to import images to convert them into Pixel Art.
 
-## ✨ Features
+## Demo
+
+You can preview a demo by pressing this
+[link to video](https://drive.google.com/file/d/1EnDNhEj2gzBFQFa1uumXe3N9cWtdiv1C/view?usp=sharing).
+
+## Features
 
 - 🎨 **Interactive Canvas**: A user-friendly interface for creating Pixel Art.
 - 🖼️ **Image Import**: Convert images into Pixel Art.
@@ -15,7 +20,7 @@ It includes features such as an interactive canvas, automatic generation of desc
 - 📱 **Responsive Design**: Optimized for both desktop and mobile devices.
 - 🔐 **User Authentication**: Secure login and registration system. Google OAuth 2.0 support.
 
-## ⚙️ Development Environment
+## Environment
 
 This project supports development with Dev Containers in order to maintain a consistent setup across environments.
 
@@ -79,27 +84,34 @@ This project supports development with Dev Containers in order to maintain a con
 
    To work with them:
 
-   #### 🔧 Open the Frontend Dev Container
+   #### Open the Frontend Dev Container
 
    1. Open **Visual Studio Code**.
    2. Navigate to the `frontend/` folder.
    3. If you have the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installed, Visual Studio Code will prompt you to reopen in a container.
    4. Or, open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and run:
-      ```VS Code
+
+      ```
       Dev Containers: Reopen in Container
       ```
+
    5. Wait for the container to build and start. This may take a few minutes, especially the first time.
+
    6. Install dependencies:
+
       ```bash
       bun install
       ```
+
    7. Start the development server:
+
       ```bash
        bun dev
       ```
+
    8. Open your browser and navigate to [`http://localhost:5173`](http://localhost:5173) to view the frontend app.
 
-   #### 🔧 Open the Backend Dev Container
+   #### Open the Backend Dev Container
 
    1. Open a **new Visual Studio Code window**.
 
@@ -125,7 +137,74 @@ This project supports development with Dev Containers in order to maintain a con
    6. Open your browser and navigate to [`http://localhost:8000/docs`](http://localhost:8000/docs) to view the backend API.
 
 > [!TIP]
-> 🧠 Keep both Visual Studio Code windows open — one for the frontend and one for the backend — to work on both services simultaneously.
+> Keep both Visual Studio Code windows open — one for the frontend and one for the backend — to work on both services simultaneously.
 
 > [!NOTE]
-> 🐳 Make sure Docker is running and both containers can run in parallel on your system.
+> Make sure Docker is running and both containers can run in parallel on your system.
+
+## Testing
+
+Pixelgram project contains unit tests for the backend, to guarantee that functionality implemented works properly.
+
+The tests were made using pytest library for Python.
+
+All the test files are located in the "tests" folder, inside the backend
+
+### Running the tests
+
+To run the tests, you need to open the backend dev container. Then, there are two ways to test the backend:
+
+- Using the Testing section in Visual Studio Code. You must have the Python extension installed.
+- Running the following command:
+
+  ```bash
+  uv run pytest
+  ```
+
+## Linting and formatting
+
+To maintain a consistent formatting among developers of the application, we use some linting libraries: Prettier and Ruff
+
+### Backend
+
+In backend, when you save changes on any file, content will automatically be linted and formatted according to the Ruff specifications by default if we use the dev container.
+
+To fix formatting issues manually, use the following command:
+
+```bash
+ruff format
+```
+
+To fix linting issues manually, use the following command:
+
+```bash
+ruff check --fix
+```
+
+### Frontend
+
+In frontend, we must make the linting procedure manually. To check if there are mistakes in the files, we can run the following command in the frontend container:
+
+To check formatting
+
+```bash
+bun prettier
+```
+
+To check linting
+
+```bash
+bun eslint
+```
+
+If we want to fix all formatting issues found, we can run the following command:
+
+```bash
+bun prettier:fix
+```
+
+If we want to fix all formatting issues found, we can run the following command:
+
+```bash
+bun eslint:fix
+```
