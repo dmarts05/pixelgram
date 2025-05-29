@@ -5,6 +5,11 @@
 Pixelgram is a web application that allows users to create, publish and share Pixel Arts with a size of 128x128 pixels, as well as interact with other creations through comments and “likes”, all in a visual environment similar to that of social networks such as Instagram.
 It includes features such as an interactive canvas, automatic generation of descriptions using AI, and the ability to import images to convert them into Pixel Art.
 
+## Demo
+
+You can preview a demo by pressing this
+[link to video](https://drive.google.com/file/d/1EnDNhEj2gzBFQFa1uumXe3N9cWtdiv1C/view?usp=sharing).
+
 ## Features
 
 - 🎨 **Interactive Canvas**: A user-friendly interface for creating Pixel Art.
@@ -85,18 +90,25 @@ This project supports development with Dev Containers in order to maintain a con
    2. Navigate to the `frontend/` folder.
    3. If you have the [Dev Containers extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) installed, Visual Studio Code will prompt you to reopen in a container.
    4. Or, open the Command Palette (`Ctrl+Shift+P` / `Cmd+Shift+P`) and run:
-      ```VS Code
+
+      ```
       Dev Containers: Reopen in Container
       ```
+
    5. Wait for the container to build and start. This may take a few minutes, especially the first time.
+
    6. Install dependencies:
+
       ```bash
       bun install
       ```
+
    7. Start the development server:
+
       ```bash
        bun dev
       ```
+
    8. Open your browser and navigate to [`http://localhost:5173`](http://localhost:5173) to view the frontend app.
 
    #### Open the Backend Dev Container
@@ -151,9 +163,25 @@ To run the tests, you need to open the backend dev container. Then, there are tw
 
 ## Linting and formatting
 
-To maintain a consistent formatting among developers of the application, we use some linting libraries: Prettier and ...
+To maintain a consistent formatting among developers of the application, we use some linting libraries: Prettier and Ruff
 
-In backend, when you save changes on any file, content will automatically be linted and formatted according to the specifications found in the file ...
+### Backend
+
+In backend, when you save changes on any file, content will automatically be linted and formatted according to the Ruff specifications by default if we use the dev container.
+
+To fix formatting issues manually, use the following command:
+
+```bash
+ruff format
+```
+
+To fix linting issues manually, use the following command:
+
+```bash
+ruff check --fix
+```
+
+### Frontend
 
 In frontend, we must make the linting procedure manually. To check if there are mistakes in the files, we can run the following command in the frontend container:
 
